@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "../pages/Landing";
 import Login from "../pages/Login";
+import Challenges from "../pages/Challenges";
 import CompanyDashboardPage from "../pages/CompanyDashboardPage";
 import CompanyRegistration from "../pages/CompanyRegistration";
 import StudentDashboardPage from "../pages/StudentDashboardPage";
@@ -11,6 +12,7 @@ export default function Router() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/challenges" element={<Challenges />} />
         <Route path="/login" element={<Login />} />
         <Route path="/company-dashboard" element={<CompanyDashboardPage />} />
         <Route path="/company-registration" element={<CompanyRegistration />} />

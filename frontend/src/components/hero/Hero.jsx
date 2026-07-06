@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function Hero() {
@@ -43,13 +44,19 @@ export default function Hero() {
           {/* Buttons */}
 
           <div className="flex flex-col sm:flex-row gap-5 mt-12">
-            <button className="px-10 py-4 rounded-xl bg-violet-600 hover:bg-violet-500 transition font-semibold shadow-lg shadow-violet-700/30">
+            <Link
+              className="px-10 py-4 rounded-xl bg-violet-600 hover:bg-violet-500 transition font-semibold shadow-lg shadow-violet-700/30 text-center"
+              to="/login"
+            >
               Start Solving Challenges
-            </button>
+            </Link>
 
-            <button className="px-10 py-4 rounded-xl bg-[#1A243D] hover:bg-[#26344F] transition">
+            <Link
+              className="px-10 py-4 rounded-xl bg-[#1A243D] hover:bg-[#26344F] transition text-center"
+              to="/company-registration"
+            >
               Post a Challenge
-            </button>
+            </Link>
           </div>
         </motion.div>
       </div>

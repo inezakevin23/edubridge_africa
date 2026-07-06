@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowRight,
   AtSign,
@@ -180,9 +181,9 @@ export default function CompanyRegistrationForm() {
             </div>
             <p className="hidden whitespace-nowrap text-[12px] text-[#8D99AE] sm:block">
               Already registered?{" "}
-              <a className="font-semibold text-[#9B6CFF]" href="/login">
+              <Link className="font-semibold text-[#9B6CFF]" to="/login">
                 Sign In
-              </a>
+              </Link>
             </p>
           </div>
         </header>
@@ -239,7 +240,11 @@ export default function CompanyRegistrationForm() {
 
               <SelectField label="Industry" placeholder="E-Commerce" />
               <SelectField label="Country" placeholder="Select country" />
-              <Field label="City" icon={<MapPin size={17} />} placeholder="Lagos" />
+              <Field
+                label="City"
+                icon={<MapPin size={17} />}
+                placeholder="Lagos"
+              />
               <Field
                 label="Company Website"
                 icon={<Globe size={17} />}
@@ -334,7 +339,10 @@ export default function CompanyRegistrationForm() {
               />
             </div>
             <div className="mt-5 flex gap-3 rounded-[18px] border border-amber-400/15 bg-amber-500/[0.06] p-4 text-[12px] leading-relaxed text-[#9AA7BA]">
-              <ShieldCheck className="mt-0.5 shrink-0 text-[#F59E0B]" size={17} />
+              <ShieldCheck
+                className="mt-0.5 shrink-0 text-[#F59E0B]"
+                size={17}
+              />
               <p>
                 The authorized representative is legally responsible for all
                 challenges and interactions posted through this account.
@@ -342,7 +350,11 @@ export default function CompanyRegistrationForm() {
             </div>
           </Section>
 
-          <Section step="4" title="Account Information" icon={<KeyRound size={18} />}>
+          <Section
+            step="4"
+            title="Account Information"
+            icon={<KeyRound size={18} />}
+          >
             <div className="grid gap-5 md:grid-cols-2">
               <div className="md:col-span-2">
                 <Field
@@ -358,7 +370,9 @@ export default function CompanyRegistrationForm() {
                 type={showPassword ? "text" : "password"}
                 rightIcon={
                   <button
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     className="transition hover:text-white"
                     onClick={() => setShowPassword((value) => !value)}
                     type="button"

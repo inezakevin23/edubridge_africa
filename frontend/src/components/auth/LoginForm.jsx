@@ -1,22 +1,27 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-import {
-  Mail,
-  Lock,
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Check,
-} from "lucide-react";
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Check } from "lucide-react";
 
 import UserToggle from "./UserToggle";
-
 import AuthInput from "./AuthInput";
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginForm() {
   const [role, setRole] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const email = formData.get("email") || "user@example.com";
+
+    login(role, email);
+    navigate(role === "company" ? "/company-dashboard" : "/dashboard");
+  };
 
   return (
     <motion.section
@@ -31,7 +36,10 @@ export default function LoginForm() {
       <div className="absolute right-[-130px] top-[-70px] h-[560px] w-[560px] rounded-full bg-violet-700/[0.08] blur-[130px]" />
       <div className="absolute right-[120px] top-[120px] h-[340px] w-[340px] rounded-full bg-violet-700/[0.04] blur-[95px]" />
 
-      <form className="relative z-10 w-full max-w-[560px]">
+      <form
+        className="relative z-10 w-full max-w-[560px]"
+        onSubmit={handleSubmit}
+      >
         <h1 className="text-[40px] font-extrabold leading-tight tracking-normal">
           Welcome back
         </h1>
@@ -50,6 +58,7 @@ export default function LoginForm() {
           </label>
 
           <AuthInput
+            name="email"
             icon={<Mail size={20} />}
             type="email"
             placeholder="you@example.com"
@@ -68,6 +77,7 @@ export default function LoginForm() {
           </div>
 
           <AuthInput
+            name="password"
             type={showPassword ? "text" : "password"}
             icon={<Lock size={20} />}
             placeholder="••••••••"
@@ -127,9 +137,9 @@ export default function LoginForm() {
 
         <p className="mt-11 text-center text-[16px] text-[#9AA7BA]">
           Don't have an account?{" "}
-          <a className="font-semibold text-[#9B6CFF]" href="#">
+          <Link className="font-semibold text-[#9B6CFF]" to="/register">
             Create one — it's free
-          </a>
+          </Link>
         </p>
       </form>
     </motion.section>

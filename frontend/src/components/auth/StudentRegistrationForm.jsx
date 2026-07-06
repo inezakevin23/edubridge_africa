@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowRight,
   AtSign,
@@ -12,7 +13,7 @@ import {
   EyeOff,
   GraduationCap,
   KeyRound,
-  Link,
+  Link as LinkIcon,
   Lock,
   Mail,
   MapPin,
@@ -152,9 +153,9 @@ export default function StudentRegistrationForm() {
             </div>
             <p className="hidden whitespace-nowrap text-[12px] text-[#8D99AE] sm:block">
               Already have an account?{" "}
-              <a className="font-semibold text-[#9B6CFF]" href="/login">
+              <Link className="font-semibold text-[#9B6CFF]" to="/login">
                 Sign In
-              </a>
+              </Link>
             </p>
           </div>
         </header>
@@ -183,10 +184,7 @@ export default function StudentRegistrationForm() {
                 placeholder="+234 800 000 0000"
                 type="tel"
               />
-              <SelectField
-                label="Country"
-                placeholder="Select country"
-              />
+              <SelectField label="Country" placeholder="Select country" />
               <Field
                 label="City"
                 icon={<MapPin size={17} />}
@@ -316,7 +314,9 @@ export default function StudentRegistrationForm() {
                 type={showPassword ? "text" : "password"}
                 rightIcon={
                   <button
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     className="transition hover:text-white"
                     onClick={() => setShowPassword((value) => !value)}
                     type="button"
@@ -359,7 +359,11 @@ export default function StudentRegistrationForm() {
             </p>
           </Section>
 
-          <Section step="4" title="Verification" icon={<ShieldCheck size={18} />}>
+          <Section
+            step="4"
+            title="Verification"
+            icon={<ShieldCheck size={18} />}
+          >
             <div>
               <span className="mb-3 block text-[13px] font-semibold text-white/90">
                 Upload National ID or Student ID

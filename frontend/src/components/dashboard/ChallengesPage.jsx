@@ -27,6 +27,8 @@ import {
   Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import DashboardLayout from "../layout/DashboardLayout";
+import Topbar from "../layout/Topbar";
 
 const navItems = [
   ["Dashboard", Grid2X2],
@@ -158,82 +160,6 @@ const challenges = [
   },
 ];
 
-function Sidebar() {
-  return (
-    <aside className="hidden min-h-screen w-[260px] shrink-0 border-r border-white/[0.07] bg-[#111A2A] px-6 py-7 xl:flex xl:flex-col">
-      <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#A78BFA,#6D28D9)] shadow-[0_0_24px_rgba(139,92,246,0.42)]">
-          <Globe size={22} strokeWidth={2.5} />
-        </div>
-        <h1 className="text-[20px] font-extrabold leading-none text-white">
-          EduBridge
-        </h1>
-      </div>
-
-      <nav className="mt-14 space-y-3 border-b border-white/[0.06] pb-7">
-        {navItems.map(([label, Icon], index) => (
-          <a
-            className={`flex h-11 items-center gap-4 rounded-2xl px-3 text-[14px] font-semibold transition ${
-              index === 1
-                ? "bg-white/[0.045] text-white"
-                : "text-[#9AA7BA] hover:bg-white/[0.035] hover:text-white"
-            }`}
-            href="#"
-            key={label}
-          >
-            <Icon size={19} />
-            {label}
-          </a>
-        ))}
-      </nav>
-
-      <div className="mt-auto flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#0D1626] p-3">
-        <img
-          alt="Adebayo O."
-          className="h-11 w-11 rounded-full border border-white/10 object-cover"
-          src="https://i.pravatar.cc/100?img=12"
-        />
-        <div>
-          <h2 className="text-[14px] font-bold text-white">Adebayo O.</h2>
-          <p className="mt-1 text-[12px] text-[#9AA7BA]">Level 12 Explorer</p>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function Topbar() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#0B1020]/92 px-4 py-3 backdrop-blur-xl sm:px-8 xl:px-8">
-      <div className="mx-auto flex max-w-[1460px] items-center justify-between gap-4">
-        <div className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-full border border-white/[0.06] bg-[#172136] px-5 text-[#9AA7BA] shadow-inner shadow-white/[0.02] sm:max-w-[390px] lg:max-w-[520px]">
-          <Search size={18} />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
-            placeholder="Search challenges, companies..."
-            type="search"
-          />
-        </div>
-
-        <div className="flex shrink-0 items-center gap-4">
-          <button
-            aria-label="Notifications"
-            className="relative hidden h-10 w-10 items-center justify-center rounded-full text-[#B5C0D2] transition hover:bg-white/[0.06] hover:text-white sm:flex"
-            type="button"
-          >
-            <Bell size={20} />
-            <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />
-          </button>
-          <div className="flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 text-[14px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            <Flame className="text-[#F59E0B]" size={17} />
-            2,450 XP
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
 function FilterSelect({ icon: Icon, label }) {
   return (
     <button
@@ -284,7 +210,10 @@ function SearchFilters() {
             <X size={13} />
           </span>
         ))}
-        <button className="font-semibold text-[#9AA7BA] hover:text-white" type="button">
+        <button
+          className="font-semibold text-[#9AA7BA] hover:text-white"
+          type="button"
+        >
           Clear all
         </button>
       </div>
@@ -384,14 +313,16 @@ function FeaturedChallenge() {
             <span className="rounded-full bg-amber-500/18 px-3 py-1.5 text-[12px] font-extrabold text-[#F59E0B]">
               FEATURED
             </span>
-            <span className="text-[13px] text-[#9AA7BA]">Sponsored by Safaricom</span>
+            <span className="text-[13px] text-[#9AA7BA]">
+              Sponsored by Safaricom
+            </span>
           </div>
           <h2 className="text-[24px] font-extrabold leading-tight text-white md:text-[28px]">
             Pan-African Connectivity Innovation Challenge
           </h2>
           <p className="mt-4 max-w-[620px] text-[15px] leading-7 text-[#AAB4C3]">
-            Design a data-efficient solution to bring reliable internet access to
-            underserved communities across East Africa.
+            Design a data-efficient solution to bring reliable internet access
+            to underserved communities across East Africa.
           </p>
           <div className="mt-5 flex flex-wrap gap-5 text-[14px] font-semibold text-[#9AA7BA]">
             <span className="flex items-center gap-2 font-extrabold text-[#F59E0B]">
@@ -425,13 +356,18 @@ function Pagination() {
     <div className="flex flex-col gap-5 pt-2 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-[14px] text-[#9AA7BA]">Page 1 of 16</p>
       <div className="flex items-center gap-2">
-        <button className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]" type="button">
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]"
+          type="button"
+        >
           <ChevronLeft size={18} />
         </button>
         {["1", "2", "3"].map((page, index) => (
           <button
             className={`flex h-10 w-10 items-center justify-center rounded-2xl text-[14px] font-bold ${
-              index === 0 ? "bg-[#8B5CF6] text-white" : "bg-[#182237] text-[#9AA7BA]"
+              index === 0
+                ? "bg-[#8B5CF6] text-white"
+                : "bg-[#182237] text-[#9AA7BA]"
             }`}
             key={page}
             type="button"
@@ -439,13 +375,22 @@ function Pagination() {
             {page}
           </button>
         ))}
-        <button className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]" type="button">
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]"
+          type="button"
+        >
           <MoreHorizontal size={18} />
         </button>
-        <button className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]" type="button">
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]"
+          type="button"
+        >
           16
         </button>
-        <button className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]" type="button">
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]"
+          type="button"
+        >
           <ChevronRight size={18} />
         </button>
       </div>
@@ -455,106 +400,108 @@ function Pagination() {
 
 export default function ChallengesPage() {
   return (
-    <div className="min-h-screen bg-[#0B1020] text-white xl:flex">
-      <Sidebar />
-
-      <div className="min-w-0 flex-1">
-        <Topbar />
-
-        <motion.main
-          className="mx-auto max-w-[1460px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55 }}
-        >
-          <div className="mb-7 flex items-center gap-3 xl:hidden">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7C4DDE] shadow-[0_0_28px_rgba(139,92,246,0.5)]">
-              <Globe size={23} />
-            </div>
-            <h1 className="text-[24px] font-extrabold">EduBridge</h1>
+    <DashboardLayout
+      navItems={navItems}
+      activeIndex={1}
+      bottomPanel={null}
+      topbar={<Topbar />}
+    >
+      <motion.main
+        className="mx-auto max-w-[1460px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55 }}
+      >
+        <div className="mb-7 flex items-center gap-3 xl:hidden">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7C4DDE] shadow-[0_0_28px_rgba(139,92,246,0.5)]">
+            <Globe size={23} />
           </div>
+          <h1 className="text-[24px] font-extrabold">EduBridge</h1>
+        </div>
 
-          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
-            <div>
-              <h2 className="text-[32px] font-extrabold leading-tight text-white lg:text-[38px]">
-                Browse Challenges
-              </h2>
-              <p className="mt-3 max-w-[760px] text-[17px] leading-7 text-[#9AA7BA]">
-                Discover and solve real business problems from Africa's top
-                companies.
-              </p>
-            </div>
-            <div className="flex h-11 w-fit items-center gap-3 rounded-full bg-[#182237] px-5 text-[14px] font-semibold text-[#AAB4C3]">
-              <Zap className="text-[#F59E0B]" size={18} />
-              142 challenges live right now
-            </div>
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+          <div>
+            <h2 className="text-[32px] font-extrabold leading-tight text-white lg:text-[38px]">
+              Browse Challenges
+            </h2>
+            <p className="mt-3 max-w-[760px] text-[17px] leading-7 text-[#9AA7BA]">
+              Discover and solve real business problems from Africa's top
+              companies.
+            </p>
           </div>
+          <div className="flex h-11 w-fit items-center gap-3 rounded-full bg-[#182237] px-5 text-[14px] font-semibold text-[#AAB4C3]">
+            <Zap className="text-[#F59E0B]" size={18} />
+            142 challenges live right now
+          </div>
+        </div>
 
-          <div className="mt-8">
-            <SearchFilters />
-          </div>
+        <div className="mt-8">
+          <SearchFilters />
+        </div>
 
-          <div className="mt-8 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {categories.map(([category, count], index) => (
-              <button
-                className={`flex h-11 shrink-0 items-center gap-2 rounded-full px-5 text-[14px] font-bold transition ${
-                  index === 0
-                    ? "bg-[#8B5CF6] text-white shadow-[0_12px_28px_rgba(139,92,246,0.28)]"
-                    : "bg-[#182237] text-[#A6B1C4] hover:bg-[#202B43] hover:text-white"
-                }`}
-                key={category}
-                type="button"
-              >
-                {category}
-                {count && (
-                  <span className="rounded-full bg-white/15 px-2 py-0.5 text-[12px]">
-                    {count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+        <div className="mt-8 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {categories.map(([category, count], index) => (
+            <button
+              className={`flex h-11 shrink-0 items-center gap-2 rounded-full px-5 text-[14px] font-bold transition ${
+                index === 0
+                  ? "bg-[#8B5CF6] text-white shadow-[0_12px_28px_rgba(139,92,246,0.28)]"
+                  : "bg-[#182237] text-[#A6B1C4] hover:bg-[#202B43] hover:text-white"
+              }`}
+              key={category}
+              type="button"
+            >
+              {category}
+              {count && (
+                <span className="rounded-full bg-white/15 px-2 py-0.5 text-[12px]">
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
 
-          <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <p className="text-[14px] text-[#9AA7BA]">Showing 9 challenges</p>
-            <div className="flex items-center gap-3">
-              <button className="flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 text-[14px] text-[#9AA7BA]" type="button">
-                Sort by:
-                <strong className="text-white">Newest</strong>
-                <ChevronDown size={15} />
-              </button>
-              <button
-                aria-label="Grid view"
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#8B5CF6] text-white"
-                type="button"
-              >
-                <LayoutGrid size={18} />
-              </button>
-              <button
-                aria-label="List view"
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]"
-                type="button"
-              >
-                <List size={18} />
-              </button>
-            </div>
+        <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <p className="text-[14px] text-[#9AA7BA]">Showing 9 challenges</p>
+          <div className="flex items-center gap-3">
+            <button
+              className="flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 text-[14px] text-[#9AA7BA]"
+              type="button"
+            >
+              Sort by:
+              <strong className="text-white">Newest</strong>
+              <ChevronDown size={15} />
+            </button>
+            <button
+              aria-label="Grid view"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#8B5CF6] text-white"
+              type="button"
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button
+              aria-label="List view"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA]"
+              type="button"
+            >
+              <List size={18} />
+            </button>
           </div>
+        </div>
 
-          <div className="mt-8 grid gap-6 md:grid-cols-2 min-[1240px]:grid-cols-3">
-            {challenges.map((challenge) => (
-              <ChallengeCard challenge={challenge} key={challenge.title} />
-            ))}
-          </div>
+        <div className="mt-8 grid gap-6 md:grid-cols-2 min-[1240px]:grid-cols-3">
+          {challenges.map((challenge) => (
+            <ChallengeCard challenge={challenge} key={challenge.title} />
+          ))}
+        </div>
 
-          <div className="mt-9">
-            <FeaturedChallenge />
-          </div>
+        <div className="mt-9">
+          <FeaturedChallenge />
+        </div>
 
-          <div className="mt-9">
-            <Pagination />
-          </div>
-        </motion.main>
-      </div>
-    </div>
+        <div className="mt-9">
+          <Pagination />
+        </div>
+      </motion.main>
+    </DashboardLayout>
   );
 }

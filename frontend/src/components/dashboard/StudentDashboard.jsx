@@ -15,6 +15,8 @@ import {
   UserRound,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import DashboardLayout from "../layout/DashboardLayout";
+import Topbar from "../layout/Topbar";
 
 const navItems = [
   ["Dashboard", Grid2X2],
@@ -60,79 +62,19 @@ const challenges = [
   },
 ];
 
-function Sidebar() {
+function SidebarBottomPanel() {
   return (
-    <aside className="hidden min-h-screen w-[290px] shrink-0 border-r border-white/[0.07] bg-[#111A2A] px-7 py-7 xl:flex xl:flex-col">
-      <div className="flex items-center gap-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,#A78BFA,#6D28D9)] shadow-[0_0_26px_rgba(139,92,246,0.45)]">
-          <Globe size={24} strokeWidth={2.5} />
-        </div>
-        <h1 className="text-[22px] font-extrabold leading-none text-white">
-          EduBridge
-        </h1>
+    <div className="mt-auto flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0D1626] p-3">
+      <img
+        alt="Adebayo O."
+        className="h-12 w-12 rounded-full border border-white/10 object-cover"
+        src="https://i.pravatar.cc/100?img=12"
+      />
+      <div>
+        <h2 className="text-[15px] font-bold text-white">Adebayo O.</h2>
+        <p className="mt-1 text-[13px] text-[#9AA7BA]">Level 12 Explorer</p>
       </div>
-
-      <nav className="mt-16 space-y-3 border-b border-white/[0.06] pb-8">
-        {navItems.map(([label, Icon], index) => (
-          <a
-            className={`flex h-11 items-center gap-4 rounded-2xl px-3 text-[15px] font-semibold transition ${
-              index === 0
-                ? "bg-white/[0.045] text-white"
-                : "text-[#9AA7BA] hover:bg-white/[0.035] hover:text-white"
-            }`}
-            href="#"
-            key={label}
-          >
-            <Icon size={20} />
-            {label}
-          </a>
-        ))}
-      </nav>
-
-      <div className="mt-auto flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0D1626] p-3">
-        <img
-          alt="Adebayo O."
-          className="h-12 w-12 rounded-full border border-white/10 object-cover"
-          src="https://i.pravatar.cc/100?img=12"
-        />
-        <div>
-          <h2 className="text-[15px] font-bold text-white">Adebayo O.</h2>
-          <p className="mt-1 text-[13px] text-[#9AA7BA]">Level 12 Explorer</p>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function Topbar() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#0B1020]/92 px-4 py-4 backdrop-blur-xl sm:px-8 xl:px-10">
-      <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
-        <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-white/[0.06] bg-[#172136] px-5 text-[#9AA7BA] shadow-inner shadow-white/[0.02] sm:max-w-[560px]">
-          <Search size={19} />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
-            placeholder="Search challenges, companies..."
-            type="search"
-          />
-        </div>
-
-        <div className="flex shrink-0 items-center gap-4">
-          <button
-            aria-label="Notifications"
-            className="relative hidden h-11 w-11 items-center justify-center rounded-full text-[#B5C0D2] transition hover:bg-white/[0.06] hover:text-white sm:flex"
-            type="button"
-          >
-            <Bell size={21} />
-            <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />
-          </button>
-          <div className="flex h-11 items-center gap-2 rounded-full bg-[#182237] px-5 text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            <Flame className="text-[#F59E0B]" size={18} />
-            2,450 XP
-          </div>
-        </div>
-      </div>
-    </header>
+    </div>
   );
 }
 
@@ -262,66 +204,65 @@ function ChallengeCard({ challenge }) {
 
 export default function StudentDashboard() {
   return (
-    <div className="min-h-screen bg-[#0B1020] text-white xl:flex">
-      <Sidebar />
-
-      <div className="min-w-0 flex-1">
-        <Topbar />
-
-        <motion.main
-          className="mx-auto max-w-[1500px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55 }}
-        >
-          <div className="mb-7 flex items-center gap-3 xl:hidden">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7C4DDE] shadow-[0_0_28px_rgba(139,92,246,0.5)]">
-              <Globe size={23} />
-            </div>
-            <h1 className="text-[24px] font-extrabold">EduBridge</h1>
+    <DashboardLayout
+      navItems={navItems}
+      activeIndex={0}
+      bottomPanel={<SidebarBottomPanel />}
+      topbar={<Topbar />}
+    >
+      <motion.main
+        className="mx-auto max-w-[1500px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55 }}
+      >
+        <div className="mb-7 flex items-center gap-3 xl:hidden">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7C4DDE] shadow-[0_0_28px_rgba(139,92,246,0.5)]">
+            <Globe size={23} />
           </div>
+          <h1 className="text-[24px] font-extrabold">EduBridge</h1>
+        </div>
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,390px)]">
-            <WelcomeCard />
-            <ReputationCard />
-          </div>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,390px)]">
+          <WelcomeCard />
+          <ReputationCard />
+        </div>
 
-          <div className="mt-9 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {filters.map((filter, index) => (
-              <button
-                className={`h-11 shrink-0 rounded-full px-5 text-[14px] font-semibold transition ${
-                  index === 0
-                    ? "bg-[#8B5CF6] text-white shadow-[0_12px_26px_rgba(76,29,149,0.3)]"
-                    : "bg-[#182237] text-[#A6B1C4] hover:bg-[#202B43] hover:text-white"
-                }`}
-                key={filter}
-                type="button"
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-9 flex items-center justify-between gap-4">
-            <h2 className="text-[24px] font-extrabold text-white">
-              Recommended for You
-            </h2>
-            <a
-              className="flex items-center gap-2 text-[15px] font-bold text-[#8B5CF6] transition hover:text-[#A879FF]"
-              href="#"
+        <div className="mt-9 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {filters.map((filter, index) => (
+            <button
+              className={`h-11 shrink-0 rounded-full px-5 text-[14px] font-semibold transition ${
+                index === 0
+                  ? "bg-[#8B5CF6] text-white shadow-[0_12px_26px_rgba(76,29,149,0.3)]"
+                  : "bg-[#182237] text-[#A6B1C4] hover:bg-[#202B43] hover:text-white"
+              }`}
+              key={filter}
+              type="button"
             >
-              View all
-              <ArrowRight size={18} />
-            </a>
-          </div>
+              {filter}
+            </button>
+          ))}
+        </div>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-2 min-[1300px]:grid-cols-3">
-            {challenges.map((challenge) => (
-              <ChallengeCard challenge={challenge} key={challenge.title} />
-            ))}
-          </div>
-        </motion.main>
-      </div>
-    </div>
+        <div className="mt-9 flex items-center justify-between gap-4">
+          <h2 className="text-[24px] font-extrabold text-white">
+            Recommended for You
+          </h2>
+          <a
+            className="flex items-center gap-2 text-[15px] font-bold text-[#8B5CF6] transition hover:text-[#A879FF]"
+            href="#"
+          >
+            View all
+            <ArrowRight size={18} />
+          </a>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-2 min-[1300px]:grid-cols-3">
+          {challenges.map((challenge) => (
+            <ChallengeCard challenge={challenge} key={challenge.title} />
+          ))}
+        </div>
+      </motion.main>
+    </DashboardLayout>
   );
 }

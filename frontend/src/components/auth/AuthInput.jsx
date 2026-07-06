@@ -3,6 +3,7 @@ export default function AuthInput({
   rightIcon,
   type,
   placeholder,
+  name,
   register,
 }) {
   return (
@@ -10,6 +11,7 @@ export default function AuthInput({
       <span className="flex shrink-0 items-center text-[#9AA7BA]">{icon}</span>
 
       <input
+        name={name}
         {...register}
         type={type}
         placeholder={placeholder}

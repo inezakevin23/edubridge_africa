@@ -1,27 +1,19 @@
 import {
   ArrowRight,
   BarChart3,
-  Bell,
-  BriefcaseBusiness,
   CalendarDays,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock3,
   Coins,
-  Flame,
   Globe,
-  Grid2X2,
   LayoutGrid,
   List,
   MapPin,
-  Medal,
-  MessageSquare,
   MoreHorizontal,
   Search,
   SlidersHorizontal,
-  TrendingUp,
-  UserRound,
   Users,
   X,
   Zap,
@@ -29,136 +21,15 @@ import {
 import { motion } from "framer-motion";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
+import {
+  challengesPageNavItems,
+  challengeCategories,
+  challengeList,
+} from "../../data/challengesPage";
 
-const navItems = [
-  ["Dashboard", Grid2X2],
-  ["Challenges", BriefcaseBusiness],
-  ["My Passport", UserRound],
-  ["Leaderboard", Medal],
-  ["Career Insights", TrendingUp],
-  ["Community", MessageSquare],
-];
-
-const categories = [
-  ["All", "9"],
-  ["Business"],
-  ["Technology"],
-  ["Design"],
-  ["Social Impact"],
-  ["Finance"],
-  ["Healthcare"],
-];
-
-const challenges = [
-  {
-    title: "Supply Chain Optimization",
-    company: "Jumia",
-    initials: "J",
-    color: "bg-violet-500/20 text-[#A879FF]",
-    status: "Open",
-    tags: ["Logistics", "Data Analysis", "Strategy"],
-    level: "Advanced",
-    xp: "1200 XP",
-    applicants: "142",
-    time: "2 days left",
-  },
-  {
-    title: "Fintech App Onboarding UX",
-    company: "Flutterwave",
-    initials: "F",
-    color: "bg-amber-500/20 text-[#F59E0B]",
-    status: "Open",
-    tags: ["UI/UX", "Research", "Design"],
-    level: "Intermediate",
-    xp: "800 XP",
-    applicants: "89",
-    time: "5 days left",
-  },
-  {
-    title: "Sustainable Agri-Tech Model",
-    company: "Nourish Africa",
-    initials: "N",
-    color: "bg-emerald-500/20 text-[#22C55E]",
-    status: "Open",
-    tags: ["Strategy", "Impact", "Agriculture"],
-    level: "Beginner",
-    xp: "450 XP",
-    applicants: "56",
-    time: "1 week left",
-  },
-  {
-    title: "AI-Powered Credit Scoring",
-    company: "Kuda Bank",
-    initials: "K",
-    color: "bg-pink-500/20 text-[#F472B6]",
-    status: "Private",
-    tags: ["Machine Learning", "Finance", "Python"],
-    level: "Advanced",
-    xp: "1500 XP",
-    applicants: "34",
-    time: "3 days left",
-  },
-  {
-    title: "Rural Healthcare Access Study",
-    company: "HealthTide NGO",
-    initials: "H",
-    color: "bg-orange-500/20 text-[#FB923C]",
-    status: "Open",
-    tags: ["Research", "Healthcare", "Impact"],
-    level: "Intermediate",
-    xp: "700 XP",
-    applicants: "71",
-    time: "10 days left",
-  },
-  {
-    title: "E-Commerce Growth Playbook",
-    company: "Paystack",
-    initials: "P",
-    color: "bg-violet-500/20 text-[#A879FF]",
-    status: "Open",
-    tags: ["Growth", "Marketing", "Analytics"],
-    level: "Intermediate",
-    xp: "950 XP",
-    applicants: "103",
-    time: "4 days left",
-  },
-  {
-    title: "Mobile-First Education Platform",
-    company: "Andela",
-    initials: "A",
-    color: "bg-yellow-500/20 text-[#EAB308]",
-    status: "Open",
-    tags: ["EdTech", "Product", "UX"],
-    level: "Advanced",
-    xp: "1100 XP",
-    applicants: "67",
-    time: "6 days left",
-  },
-  {
-    title: "Waste Collection Route Optimizer",
-    company: "Ecoclean Lagos",
-    initials: "E",
-    color: "bg-emerald-500/20 text-[#22C55E]",
-    status: "Open",
-    tags: ["Environment", "Mapping", "Impact"],
-    level: "Beginner",
-    xp: "400 XP",
-    applicants: "29",
-    time: "2 weeks left",
-  },
-  {
-    title: "Pan-African Logistics Dashboard",
-    company: "DHL Africa",
-    initials: "D",
-    color: "bg-fuchsia-500/20 text-[#E879F9]",
-    status: "Private",
-    tags: ["Data Viz", "Logistics", "Design"],
-    level: "Advanced",
-    xp: "1800 XP",
-    applicants: "18",
-    time: "1 day left",
-  },
-];
+// Local aliases used by this page.
+const categories = challengeCategories;
+const challenges = challengeList;
 
 function FilterSelect({ icon: Icon, label }) {
   return (
@@ -401,7 +272,7 @@ function Pagination() {
 export default function ChallengesPage() {
   return (
     <DashboardLayout
-      navItems={navItems}
+      navItems={challengesPageNavItems}
       activeIndex={1}
       bottomPanel={null}
       topbar={<Topbar />}

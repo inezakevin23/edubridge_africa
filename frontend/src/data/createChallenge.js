@@ -1,0 +1,90 @@
+// Mock response for GET /api/challenges/form-config
+import {
+  BriefcaseBusiness,
+  CheckSquare,
+  ChartPie,
+  Code2,
+  FileArchive,
+  FileText,
+  LayoutDashboard,
+  UsersRound,
+  Video,
+  WalletCards,
+} from "lucide-react";
+
+export const createChallengeNavItems = [
+  ["Dashboard", LayoutDashboard],
+  ["Manage Challenges", BriefcaseBusiness],
+  ["Talent Discovery", UsersRound],
+  ["Analytics", ChartPie],
+  ["Submissions", CheckSquare],
+];
+
+export const createChallengeSteps = [
+  { id: 1, label: "Basic Info" },
+  { id: 2, label: "Requirements" },
+  { id: 3, label: "Rewards & Access" },
+  { id: 4, label: "Review & Publish" },
+];
+
+export const createChallengeInitialForm = {
+  title: "",
+  description: "",
+  category: "",
+  industry: "",
+  skills: ["Data Analysis", "Strategy", "Logistics"],
+  difficulty: "",
+  duration: "",
+  requirements: ["", "", ""],
+  formats: ["Written Report", "Design File", "Code Repository"],
+  formatDetails: {},
+  xpReward: "",
+  deadline: "",
+  maxTeamSize: "",
+  participantStatus: "",
+  accessType: "open",
+  prize: "",
+};
+
+export const createChallengeFormatOptions = [
+  {
+    label: "Written Report",
+    sublabel: "PDF / DOCX upload or link",
+    icon: FileText,
+    mode: "fileOrLink",
+    accept: ".pdf,.doc,.docx",
+  },
+  {
+    label: "Design File",
+    sublabel: "Figma link or file upload",
+    icon: FileArchive,
+    mode: "fileOrLink",
+    accept: ".fig,.sketch,.pdf,.png,.jpg,.jpeg",
+  },
+  {
+    label: "Code Repository",
+    sublabel: "GitHub link",
+    icon: Code2,
+    mode: "linkOnly",
+  },
+  {
+    label: "Slide Deck",
+    sublabel: "PPT / PDF upload or link",
+    icon: LayoutDashboard,
+    mode: "fileOrLink",
+    accept: ".ppt,.pptx,.pdf",
+  },
+  {
+    label: "Video Walkthrough",
+    sublabel: "Video link",
+    icon: Video,
+    mode: "linkOnly",
+  },
+  {
+    label: "Spreadsheet",
+    sublabel: "Excel / CSV upload or link",
+    icon: WalletCards,
+    mode: "fileOrLink",
+    accept: ".xls,.xlsx,.csv",
+  },
+];

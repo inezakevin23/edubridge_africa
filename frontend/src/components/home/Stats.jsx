@@ -1,25 +1,11 @@
 import { motion } from "framer-motion";
-
-const stats = [
-  {
-    number: "10K+",
-    label: "Active Students",
-  },
-  {
-    number: "500+",
-    label: "Partner Companies",
-  },
-  {
-    number: "$2M+",
-    label: "In Opportunities",
-  },
-];
+import { statsData } from "../../data/home";
 
 export default function Stats() {
   return (
     <section className="py-12">
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3">
-        {stats.map((item, index) => (
+        {statsData.map((item, index) => (
           <motion.div
             key={index}
             whileHover={{ scale: 1.05 }}

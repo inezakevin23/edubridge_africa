@@ -1,77 +1,27 @@
 import {
-  BarChart3,
-  Bell,
-  BriefcaseBusiness,
-  Building2,
-  CheckSquare,
-  ChartPie,
   ChevronRight,
   ClipboardList,
-  Clock3,
-  Coins,
   FileText,
-  Mail,
   Plus,
-  Search,
   Sparkles,
   Trophy,
   UserPlus,
   Users,
-  UsersRound,
   Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
-
-const navItems = [
-  ["Dashboard", ChartPie],
-  ["Manage Challenges", BriefcaseBusiness],
-  ["Talent Discovery", UsersRound],
-  ["Analytics", ChartPie],
-  ["Submissions", CheckSquare],
-];
-
-const tags = ["Logistics", "Data Analysis", "Strategy", "Advanced"];
-
-const requirements = [
-  "Analyze the provided dataset (CSV + GeoJSON) covering 6 months of delivery records across 3 cities",
-  "Identify the top 3 bottlenecks causing delivery delays and cost overruns",
-  "Propose a scalable optimization framework with at least 3 concrete interventions",
-  "Build a visual dashboard prototype (Figma or equivalent) to present your findings",
-  "Provide a written report (max 2,000 words) summarizing your methodology",
-  "Include projected ROI calculations for each proposed intervention",
-];
-
-const feedback = [
-  {
-    label: "Problem Framing",
-    score: "85/100",
-    value: "85%",
-    color: "bg-[#22C55E]",
-    note: "Good clarity on scope. Consider narrowing the geographic focus for greater depth.",
-  },
-  {
-    label: "Data Methodology",
-    score: "72/100",
-    value: "72%",
-    color: "bg-[#F59E0B]",
-    note: "Strong use of quantitative analysis. Add a qualitative component for balance.",
-  },
-  {
-    label: "Proposed Solution",
-    score: "91/100",
-    value: "91%",
-    color: "bg-[#22C55E]",
-    note: "Excellent ROI framing and realistic implementation timeline.",
-  },
-];
-
-const leaderboard = [
-  ["1", "Amina B.", "98%", "https://i.pravatar.cc/100?img=47"],
-  ["2", "Kwame O.", "95%", "https://i.pravatar.cc/100?img=12"],
-  ["3", "Adebayo O.", "91%", "https://i.pravatar.cc/100?img=32"],
-];
+import {
+  challengeDetailsNavItems,
+  challengeDetailsTags,
+  challengeDetailsRequirements,
+  challengeDetailsFeedback,
+  challengeDetailsLeaderboard,
+  challengeDetailsApplyRows,
+  challengeDetailsCompany,
+} from "../../data/challengeDetails";
 
 function HeroCard() {
   return (
@@ -87,7 +37,7 @@ function HeroCard() {
               Supply Chain Optimization Challenge
             </h2>
             <div className="mt-5 flex flex-wrap gap-2">
-              {tags.map((tag, index) => (
+              {challengeDetailsTags.map((tag, index) => (
                 <span
                   className={`rounded-xl px-3 py-1.5 text-[12px] font-semibold ${
                     index === 3
@@ -130,20 +80,13 @@ function Panel({ icon: Icon, title, iconColor = "text-[#8B5CF6]", children }) {
 }
 
 function ApplyCard() {
-  const rows = [
-    ["Reward", "1,200 XP", Coins],
-    ["Deadline", "Oct 24, 2024", Clock3],
-    ["Participants", "142", Users],
-    ["Difficulty", "Advanced", BarChart3],
-  ];
-
   return (
     <aside className="rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-6 shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
       <h2 className="text-[18px] font-extrabold text-white">
         Ready to Compete?
       </h2>
       <div className="mt-5 divide-y divide-white/[0.06]">
-        {rows.map(([label, value, Icon]) => (
+        {challengeDetailsApplyRows.map(([label, value, Icon]) => (
           <div
             className="flex items-center justify-between gap-4 py-4"
             key={label}
@@ -171,12 +114,12 @@ function ApplyCard() {
       >
         Apply & Start Solving
       </button>
-      <button
-        className="mt-3 h-11 w-full rounded-2xl bg-[#1C273A] text-[14px] font-bold text-white"
-        type="button"
+      <Link
+        className="mt-3 flex h-11 w-full items-center justify-center rounded-2xl bg-[#1C273A] text-[14px] font-bold text-white"
+        to="/challenges/supply-chain-optimization/submit"
       >
         Submit Solution
-      </button>
+      </Link>
       <p className="mt-4 text-center text-[12px] text-[#9AA7BA]">
         2 days, 14 hours remaining
       </p>
@@ -192,25 +135,23 @@ function CompanyCard() {
       </h2>
       <div className="mt-5 flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[22px] font-extrabold text-[#1E1B4B]">
-          J
+          {challengeDetailsCompany.name.charAt(0)}
         </div>
         <div>
-          <h3 className="font-extrabold text-white">Jumia Inc.</h3>
-          <p className="text-[12px] text-[#9AA7BA]">E-Commerce - Pan-African</p>
+          <h3 className="font-extrabold text-white">{challengeDetailsCompany.name}</h3>
+          <p className="text-[12px] text-[#9AA7BA]">{challengeDetailsCompany.industry}</p>
         </div>
       </div>
       <p className="mt-5 text-[13px] leading-6 text-[#9AA7BA]">
-        Africa's #1 online marketplace, operating across 11 countries with 3M+
-        active customers and a mission to transform commerce across the
-        continent.
+        {challengeDetailsCompany.description}
       </p>
       <div className="mt-5 grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-[#0E1728] p-4 text-center">
-          <p className="text-[18px] font-extrabold text-white">12</p>
+          <p className="text-[18px] font-extrabold text-white">{challengeDetailsCompany.challengesPosted}</p>
           <p className="text-[11px] text-[#9AA7BA]">Challenges Posted</p>
         </div>
         <div className="rounded-2xl bg-[#0E1728] p-4 text-center">
-          <p className="text-[18px] font-extrabold text-white">4.9</p>
+          <p className="text-[18px] font-extrabold text-white">{challengeDetailsCompany.averageRating}</p>
           <p className="text-[11px] text-[#9AA7BA]">Avg. Rating</p>
         </div>
       </div>
@@ -233,7 +174,7 @@ function LeaderboardCard() {
         Current Leaderboard
       </h2>
       <div className="space-y-4">
-        {leaderboard.map(([rank, name, score, avatar]) => (
+        {challengeDetailsLeaderboard.map(([rank, name, score, avatar]) => (
           <div className="flex items-center gap-3" key={name}>
             <span
               className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-extrabold ${
@@ -265,7 +206,7 @@ function LeaderboardCard() {
 export default function ChallengeDetailsPage() {
   return (
     <DashboardLayout
-      navItems={navItems}
+      navItems={challengeDetailsNavItems}
       activeIndex={1}
       bottomPanel={null}
       topbar={<Topbar />}
@@ -309,7 +250,7 @@ export default function ChallengeDetailsPage() {
               iconColor="text-[#F59E0B]"
             >
               <div className="space-y-3">
-                {requirements.map((item, index) => (
+                {challengeDetailsRequirements.map((item, index) => (
                   <div
                     className="flex items-center gap-4 rounded-2xl bg-[#0D1626] p-4 text-[13px] text-[#AAB4C3]"
                     key={item}
@@ -363,7 +304,7 @@ export default function ChallengeDetailsPage() {
                 Powered by EduBridge AI - instant draft review
               </p>
               <div className="space-y-5">
-                {feedback.map((item) => (
+                {challengeDetailsFeedback.map((item) => (
                   <div
                     className="rounded-2xl bg-[#0D1626] p-4"
                     key={item.label}

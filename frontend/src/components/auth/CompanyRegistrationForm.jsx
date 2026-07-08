@@ -23,23 +23,11 @@ import {
   Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
-
-const stepLabels = ["Organization", "Documents", "Representative", "Account"];
-const businessTypes = [
-  "Startup",
-  "SME",
-  "Corporation",
-  "NGO",
-  "Government",
-  "Educational",
-];
-const documents = [
-  "Business Registration Certificate",
-  "Tax Registration Document (TIN)",
-  "Operating License",
-  "NGO Registration Certificate",
-  "Government Accreditation Document",
-];
+import {
+  companyRegistrationStepLabels,
+  companyRegistrationBusinessTypes,
+  companyRegistrationDocuments,
+} from "../../data/companyRegistration";
 
 function Field({ label, icon, placeholder, type = "text", rightIcon }) {
   return (
@@ -138,6 +126,7 @@ function DocumentUpload({ title, optional }) {
 }
 
 export default function CompanyRegistrationForm() {
+  const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -157,20 +146,20 @@ export default function CompanyRegistrationForm() {
                 Company Registration
               </div>
               <div className="grid w-full min-w-[320px] max-w-[900px] grid-cols-4 gap-2">
-                {stepLabels.map((label, index) => (
+                {companyRegistrationStepLabels.map((label, index) => (
                   <div key={label} className="min-w-0">
                     <span
                       className={`mb-2 block h-[5px] rounded-full ${
-                        index === 0
+                        index + 1 <= currentStep
                           ? "bg-[#F59E0B] shadow-[0_0_16px_rgba(245,158,11,0.45)]"
-                          : index === 1
-                            ? "bg-amber-500/35"
-                            : "bg-[#1A2438]"
+                          : "bg-[#1A2438]"
                       }`}
                     />
                     <span
                       className={`block truncate text-[12px] font-semibold ${
-                        index === 0 ? "text-[#F59E0B]" : "text-[#7F8AA0]"
+                        index + 1 === currentStep
+                          ? "text-[#F59E0B]"
+                          : "text-[#7F8AA0]"
                       }`}
                     >
                       {label}
@@ -188,12 +177,13 @@ export default function CompanyRegistrationForm() {
           </div>
         </header>
 
-        <form className="py-9">
-          <Section
-            step="1"
-            title="Organization Information"
-            icon={<Building2 size={18} />}
-          >
+        <form className="py-9" onSubmit={(event) => event.preventDefault()}>
+          {currentStep === 1 ? (
+            <Section
+              step="1"
+              title="Organization Information"
+              icon={<Building2 size={18} />}
+            >
             <div className="grid gap-5 md:grid-cols-2">
               <div className="md:col-span-2">
                 <Field
@@ -208,7 +198,7 @@ export default function CompanyRegistrationForm() {
                   Business Type
                 </span>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {businessTypes.map((type, index) => (
+                  {companyRegistrationBusinessTypes.map((type, index) => (
                     <label
                       key={type}
                       className={`flex h-11 items-center gap-3 rounded-[22px] border px-4 text-[14px] font-medium ${
@@ -279,19 +269,21 @@ export default function CompanyRegistrationForm() {
                 </span>
               </label>
             </div>
-          </Section>
+            </Section>
+          ) : null}
 
-          <Section
-            step="2"
-            title="Registration & Verification Documents"
-            icon={<FileText size={18} />}
-          >
+          {currentStep === 2 ? (
+            <Section
+              step="2"
+              title="Registration & Verification Documents"
+              icon={<FileText size={18} />}
+            >
             <p className="mb-5 max-w-[610px] text-[13px] leading-relaxed text-[#9AA7BA]">
               Upload the relevant documents for your business type. All files
               are securely stored and reviewed within 48 hours.
             </p>
             <div className="space-y-3">
-              {documents.map((document, index) => (
+              {companyRegistrationDocuments.map((document, index) => (
                 <DocumentUpload
                   key={document}
                   optional={index >= 2}
@@ -307,13 +299,15 @@ export default function CompanyRegistrationForm() {
                 organization types.
               </p>
             </div>
-          </Section>
+            </Section>
+          ) : null}
 
-          <Section
-            step="3"
-            title="Authorized Representative"
-            icon={<Users size={18} />}
-          >
+          {currentStep === 3 ? (
+            <Section
+              step="3"
+              title="Authorized Representative"
+              icon={<Users size={18} />}
+            >
             <div className="grid gap-5 md:grid-cols-2">
               <Field
                 label="Full Name"
@@ -348,13 +342,15 @@ export default function CompanyRegistrationForm() {
                 challenges and interactions posted through this account.
               </p>
             </div>
-          </Section>
+            </Section>
+          ) : null}
 
-          <Section
-            step="4"
-            title="Account Information"
-            icon={<KeyRound size={18} />}
-          >
+          {currentStep === 4 ? (
+            <Section
+              step="4"
+              title="Account Information"
+              icon={<KeyRound size={18} />}
+            >
             <div className="grid gap-5 md:grid-cols-2">
               <div className="md:col-span-2">
                 <Field
@@ -440,18 +436,45 @@ export default function CompanyRegistrationForm() {
               </CheckboxLine>
             </div>
 
-            <button
-              className="mt-7 flex h-14 w-full items-center justify-center gap-3 rounded-[26px] bg-[#F59E0B] text-[15px] font-bold text-white shadow-[0_18px_36px_rgba(245,158,11,0.3)] transition hover:bg-[#f7a923]"
-              type="submit"
-            >
-              Register Company Account
-              <ArrowRight size={18} />
-            </button>
             <p className="mt-4 text-center text-[12px] text-[#8D99AE]">
               Account activation takes up to 48 hours after document
               verification.
             </p>
-          </Section>
+            </Section>
+          ) : null}
+
+          <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              {currentStep > 1 ? (
+                <button
+                  className="flex h-12 w-full items-center justify-center rounded-[24px] bg-[#182237]/95 px-7 text-[14px] font-bold text-white transition hover:bg-white/[0.09] sm:w-auto"
+                  onClick={() => setCurrentStep((step) => Math.max(1, step - 1))}
+                  type="button"
+                >
+                  Back
+                </button>
+              ) : null}
+            </div>
+
+            {currentStep < 4 ? (
+              <button
+                className="flex h-12 items-center justify-center gap-3 rounded-[24px] bg-[#F59E0B] px-8 text-[14px] font-bold text-white shadow-[0_18px_36px_rgba(245,158,11,0.25)] transition hover:bg-[#f7a923]"
+                onClick={() => setCurrentStep((step) => Math.min(4, step + 1))}
+                type="button"
+              >
+                Next
+                <ArrowRight size={18} />
+              </button>
+            ) : (
+              <button
+                className="flex h-12 items-center justify-center gap-3 rounded-[24px] bg-[#F59E0B] px-8 text-[14px] font-bold text-white shadow-[0_18px_36px_rgba(245,158,11,0.3)] transition hover:bg-[#f7a923]"
+                type="submit"
+              >
+                Register
+                <ArrowRight size={18} />
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </motion.main>

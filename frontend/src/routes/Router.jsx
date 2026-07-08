@@ -3,6 +3,7 @@ import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Challenges from "../pages/Challenges";
 import CreateChallengePage from "../components/dashboard/CreateChallengePage";
+import SubmitSolutionPage from "../components/dashboard/SubmitSolutionPage";
 import CompanyDashboardPage from "../pages/CompanyDashboardPage";
 import CompanyRegistration from "../pages/CompanyRegistration";
 import StudentDashboardPage from "../pages/StudentDashboardPage";
@@ -29,6 +30,15 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <CreateChallengePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/submit-solution" element={<SubmitSolutionPage />} />
+        <Route
+          path="/challenges/supply-chain-optimization/submit"
+          element={
+            <ProtectedRoute>
+              <SubmitSolutionPage />
             </ProtectedRoute>
           }
         />

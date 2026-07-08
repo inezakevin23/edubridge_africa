@@ -1,114 +1,24 @@
 import {
-  BriefcaseBusiness,
   Building2,
-  ChartPie,
-  CheckSquare,
   ChevronDown,
   CircleAlert,
   Globe,
-  Inbox,
   Mail,
   Sparkles,
-  Star,
   TrendingUp,
   Trophy,
-  UsersRound,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
-
-const navItems = [
-  ["Dashboard", ChartPie],
-  ["Manage Challenges", BriefcaseBusiness],
-  ["Talent Discovery", UsersRound],
-  ["Analytics", ChartPie],
-  ["Submissions", CheckSquare],
-];
-
-const metrics = [
-  {
-    label: "Active Challenges",
-    value: "4",
-    trend: "+1",
-    icon: BriefcaseBusiness,
-    color: "text-[#9B6CFF]",
-  },
-  {
-    label: "Total Submissions",
-    value: "142",
-    trend: "+24%",
-    icon: Inbox,
-    color: "text-[#60A5FA]",
-  },
-  {
-    label: "Avg. Submission Quality",
-    value: "92%",
-    trend: "+5%",
-    icon: Star,
-    color: "text-[#F59E0B]",
-  },
-  {
-    label: "Talent Pipeline",
-    value: "38",
-    trend: "+12",
-    icon: UsersRound,
-    color: "text-[#22C55E]",
-  },
-];
-
-const chartData = [
-  ["Mon", 28, 12],
-  ["Tue", 34, 28],
-  ["Wed", 30, 16],
-  ["Thu", 35, 48],
-  ["Fri", 35, 31],
-  ["Sat", 33, 61],
-  ["Sun", 35, 42],
-];
-
-const reviewItems = [
-  {
-    name: "Amina B.",
-    project: "Supply Chain Model",
-    score: "98%",
-    avatar: "https://i.pravatar.cc/100?img=47",
-  },
-  {
-    name: "Kwame O.",
-    project: "UX Audit",
-    score: "95%",
-    avatar: "https://i.pravatar.cc/100?img=12",
-  },
-  {
-    name: "Sarah T.",
-    project: "Growth Strategy",
-    score: "91%",
-    avatar: "https://i.pravatar.cc/100?img=32",
-  },
-];
-
-const activeChallenges = [
-  ["Supply Chain Optimization", "Open", "45", "Oct 24", "Active"],
-  ["Q4 Growth Strategy", "Private", "12", "Oct 28", "Active"],
-  ["UX Audit: Checkout Flow", "Open", "85", "Oct 15", "Reviewing"],
-];
-
-const talent = [
-  {
-    name: "Adebayo O.",
-    role: "Product Designer",
-    level: "Lvl 12",
-    badges: "8",
-  },
-  {
-    name: "Fatima S.",
-    role: "Data Analyst",
-    level: "Lvl 15",
-    badges: "12",
-  },
-];
+import {
+  companyDashboardChartData,
+  companyDashboardReviewItems,
+  companyDashboardActiveChallenges,
+  companyDashboardTalent,
+  companyDashboardMetrics,
+} from "../../data/companyDashboard";
 
 function MetricCard({ metric }) {
   const Icon = metric.icon;
@@ -159,7 +69,7 @@ function TrendChart() {
           <span>0</span>
         </div>
         <div className="flex h-[270px] items-end justify-between gap-4 border-b border-white/[0.04] pb-8">
-          {chartData.map(([day, views, quality]) => (
+          {companyDashboardChartData.map(([day, views, quality]) => (
             <div className="flex h-full flex-1 flex-col justify-end" key={day}>
               <div className="flex h-full items-end justify-center">
                 <div className="relative h-full w-full max-w-[56px]">
@@ -209,7 +119,7 @@ function ReviewPanel() {
       </div>
 
       <div className="space-y-4">
-        {reviewItems.map((item) => (
+        {companyDashboardReviewItems.map((item) => (
           <article
             className="flex items-center gap-4 rounded-[20px] border border-white/[0.05] bg-[#0E1728] p-4"
             key={item.name}
@@ -268,7 +178,7 @@ function ActiveChallengesTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.05] text-[15px]">
-            {activeChallenges.map(
+            {companyDashboardActiveChallenges.map(
               ([title, type, submissions, deadline, status]) => (
                 <tr key={title}>
                   <td className="px-7 py-5 font-bold text-white">{title}</td>
@@ -311,7 +221,7 @@ function TalentPipeline() {
       </h2>
 
       <div className="space-y-5">
-        {talent.map((person) => (
+        {companyDashboardTalent.map((person) => (
           <article
             className="rounded-[22px] border border-white/[0.05] bg-[#0D1626] p-5"
             key={person.name}
@@ -360,7 +270,7 @@ function TalentPipeline() {
 export default function CompanyDashboard() {
   return (
     <DashboardLayout
-      navItems={navItems}
+      navItems={[]}
       activeIndex={0}
       bottomPanel={null}
       topbar={<Topbar />}
@@ -400,7 +310,7 @@ export default function CompanyDashboard() {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {metrics.map((metric) => (
+          {companyDashboardMetrics.map((metric) => (
             <MetricCard key={metric.label} metric={metric} />
           ))}
         </div>

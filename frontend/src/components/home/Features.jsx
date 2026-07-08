@@ -1,31 +1,4 @@
-import { Briefcase, GraduationCap, Award, Building2 } from "lucide-react";
-
-const features = [
-  {
-    icon: GraduationCap,
-    title: "Real-World Learning",
-    description:
-      "Solve genuine business challenges instead of theoretical assignments.",
-  },
-  {
-    icon: Award,
-    title: "Skill Passport",
-    description:
-      "Earn verifiable reputation credits that showcase your practical abilities.",
-  },
-  {
-    icon: Briefcase,
-    title: "Career Opportunities",
-    description:
-      "Outstanding submissions can lead directly to internships and jobs.",
-  },
-  {
-    icon: Building2,
-    title: "Business Innovation",
-    description:
-      "Companies receive creative solutions while discovering talented future employees.",
-  },
-];
+import { featuresData } from "../../data/home";
 
 export default function Features() {
   return (
@@ -45,7 +18,7 @@ export default function Features() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
-          {features.map((feature, index) => {
+          {featuresData.map((feature, index) => {
             const Icon = feature.icon;
 
             return (

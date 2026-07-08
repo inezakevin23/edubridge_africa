@@ -2,18 +2,11 @@ import { useState } from "react";
 import {
   Award,
   Bell,
-  BriefcaseBusiness,
   Calendar,
-  ChartPie,
-  CheckSquare,
   ChevronDown,
   ClipboardList,
-  Code2,
   Eye,
-  FileArchive,
-  FileText,
   Globe2,
-  LayoutDashboard,
   Link as LinkIcon,
   Megaphone,
   Plus,
@@ -23,90 +16,24 @@ import {
   Trash2,
   Upload,
   UsersRound,
-  Video,
   WalletCards,
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
+import {
+  createChallengeSteps,
+  createChallengeInitialForm,
+  createChallengeFormatOptions,
+  createChallengeNavItems,
+} from "../../data/createChallenge";
 
-const navItems = [
-  ["Dashboard", LayoutDashboard],
-  ["Manage Challenges", BriefcaseBusiness],
-  ["Talent Discovery", UsersRound],
-  ["Analytics", ChartPie],
-  ["Submissions", CheckSquare],
-];
-
-const steps = [
-  { id: 1, label: "Basic Info" },
-  { id: 2, label: "Requirements" },
-  { id: 3, label: "Rewards & Access" },
-  { id: 4, label: "Review & Publish" },
-];
-
-const initialForm = {
-  title: "",
-  description: "",
-  category: "",
-  industry: "",
-  skills: ["Data Analysis", "Strategy", "Logistics"],
-  difficulty: "",
-  duration: "",
-  requirements: ["", "", ""],
-  formats: ["Written Report", "Design File", "Code Repository"],
-  formatDetails: {},
-  xpReward: "",
-  deadline: "",
-  maxTeamSize: "",
-  participantStatus: "",
-  accessType: "open",
-  prize: "",
-};
-
-const formatOptions = [
-  {
-    label: "Written Report",
-    sublabel: "PDF / DOCX upload or link",
-    icon: FileText,
-    mode: "fileOrLink",
-    accept: ".pdf,.doc,.docx",
-  },
-  {
-    label: "Design File",
-    sublabel: "Figma link or file upload",
-    icon: FileArchive,
-    mode: "fileOrLink",
-    accept: ".fig,.sketch,.pdf,.png,.jpg,.jpeg",
-  },
-  {
-    label: "Code Repository",
-    sublabel: "GitHub link",
-    icon: Code2,
-    mode: "linkOnly",
-  },
-  {
-    label: "Slide Deck",
-    sublabel: "PPT / PDF upload or link",
-    icon: LayoutDashboard,
-    mode: "fileOrLink",
-    accept: ".ppt,.pptx,.pdf",
-  },
-  {
-    label: "Video Walkthrough",
-    sublabel: "Video link",
-    icon: Video,
-    mode: "linkOnly",
-  },
-  {
-    label: "Spreadsheet",
-    sublabel: "Excel / CSV upload or link",
-    icon: WalletCards,
-    mode: "fileOrLink",
-    accept: ".xls,.xlsx,.csv",
-  },
-];
+// Keep existing variable names used throughout the component
+const steps = createChallengeSteps;
+const initialForm = createChallengeInitialForm;
+const formatOptions = createChallengeFormatOptions;
+const navItems = createChallengeNavItems;
 
 function CompanyTopbar() {
   return (
@@ -308,7 +235,10 @@ export default function CreateChallengePage() {
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="mb-3 flex items-center gap-2 text-[13px] font-bold text-[#7F8EA5]">
-              <Link className="transition hover:text-white" to="/company-dashboard">
+              <Link
+                className="transition hover:text-white"
+                to="/company-dashboard"
+              >
                 Challenges
               </Link>
               <ChevronDown className="-rotate-90" size={14} />
@@ -372,14 +302,19 @@ export default function CreateChallengePage() {
           </div>
         </div>
 
-        <form className="space-y-6" onSubmit={(event) => event.preventDefault()}>
+        <form
+          className="space-y-6"
+          onSubmit={(event) => event.preventDefault()}
+        >
           {currentStep === 1 ? (
             <SectionCard icon={ClipboardList} title="Basic Information">
               <div className="space-y-6">
                 <FormField label="Challenge Title">
                   <TextInput
                     icon={Megaphone}
-                    onChange={(event) => updateField("title", event.target.value)}
+                    onChange={(event) =>
+                      updateField("title", event.target.value)
+                    }
                     placeholder="e.g. Supply Chain Optimization for Last-Mile Delivery"
                     value={form.title}
                   />
@@ -745,7 +680,9 @@ export default function CreateChallengePage() {
                 <FormField label="Cash / Physical Prize (Optional)">
                   <TextInput
                     icon={WalletCards}
-                    onChange={(event) => updateField("prize", event.target.value)}
+                    onChange={(event) =>
+                      updateField("prize", event.target.value)
+                    }
                     placeholder="e.g. $500 stipend for top 3 submissions"
                     value={form.prize}
                   />
@@ -771,7 +708,10 @@ export default function CreateChallengePage() {
                     ["Category", form.category || "Not set"],
                     ["Difficulty", form.difficulty || "Advanced"],
                     ["Deadline", form.deadline || "Not set"],
-                    ["XP Reward", form.xpReward ? `${form.xpReward} XP` : "1,200 XP"],
+                    [
+                      "XP Reward",
+                      form.xpReward ? `${form.xpReward} XP` : "1,200 XP",
+                    ],
                     [
                       "Requirements",
                       `${completedRequirements || form.requirements.length} added`,
@@ -804,7 +744,8 @@ export default function CreateChallengePage() {
                 {incompleteFields.length
                   ? incompleteFields.join(" and ")
                   : "all required fields"}{" "}
-                before publishing. Incomplete challenges will be saved as drafts.
+                before publishing. Incomplete challenges will be saved as
+                drafts.
               </div>
             </SectionCard>
           ) : null}
@@ -814,7 +755,9 @@ export default function CreateChallengePage() {
               {currentStep > 1 ? (
                 <button
                   className="h-12 w-full rounded-full bg-[#1A2639] px-7 text-[15px] font-extrabold text-white transition hover:bg-[#24324A] sm:w-auto"
-                  onClick={() => setCurrentStep((step) => Math.max(1, step - 1))}
+                  onClick={() =>
+                    setCurrentStep((step) => Math.max(1, step - 1))
+                  }
                   type="button"
                 >
                   Back
@@ -892,12 +835,12 @@ export default function CreateChallengePage() {
                   ["Difficulty", form.difficulty || "Not set"],
                   ["Duration", form.duration || "Not set"],
                   ["Deadline", form.deadline || "Not set"],
-                  ["XP Reward", form.xpReward ? `${form.xpReward} XP` : "Not set"],
+                  [
+                    "XP Reward",
+                    form.xpReward ? `${form.xpReward} XP` : "Not set",
+                  ],
                 ].map(([label, value]) => (
-                  <div
-                    className="rounded-2xl bg-[#1A2639] p-4"
-                    key={label}
-                  >
+                  <div className="rounded-2xl bg-[#1A2639] p-4" key={label}>
                     <p className="text-[12px] font-bold text-[#7F8EA5]">
                       {label}
                     </p>
@@ -937,14 +880,16 @@ export default function CreateChallengePage() {
                   </h3>
                   <div className="space-y-2">
                     {form.requirements.filter(Boolean).length ? (
-                      form.requirements.filter(Boolean).map((requirement, index) => (
-                        <p
-                          className="rounded-2xl bg-[#1A2639] px-4 py-3 text-[14px] font-semibold text-[#D6DEEA]"
-                          key={`${requirement}-${index}`}
-                        >
-                          {index + 1}. {requirement}
-                        </p>
-                      ))
+                      form.requirements
+                        .filter(Boolean)
+                        .map((requirement, index) => (
+                          <p
+                            className="rounded-2xl bg-[#1A2639] px-4 py-3 text-[14px] font-semibold text-[#D6DEEA]"
+                            key={`${requirement}-${index}`}
+                          >
+                            {index + 1}. {requirement}
+                          </p>
+                        ))
                     ) : (
                       <p className="text-[13px] font-semibold text-[#9AA7BA]">
                         No requirements added yet.

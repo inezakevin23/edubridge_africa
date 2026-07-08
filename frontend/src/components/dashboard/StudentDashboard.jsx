@@ -1,66 +1,19 @@
 import {
   ArrowRight,
-  Bell,
-  BriefcaseBusiness,
   Clock3,
   Coins,
   GraduationCap,
-  Flame,
   Globe,
-  Grid2X2,
   Medal,
-  MessageSquare,
-  Search,
-  TrendingUp,
-  UserRound,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
-
-const navItems = [
-  ["Dashboard", Grid2X2],
-  ["Challenges", BriefcaseBusiness],
-  ["My Passport", UserRound],
-  ["Leaderboard", Medal],
-  ["Career Insights", TrendingUp],
-  ["Community", MessageSquare],
-];
-
-const filters = [
-  "All Challenges",
-  "Technology",
-  "Design & UX",
-  "Business Strategy",
-  "Social Impact",
-];
-
-const challenges = [
-  {
-    title: "Supply Chain Optimization",
-    company: "Jumia",
-    tags: ["Logistics", "Data", "Advanced"],
-    xp: "1200 XP",
-    time: "2 days left",
-    initials: "SC",
-  },
-  {
-    title: "Fintech App Onboarding UX",
-    company: "Flutterwave",
-    tags: ["UI/UX", "Research", "Intermediate"],
-    xp: "800 XP",
-    time: "5 days left",
-    initials: "UX",
-  },
-  {
-    title: "Sustainable Agri-Tech Model",
-    company: "Nourish Africa",
-    tags: ["Strategy", "Impact", "Beginner"],
-    xp: "450 XP",
-    time: "1 week left",
-    initials: "AG",
-  },
-];
+import {
+  studentDashboardNavItems,
+  studentDashboardFilters,
+  studentDashboardChallenges,
+} from "../../data/studentDashboard";
 
 function SidebarBottomPanel() {
   return (
@@ -205,7 +158,7 @@ function ChallengeCard({ challenge }) {
 export default function StudentDashboard() {
   return (
     <DashboardLayout
-      navItems={navItems}
+      navItems={studentDashboardNavItems}
       activeIndex={0}
       bottomPanel={<SidebarBottomPanel />}
       topbar={<Topbar />}
@@ -229,7 +182,7 @@ export default function StudentDashboard() {
         </div>
 
         <div className="mt-9 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {filters.map((filter, index) => (
+          {studentDashboardFilters.map((filter, index) => (
             <button
               className={`h-11 shrink-0 rounded-full px-5 text-[14px] font-semibold transition ${
                 index === 0
@@ -258,7 +211,7 @@ export default function StudentDashboard() {
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2 min-[1300px]:grid-cols-3">
-          {challenges.map((challenge) => (
+          {studentDashboardChallenges.map((challenge) => (
             <ChallengeCard challenge={challenge} key={challenge.title} />
           ))}
         </div>

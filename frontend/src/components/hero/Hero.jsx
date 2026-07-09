@@ -19,7 +19,7 @@ export default function Hero() {
           {/* Badge */}
 
           <div className="bg-[#18233D] text-yellow-400 rounded-full px-5 py-2 text-sm mb-8 border border-[#283655]">
-            ● The New Reputation Economy for Africa
+            Bridging the gap between education and employment in Africa
           </div>
 
           {/* Heading */}
@@ -46,14 +46,14 @@ export default function Hero() {
           <div className="flex flex-col sm:flex-row gap-5 mt-12">
             <Link
               className="px-10 py-4 rounded-xl bg-violet-600 hover:bg-violet-500 transition font-semibold shadow-lg shadow-violet-700/30 text-center"
-              to="/login"
+              to="/challenges"
             >
               Start Solving Challenges
             </Link>
 
             <Link
               className="px-10 py-4 rounded-xl bg-[#1A243D] hover:bg-[#26344F] transition text-center"
-              to="/company-registration"
+              to="/create-challenge"
             >
               Post a Challenge
             </Link>

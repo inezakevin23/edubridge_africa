@@ -1,6 +1,6 @@
 import Navbar from "../components/layout/Navbar";
 import Hero from "../components/hero/Hero";
-import DashboardPreview from "../components/home/DashboardPreview";
+import LatestChallenges from "../components/home/LatestChallenges";
 import Features from "../components/home/Features";
 import Footer from "../components/layout/Footer";
 
@@ -13,7 +13,7 @@ export default function Landing() {
 
       <Features />
 
-      <DashboardPreview />
+      <LatestChallenges />
 
       <Footer />
     </div>

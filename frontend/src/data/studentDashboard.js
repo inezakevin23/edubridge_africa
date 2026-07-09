@@ -4,6 +4,7 @@ import {
   Grid2X2,
   Medal,
   MessageSquare,
+  MessageSquareText,
   TrendingUp,
   UserRound,
 } from "lucide-react";
@@ -12,6 +13,7 @@ export const studentDashboardNavItems = [
   ["Dashboard", Grid2X2],
   ["Challenges", BriefcaseBusiness],
   ["My Passport", UserRound],
+  ["Feedback", MessageSquareText],
   ["Leaderboard", Medal],
   ["Career Insights", TrendingUp],
   ["Community", MessageSquare],

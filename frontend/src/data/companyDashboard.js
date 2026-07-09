@@ -5,7 +5,6 @@ import {
   CheckSquare,
   Inbox,
   Star,
-  TrendingUp,
   UsersRound,
 } from "lucide-react";
 

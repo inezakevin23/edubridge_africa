@@ -4,6 +4,8 @@ import Login from "../pages/Login";
 import Challenges from "../pages/Challenges";
 import CreateChallengePage from "../components/dashboard/CreateChallengePage";
 import SubmitSolutionPage from "../components/dashboard/SubmitSolutionPage";
+import CompanySubmissionsReviewPage from "../components/dashboard/CompanySubmissionsReviewPage";
+import StudentFeedbackPage from "../components/dashboard/StudentFeedbackPage";
 import CompanyDashboardPage from "../pages/CompanyDashboardPage";
 import CompanyRegistration from "../pages/CompanyRegistration";
 import StudentDashboardPage from "../pages/StudentDashboardPage";
@@ -33,6 +35,14 @@ export default function Router() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/company-submissions"
+          element={
+            <ProtectedRoute>
+              <CompanySubmissionsReviewPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/submit-solution" element={<SubmitSolutionPage />} />
         <Route
           path="/challenges/supply-chain-optimization/submit"
@@ -57,6 +67,14 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <StudentDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student-feedback"
+          element={
+            <ProtectedRoute>
+              <StudentFeedbackPage />
             </ProtectedRoute>
           }
         />

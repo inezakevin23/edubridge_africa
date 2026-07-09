@@ -9,14 +9,17 @@ const routeForLabel = (label) => {
     case "Career Insights":
     case "Community":
       return "/dashboard";
+    case "Feedback":
+      return "/student-feedback";
     case "Challenges":
       return "/challenges";
     case "Manage Challenges":
       return "/create-challenge";
     case "Talent Discovery":
     case "Analytics":
-    case "Submissions":
       return "/company-dashboard";
+    case "Submissions":
+      return "/company-submissions";
     default:
       return "/dashboard";
   }

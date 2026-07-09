@@ -40,15 +40,6 @@ export default function Navbar() {
               Challenges
             </Link>
           </li>
-
-          <li>
-            <Link
-              className="hover:text-white cursor-pointer transition"
-              to="/#about"
-            >
-              About
-            </Link>
-          </li>
         </ul>
 
         {/* Desktop Buttons */}
@@ -83,8 +74,6 @@ export default function Navbar() {
             <Link to="/company-registration">For Companies</Link>
 
             <Link to="/challenges">Challenges</Link>
-
-            <Link to="/#about">About</Link>
 
             <Link
               className="bg-violet-600 rounded-xl py-3 text-center"

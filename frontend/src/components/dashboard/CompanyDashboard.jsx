@@ -18,6 +18,7 @@ import {
   companyDashboardActiveChallenges,
   companyDashboardTalent,
   companyDashboardMetrics,
+  companyDashboardNavItems,
 } from "../../data/companyDashboard";
 
 function MetricCard({ metric }) {
@@ -270,7 +271,7 @@ function TalentPipeline() {
 export default function CompanyDashboard() {
   return (
     <DashboardLayout
-      navItems={[]}
+      navItems={companyDashboardNavItems}
       activeIndex={0}
       bottomPanel={null}
       topbar={<Topbar />}

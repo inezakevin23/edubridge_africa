@@ -25,7 +25,7 @@ export const featuresData = [
   },
   {
     icon: Award,
-    title: "Skill Passport",
+    title: "Reputation Credits",
     description:
       "Earn verifiable reputation credits that showcase your practical abilities.",
   },
@@ -33,7 +33,7 @@ export const featuresData = [
     icon: Briefcase,
     title: "Career Opportunities",
     description:
-      "Outstanding submissions can lead directly to internships and jobs.",
+      "Outstanding submissions can lead directly to being shortlisted for future employment opportunities",
   },
   {
     icon: Building2,

@@ -19,7 +19,7 @@ export default function Navbar() {
               className="hover:text-white cursor-pointer transition"
               to="/register"
             >
-              For Students
+              For Interns
             </Link>
           </li>
 

@@ -1,5 +1,6 @@
-import { Globe, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { motion } from "framer-motion";
+import EduBridgeLogo from "../layout/Logo";
 
 export default function CompanyRegistrationLeft() {
   return (
@@ -10,16 +11,11 @@ export default function CompanyRegistrationLeft() {
       transition={{ duration: 0.7 }}
     >
       <div className="relative z-10 flex items-center gap-3">
-        <div className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#7C4DDE] shadow-[0_0_34px_rgba(139,92,246,0.55)]">
-          <Globe size={27} strokeWidth={2.5} />
-        </div>
-        <h1 className="text-[32px] font-bold leading-none tracking-normal">
-          EduBridge
-        </h1>
+        <EduBridgeLogo />
       </div>
 
       <div className="relative z-10 mt-auto pb-12">
-        <h2 className="max-w-[430px] text-[39px] font-extrabold leading-[1.18] tracking-normal">
+        <h2 className="max-w-[430px] text-[29px] font-extrabold leading-[1.18] tracking-normal">
           Find Africa's Best Emerging Talent
         </h2>
         <p className="mt-8 max-w-[430px] text-[17px] leading-[1.65] text-[#A6B1C4]">

@@ -10,74 +10,39 @@ import CompanyDashboardPage from "../pages/CompanyDashboardPage";
 import CompanyRegistration from "../pages/CompanyRegistration";
 import StudentDashboardPage from "../pages/StudentDashboardPage";
 import StudentRegistration from "../pages/StudentRegistration";
-import ProtectedRoute from "./ProtectedRoute";
+import ChallengeDetailsPage from "../components/dashboard/ChallengeDetailsPage";
+// import ProtectedRoute from "./ProtectedRoute";
 
 export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
+        {/* protected route */}
         <Route path="/challenges" element={<Challenges />} />
+        <Route path="/challenges/:slug" element={<ChallengeDetailsPage />} />
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/company-dashboard"
-          element={
-            <ProtectedRoute>
-              <CompanyDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create-challenge"
-          element={
-            <ProtectedRoute>
-              <CreateChallengePage />
-            </ProtectedRoute>
-          }
-        />
+        {/* protected route */}
+        <Route path="/company-dashboard" element={<CompanyDashboardPage />} />
+        {/* protected route */}
+        <Route path="/create-challenge" element={<CreateChallengePage />} />
+        {/* protected route */}
         <Route
           path="/company-submissions"
-          element={
-            <ProtectedRoute>
-              <CompanySubmissionsReviewPage />
-            </ProtectedRoute>
-          }
+          element={<CompanySubmissionsReviewPage />}
         />
+        {/* protected route */}
         <Route path="/submit-solution" element={<SubmitSolutionPage />} />
-        <Route
-          path="/challenges/supply-chain-optimization/submit"
-          element={
-            <ProtectedRoute>
-              <SubmitSolutionPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* protected route */}
+        <Route path="/challenges/:slug/submit" element={<SubmitSolutionPage />} />
         <Route path="/company-registration" element={<CompanyRegistration />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <StudentDashboardPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* protected route */}
+        <Route path="/dashboard" element={<StudentDashboardPage />} />
         <Route path="/register" element={<StudentRegistration />} />
-        <Route
-          path="/student-dashboard"
-          element={
-            <ProtectedRoute>
-              <StudentDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student-feedback"
-          element={
-            <ProtectedRoute>
-              <StudentFeedbackPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* protected route */}
+        <Route path="/student-dashboard" element={<StudentDashboardPage />} />
+        {/* protected route */}
+        <Route path="/student-feedback" element={<StudentFeedbackPage />} />
         <Route path="/student-registration" element={<StudentRegistration />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

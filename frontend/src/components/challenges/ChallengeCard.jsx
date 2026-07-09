@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, Coins, Users } from "lucide-react";
+import { ArrowRight, Clock3, Coins } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ChallengeCard({ challenge, compact = false }) {
@@ -38,9 +38,6 @@ export default function ChallengeCard({ challenge, compact = false }) {
             {tag}
           </span>
         ))}
-        <span className="rounded-xl border border-amber-500/25 bg-amber-500/12 px-3 py-1.5 text-[12px] font-extrabold text-[#F59E0B]">
-          {challenge.level}
-        </span>
       </div>
 
       <div className="mt-auto flex items-center justify-between border-t border-white/[0.07] pt-5">
@@ -50,10 +47,6 @@ export default function ChallengeCard({ challenge, compact = false }) {
         </div>
         <div className="flex items-center gap-3 text-[12px] font-semibold text-[#9AA7BA]">
           <span className="flex items-center gap-1">
-            <Users size={15} />
-            {challenge.applicants}
-          </span>
-          <span className="flex items-center gap-1">
             <Clock3 size={15} />
             {challenge.time}
           </span>
@@ -62,7 +55,7 @@ export default function ChallengeCard({ challenge, compact = false }) {
 
       <Link
         className="mt-5 flex h-10 items-center justify-center gap-2 rounded-2xl border border-violet-400/10 bg-violet-500/12 text-[13px] font-extrabold text-[#A879FF] transition group-hover:bg-violet-500/18"
-        to="/challenges"
+        to={`/challenges/${challenge.slug}`}
       >
         View Challenge
         <ArrowRight size={16} />

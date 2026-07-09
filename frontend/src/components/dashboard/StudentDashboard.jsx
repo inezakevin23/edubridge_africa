@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ArrowRight,
   Clock3,
@@ -16,15 +17,27 @@ import {
 } from "../../data/studentDashboard";
 
 function SidebarBottomPanel() {
+  const [studentProfile] = useState(() => {
+    const savedName = localStorage.getItem("edubridgeStudentName");
+    const savedAvatar = localStorage.getItem("edubridgeStudentProfilePic");
+
+    return {
+      name: savedName || "Adebayo O.",
+      avatar: savedAvatar || "https://i.pravatar.cc/100?img=12",
+    };
+  });
+
   return (
     <div className="mt-auto flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0D1626] p-3">
       <img
-        alt="Adebayo O."
+        alt={studentProfile.name}
         className="h-12 w-12 rounded-full border border-white/10 object-cover"
-        src="https://i.pravatar.cc/100?img=12"
+        src={studentProfile.avatar}
       />
       <div>
-        <h2 className="text-[15px] font-bold text-white">Adebayo O.</h2>
+        <h2 className="text-[15px] font-bold text-white">
+          {studentProfile.name}
+        </h2>
         <p className="mt-1 text-[13px] text-[#9AA7BA]">Level 12 Explorer</p>
       </div>
     </div>

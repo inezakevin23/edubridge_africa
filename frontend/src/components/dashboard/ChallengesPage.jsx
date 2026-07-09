@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import ChallengeCard from "../challenges/ChallengeCard";
@@ -127,13 +128,13 @@ function FeaturedChallenge() {
             </span>
           </div>
         </div>
-        <button
+        <Link
           className="flex h-14 shrink-0 items-center justify-center gap-2 rounded-[22px] bg-[#8B5CF6] px-8 text-[15px] font-extrabold text-white shadow-[0_18px_40px_rgba(139,92,246,0.35)] transition hover:bg-[#9568ff]"
-          type="button"
+          to="/challenges/mobile-first-education-platform"
         >
           Apply Now
           <ArrowRight size={18} />
-        </button>
+        </Link>
       </div>
     </section>
   );

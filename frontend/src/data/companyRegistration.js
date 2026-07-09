@@ -22,3 +22,17 @@ export const companyRegistrationDocuments = [
   "NGO Registration Certificate",
   "Government Accreditation Document",
 ];
+
+export const companyRegistrationIndustries = [
+  "E-Commerce",
+  "Financial Services",
+  "Healthcare",
+  "Education",
+  "Agriculture",
+  "Logistics",
+  "Technology",
+  "Energy",
+  "Manufacturing",
+  "Media",
+  "Other",
+];

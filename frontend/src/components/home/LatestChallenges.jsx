@@ -16,7 +16,7 @@ export default function LatestChallenges() {
               Latest Opportunities
             </span>
             <h2 className="text-[32px] font-extrabold leading-tight text-white md:text-[42px]">
-              Challenges students can solve now
+              Challenges interns can solve now
             </h2>
             <p className="mt-3 max-w-2xl text-[16px] leading-7 text-[#9AA7BA]">
               Explore fresh real-world briefs from partner companies and start
@@ -34,7 +34,11 @@ export default function LatestChallenges() {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {latestChallenges.map((challenge) => (
-            <ChallengeCard challenge={challenge} compact key={challenge.title} />
+            <ChallengeCard
+              challenge={challenge}
+              compact
+              key={challenge.title}
+            />
           ))}
         </div>
       </div>

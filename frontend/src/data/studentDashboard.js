@@ -1,22 +1,10 @@
 // Mock response for GET /api/student/dashboard
-import {
-  BriefcaseBusiness,
-  Grid2X2,
-  Medal,
-  MessageSquare,
-  MessageSquareText,
-  TrendingUp,
-  UserRound,
-} from "lucide-react";
+import { BriefcaseBusiness, Grid2X2, MessageSquareText } from "lucide-react";
 
 export const studentDashboardNavItems = [
   ["Dashboard", Grid2X2],
   ["Challenges", BriefcaseBusiness],
-  ["My Passport", UserRound],
   ["Feedback", MessageSquareText],
-  ["Leaderboard", Medal],
-  ["Career Insights", TrendingUp],
-  ["Community", MessageSquare],
 ];
 
 export const studentDashboardFilters = [

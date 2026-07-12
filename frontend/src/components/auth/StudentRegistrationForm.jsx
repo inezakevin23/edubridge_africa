@@ -6,8 +6,6 @@ import {
   BookOpen,
   Briefcase,
   Building2,
-  Calendar,
-  Check,
   ChevronDown,
   Eye,
   EyeOff,
@@ -38,6 +36,10 @@ const stepLabels = studentRegistrationStepLabels;
 const statusOptions = studentRegistrationStatusOptions;
 const starterSkills = studentRegistrationSkills;
 const genderOptions = ["Male", "Female"];
+const emailPattern = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+const phonePattern = "^\\+?[0-9\\s()-]{7,20}$";
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
 
 function RequiredMark() {
   return <span className="text-[#F43F5E]">*</span>;
@@ -61,6 +63,7 @@ function Field({
   name,
   onChange,
   optional = false,
+  pattern,
   placeholder,
   required = false,
   rightIcon,
@@ -73,11 +76,12 @@ function Field({
         {label}
       </Label>
       <span className="flex h-12 items-center gap-3 rounded-[24px] border border-white/[0.04] bg-[#182237]/95 px-4 text-[#93A0B5] shadow-inner shadow-white/[0.02] transition focus-within:border-violet-400/60 focus-within:ring-2 focus-within:ring-violet-500/20">
-        <span className="shrink-0">{icon}</span>
+        {icon ? <span className="shrink-0">{icon}</span> : null}
         <input
           className="auth-input h-full min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
           name={name}
           onChange={onChange}
+          pattern={pattern}
           placeholder={placeholder}
           required={required}
           type={type}
@@ -145,18 +149,6 @@ function Section({ step, title, icon, children }) {
       </div>
       {children}
     </section>
-  );
-}
-
-function CheckboxLine({ children }) {
-  return (
-    <label className="group flex items-center gap-3 text-[13px] text-[#9AA7BA]">
-      <input className="peer sr-only" type="checkbox" />
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#182237] text-transparent transition peer-checked:border-violet-400/60 peer-checked:bg-violet-500/15 peer-checked:text-violet-300">
-        <Check size={13} strokeWidth={3} />
-      </span>
-      <span>{children}</span>
-    </label>
   );
 }
 
@@ -273,6 +265,7 @@ export default function StudentRegistrationForm() {
   const [profilePic, setProfilePic] = useState(null);
   const [profilePreview, setProfilePreview] = useState("");
   const [formMessage, setFormMessage] = useState("");
+  const [fileInputResetKey, setFileInputResetKey] = useState(0);
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(form.password),
@@ -330,6 +323,16 @@ export default function StudentRegistrationForm() {
     setFormMessage(
       "Registration details saved. Your profile picture is ready for the student sidebar.",
     );
+    setForm(initialForm);
+    setSelectedSkills([]);
+    setSkillInput("");
+    setIdFile(null);
+    setProfilePic(null);
+    setProfilePreview("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setCurrentStep(1);
+    setFileInputResetKey((key) => key + 1);
   };
 
   const validateStep = (step) => {
@@ -337,7 +340,9 @@ export default function StudentRegistrationForm() {
       const hasRequiredDetails =
         form.fullName &&
         form.email &&
+        emailRegex.test(form.email) &&
         form.phone &&
+        phoneRegex.test(form.phone) &&
         form.city &&
         form.dateOfBirth &&
         form.gender;
@@ -345,7 +350,7 @@ export default function StudentRegistrationForm() {
       setFormMessage(
         hasRequiredDetails
           ? ""
-          : "Complete all required personal fields before continuing.",
+          : "Complete all required personal fields with a valid email and phone number before continuing.",
       );
       return Boolean(hasRequiredDetails);
     }
@@ -363,12 +368,14 @@ export default function StudentRegistrationForm() {
     }
 
     if (step === 3) {
-      const hasAccountDetails = form.username && form.password;
+      const hasAccountDetails =
+        form.username &&
+        form.password &&
+        form.confirmPassword &&
+        form.password === form.confirmPassword;
 
       setFormMessage(
-        hasAccountDetails
-          ? ""
-          : "Add a username and password before continuing.",
+        hasAccountDetails ? "" : "Passwords must be filled in and match.",
       );
       return Boolean(hasAccountDetails);
     }
@@ -392,7 +399,7 @@ export default function StudentRegistrationForm() {
 
   return (
     <motion.main
-      className="relative min-h-screen overflow-y-auto bg-[#0B1020] px-5 py-5 text-white sm:px-8 lg:px-12"
+      className="relative h-screen overflow-y-auto bg-[#0B1020] px-5 py-5 text-white sm:px-8 lg:px-12"
       initial={{ opacity: 0, x: 40 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7, delay: 0.1 }}
@@ -480,6 +487,7 @@ export default function StudentRegistrationForm() {
                   icon={<Mail size={17} />}
                   name="email"
                   onChange={updateForm}
+                  pattern={emailPattern}
                   placeholder="you@example.com"
                   required
                   type="email"
@@ -490,6 +498,7 @@ export default function StudentRegistrationForm() {
                   icon={<Phone size={17} />}
                   name="phone"
                   onChange={updateForm}
+                  pattern={phonePattern}
                   placeholder="+234 800 000 0000"
                   required
                   type="tel"
@@ -515,7 +524,6 @@ export default function StudentRegistrationForm() {
                 />
                 <Field
                   label="Date of Birth"
-                  icon={<Calendar size={17} />}
                   name="dateOfBirth"
                   onChange={updateForm}
                   required
@@ -727,8 +735,8 @@ export default function StudentRegistrationForm() {
                   icon={<Lock size={17} />}
                   name="confirmPassword"
                   onChange={updateForm}
-                  optional
                   placeholder="Repeat password"
+                  required
                   type={showConfirmPassword ? "text" : "password"}
                   value={form.confirmPassword}
                   rightIcon={
@@ -784,6 +792,7 @@ export default function StudentRegistrationForm() {
                   accept="application/pdf"
                   fileName={idFile?.name}
                   helper="PDF only - max 5MB"
+                  key={`id-${fileInputResetKey}`}
                   label="National ID or Student ID"
                   onChange={(event) => setIdFile(event.target.files?.[0] || null)}
                   required
@@ -793,6 +802,7 @@ export default function StudentRegistrationForm() {
                   accept="image/png,image/jpeg,image/jpg"
                   fileName={profilePic?.name}
                   helper="PNG or JPG - max 5MB"
+                  key={`profile-${fileInputResetKey}`}
                   label="Profile Picture"
                   onChange={handleProfileUpload}
                   preview={profilePreview}
@@ -819,15 +829,6 @@ export default function StudentRegistrationForm() {
                 <span className="rounded-full bg-white/[0.06] px-3 py-1 text-[12px] font-medium text-[#9AA7BA]">
                   Pending
                 </span>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <CheckboxLine>
-                  I accept the Terms and Conditions of EduBridge
-                </CheckboxLine>
-                <CheckboxLine>
-                  I accept the Privacy Policy and consent to data processing
-                </CheckboxLine>
               </div>
 
               <p className="mt-4 text-center text-[12px] text-[#8D99AE]">

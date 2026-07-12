@@ -130,7 +130,5 @@ export const companySubmissionsReviewItems = [
 export const companySubmissionsNavItems = [
   ["Dashboard", ChartPie],
   ["Manage Challenges", BriefcaseBusiness],
-  ["Talent Discovery", UsersRound],
-  ["Analytics", ChartPie],
   ["Submissions", CheckSquare],
 ];

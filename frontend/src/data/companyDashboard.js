@@ -11,8 +11,6 @@ import {
 export const companyDashboardNavItems = [
   ["Dashboard", ChartPie],
   ["Manage Challenges", BriefcaseBusiness],
-  ["Talent Discovery", UsersRound],
-  ["Analytics", ChartPie],
   ["Submissions", CheckSquare],
 ];
 

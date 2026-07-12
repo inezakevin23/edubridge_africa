@@ -3,21 +3,19 @@ import {
   ClipboardList,
   FileText,
   Plus,
-  Sparkles,
-  Trophy,
   UserPlus,
   Users,
-  Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, Navigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import {
-  challengeDetailsNavItems,
   getChallengeApplyRows,
   getChallengeBySlug,
 } from "../../data/challengeDetails";
+
+import { studentDashboardNavItems } from "../../data/studentDashboard";
 
 function HeroCard({ challenge }) {
   return (
@@ -110,12 +108,6 @@ function ApplyCard({ challenge }) {
         className="mt-5 flex h-12 w-full items-center justify-center rounded-2xl bg-[#8B5CF6] text-[14px] font-extrabold text-white shadow-[0_14px_32px_rgba(139,92,246,0.35)]"
         to={`/challenges/${challenge.slug}/submit`}
       >
-        Apply & Start Solving
-      </Link>
-      <Link
-        className="mt-3 flex h-11 w-full items-center justify-center rounded-2xl bg-[#1C273A] text-[14px] font-bold text-white"
-        to={`/challenges/${challenge.slug}/submit`}
-      >
         Submit Solution
       </Link>
       <p className="mt-4 text-center text-[12px] text-[#9AA7BA]">
@@ -143,64 +135,6 @@ function CompanyCard({ company }) {
       <p className="mt-5 text-[13px] leading-6 text-[#9AA7BA]">
         {company.description}
       </p>
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-[#0E1728] p-4 text-center">
-          <p className="text-[18px] font-extrabold text-white">
-            {company.challengesPosted}
-          </p>
-          <p className="text-[11px] text-[#9AA7BA]">Challenges Posted</p>
-        </div>
-        <div className="rounded-2xl bg-[#0E1728] p-4 text-center">
-          <p className="text-[18px] font-extrabold text-white">
-            {company.averageRating}
-          </p>
-          <p className="text-[11px] text-[#9AA7BA]">Avg. Rating</p>
-        </div>
-      </div>
-      <a
-        className="mt-5 flex items-center justify-center gap-2 text-[13px] font-extrabold text-[#8B5CF6]"
-        href="#"
-      >
-        View Company Profile
-        <ChevronRight size={16} />
-      </a>
-    </aside>
-  );
-}
-
-function LeaderboardCard({ leaderboard }) {
-  return (
-    <aside className="rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-6 shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-      <h2 className="mb-5 flex items-center gap-2 text-[16px] font-extrabold text-white">
-        <Trophy className="text-[#F59E0B]" size={20} />
-        Current Leaderboard
-      </h2>
-      <div className="space-y-4">
-        {leaderboard.map(([rank, name, score, avatar]) => (
-          <div className="flex items-center gap-3" key={name}>
-            <span
-              className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-extrabold ${
-                rank === "1"
-                  ? "bg-[#F59E0B] text-white"
-                  : "bg-white/[0.07] text-[#9AA7BA]"
-              }`}
-            >
-              {rank}
-            </span>
-            <img
-              alt={name}
-              className="h-8 w-8 rounded-full object-cover"
-              src={avatar}
-            />
-            <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-white">
-              {name}
-            </span>
-            <span className="text-[13px] font-extrabold text-[#22C55E]">
-              {score}
-            </span>
-          </div>
-        ))}
-      </div>
     </aside>
   );
 }
@@ -215,8 +149,8 @@ export default function ChallengeDetailsPage() {
 
   return (
     <DashboardLayout
-      navItems={challengeDetailsNavItems}
-      activeIndex={1}
+      navItems={studentDashboardNavItems}
+      activeIndex={2}
       bottomPanel={null}
       topbar={<Topbar />}
     >
@@ -304,55 +238,11 @@ export default function ChallengeDetailsPage() {
                 </button>
               </div>
             </Panel>
-
-            <Panel icon={Sparkles} title="AI Feedback Preview">
-              <p className="-mt-5 mb-5 text-[12px] text-[#9AA7BA]">
-                Powered by EduBridge AI - instant draft review
-              </p>
-              <div className="space-y-5">
-                {challenge.feedback.map((item) => (
-                  <div
-                    className="rounded-2xl bg-[#0D1626] p-4"
-                    key={item.label}
-                  >
-                    <div className="flex items-center justify-between text-[13px] font-extrabold">
-                      <span className="text-white">{item.label}</span>
-                      <span
-                        className={
-                          item.color === "bg-[#22C55E]"
-                            ? "text-[#22C55E]"
-                            : "text-[#F59E0B]"
-                        }
-                      >
-                        {item.score}
-                      </span>
-                    </div>
-                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#253149]">
-                      <div
-                        className={`h-full rounded-full ${item.color}`}
-                        style={{ width: item.value }}
-                      />
-                    </div>
-                    <p className="mt-3 text-[12px] leading-5 text-[#9AA7BA]">
-                      {item.note}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <button
-                className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-violet-500/14 text-[13px] font-extrabold text-[#A879FF]"
-                type="button"
-              >
-                <Zap size={16} />
-                Run Full AI Analysis on My Draft
-              </button>
-            </Panel>
           </div>
 
           <div className="space-y-7 lg:sticky lg:top-24 lg:self-start">
             <ApplyCard challenge={challenge} />
             <CompanyCard company={challenge.company} />
-            <LeaderboardCard leaderboard={challenge.leaderboard} />
           </div>
         </div>
       </motion.main>

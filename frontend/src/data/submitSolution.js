@@ -15,10 +15,6 @@ import {
 export const submitSolutionNavItems = [
   ["Dashboard", Grid2X2],
   ["Challenges", BriefcaseBusiness],
-  ["My Passport", UserRound],
-  ["Leaderboard", Medal],
-  ["Career Insights", TrendingUp],
-  ["Community", MessageSquare],
 ];
 
 export const submitSolutionDeliverables = [

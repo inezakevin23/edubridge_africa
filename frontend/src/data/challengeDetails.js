@@ -5,15 +5,12 @@ import {
   CheckSquare,
   Coins,
   Clock3,
-  UserRound,
   Users,
 } from "lucide-react";
 
 export const challengeDetailsNavItems = [
   ["Dashboard", ChartPie],
   ["Manage Challenges", BriefcaseBusiness],
-  ["Talent Discovery", UserRound],
-  ["Analytics", ChartPie],
   ["Submissions", CheckSquare],
 ];
 

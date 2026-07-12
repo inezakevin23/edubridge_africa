@@ -5,7 +5,6 @@ import {
   AtSign,
   BriefcaseBusiness,
   Building2,
-  Check,
   ChevronDown,
   Eye,
   EyeOff,
@@ -31,6 +30,11 @@ import {
 } from "../../data/companyRegistration";
 import { africanCountries } from "../../data/studentRegistration";
 
+const emailPattern = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+const phonePattern = "^\\+?[0-9\\s()-]{7,20}$";
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
+
 function RequiredMark() {
   return <span className="text-[#F43F5E]">*</span>;
 }
@@ -53,6 +57,7 @@ function Field({
   name,
   onChange,
   optional = false,
+  pattern,
   placeholder,
   required = false,
   rightIcon,
@@ -70,6 +75,7 @@ function Field({
           className="auth-input h-full min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
           name={name}
           onChange={onChange}
+          pattern={pattern}
           placeholder={placeholder}
           required={required}
           type={type}
@@ -170,18 +176,6 @@ function Section({ step, title, icon, children }) {
   );
 }
 
-function CheckboxLine({ children }) {
-  return (
-    <label className="flex items-start gap-3 text-[13px] leading-relaxed text-[#9AA7BA]">
-      <input className="peer sr-only" type="checkbox" />
-      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#182237] text-transparent transition peer-checked:border-amber-400/60 peer-checked:bg-amber-500/15 peer-checked:text-amber-300">
-        <Check size={13} strokeWidth={3} />
-      </span>
-      <span>{children}</span>
-    </label>
-  );
-}
-
 function DocumentUpload({ file, onChange, optional, required, title }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[18px] border border-white/[0.04] bg-[#182237]/95 p-4 transition hover:border-amber-400/35">
@@ -194,7 +188,8 @@ function DocumentUpload({ file, onChange, optional, required, title }) {
             {title} {required ? <RequiredMark /> : null}
           </h3>
           <p className="mt-1 truncate text-[12px] text-[#8D99AE]">
-            {file?.name || (optional ? "Optional document" : "PDF, JPG, or PNG required")}
+            {file?.name ||
+              (optional ? "Optional document" : "PDF, JPG, or PNG required")}
           </p>
         </div>
       </div>
@@ -251,7 +246,8 @@ function getPasswordStrength(password) {
 
   if (score <= 1) {
     return {
-      label: "Weak password - use at least 8 characters, numbers, and a symbol.",
+      label:
+        "Weak password - use at least 8 characters, numbers, and a symbol.",
       color: "text-[#F43F5E]",
       activeBars: 1,
     };
@@ -259,7 +255,8 @@ function getPasswordStrength(password) {
 
   if (score === 2 || score === 3) {
     return {
-      label: "Medium strength - add uppercase letters or a symbol to strengthen.",
+      label:
+        "Medium strength - add uppercase letters or a symbol to strengthen.",
       color: "text-[#F59E0B]",
       activeBars: 3,
     };
@@ -279,6 +276,7 @@ export default function CompanyRegistrationForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formMessage, setFormMessage] = useState("");
+  const [fileInputResetKey, setFileInputResetKey] = useState(0);
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(form.password),
@@ -305,13 +303,15 @@ export default function CompanyRegistrationForm() {
         form.country &&
         form.city &&
         form.email &&
+        emailRegex.test(form.email) &&
         form.phone &&
+        phoneRegex.test(form.phone) &&
         form.description;
 
       setFormMessage(
         hasOrganizationDetails
           ? ""
-          : "Complete all required organization fields before continuing.",
+          : "Complete all required organization fields with a valid email and phone number before continuing.",
       );
       return Boolean(hasOrganizationDetails);
     }
@@ -334,7 +334,9 @@ export default function CompanyRegistrationForm() {
         form.representativeName &&
         form.representativeTitle &&
         form.representativeEmail &&
-        form.representativePhone;
+        emailRegex.test(form.representativeEmail) &&
+        form.representativePhone &&
+        phoneRegex.test(form.representativePhone);
 
       setFormMessage(
         hasRepresentativeDetails
@@ -344,9 +346,15 @@ export default function CompanyRegistrationForm() {
       return Boolean(hasRepresentativeDetails);
     }
 
-    const hasAccountDetails = form.username && form.password;
+    const hasAccountDetails =
+      form.username &&
+      form.password &&
+      form.confirmPassword &&
+      form.password === form.confirmPassword;
     setFormMessage(
-      hasAccountDetails ? "" : "Add a username and password to register.",
+      hasAccountDetails
+        ? ""
+        : "Passwords must be filled in and match before registering.",
     );
     return Boolean(hasAccountDetails);
   };
@@ -369,11 +377,17 @@ export default function CompanyRegistrationForm() {
     setFormMessage(
       "Company registration details saved. Documents are ready for review.",
     );
+    setForm(initialForm);
+    setDocuments({});
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setCurrentStep(1);
+    setFileInputResetKey((key) => key + 1);
   };
 
   return (
     <motion.main
-      className="relative min-h-screen overflow-y-auto bg-[#0B1020] px-5 py-5 text-white sm:px-8 lg:px-12"
+      className="relative h-screen overflow-y-auto bg-[#0B1020] px-5 py-5 text-white sm:px-8 lg:px-12"
       initial={{ opacity: 0, x: 40 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7, delay: 0.1 }}
@@ -473,7 +487,9 @@ export default function CompanyRegistrationForm() {
                         >
                           <span
                             className={`flex h-4 w-4 items-center justify-center rounded-full border ${
-                              isSelected ? "border-[#F59E0B]" : "border-white/10"
+                              isSelected
+                                ? "border-[#F59E0B]"
+                                : "border-white/10"
                             }`}
                           >
                             {isSelected ? (
@@ -703,7 +719,7 @@ export default function CompanyRegistrationForm() {
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
-                      className="transition hover:text-white"
+                      className="transition hover:text-white cursor-pointer"
                       onClick={() => setShowPassword((value) => !value)}
                       type="button"
                     >
@@ -782,20 +798,7 @@ export default function CompanyRegistrationForm() {
                 </span>
               </div>
 
-              <div className="mt-6 space-y-4">
-                <CheckboxLine>
-                  I confirm that I have legal ownership or am authorized to
-                  represent this organization on EduBridge
-                </CheckboxLine>
-                <CheckboxLine>
-                  I accept the Terms and Conditions including the Challenge
-                  Posting Guidelines
-                </CheckboxLine>
-                <CheckboxLine>
-                  I accept the Privacy Policy and consent to data processing
-                  under applicable laws
-                </CheckboxLine>
-              </div>
+              <div className="mt-6 space-y-4"></div>
 
               <p className="mt-4 text-center text-[12px] text-[#8D99AE]">
                 Account activation takes up to 48 hours after document

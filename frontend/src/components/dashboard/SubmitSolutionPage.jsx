@@ -1,14 +1,10 @@
 import { useMemo, useState } from "react";
 import {
-  Bell,
   CheckCircle2,
   ChevronRight,
   Circle,
-  Flame,
   Link as LinkIcon,
-  Search,
   Send,
-  Timer,
   Users,
   X,
   Zap,
@@ -19,43 +15,14 @@ import {
   FileText,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
-import { submitSolutionNavItems } from "../../data/submitSolution";
-
-// Keep local state initialized inline; remove unused imported mocks.
-
-function SubmissionTopbar() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#0B1020]/92 px-4 py-4 backdrop-blur-xl sm:px-8 xl:px-10">
-      <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
-        <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-white/[0.06] bg-[#172136] px-5 text-[#9AA7BA] shadow-inner shadow-white/[0.02] sm:max-w-[520px]">
-          <Search size={19} />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
-            placeholder="Search challenges, companies..."
-            type="search"
-          />
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <button
-            aria-label="Notifications"
-            className="relative hidden h-11 w-11 items-center justify-center rounded-full text-[#B5C0D2] transition hover:bg-white/[0.06] hover:text-white sm:flex"
-            type="button"
-          >
-            <Bell size={21} />
-            <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />
-          </button>
-          <div className="flex h-11 items-center gap-2 rounded-full bg-[#182237] px-5 text-[15px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            <Flame className="text-[#F59E0B]" size={18} />
-            2,450 XP
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
+import Topbar from "../layout/Topbar";
+import {
+  challengeRecords,
+  getChallengeBySlug,
+} from "../../data/challengeDetails";
+import { studentDashboardNavItems } from "../../data/studentDashboard";
 
 function Panel({ accent = "violet", children, icon: Icon, title }) {
   const iconClass =
@@ -180,6 +147,62 @@ export default function SubmitSolutionPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const canUpdateBeforeDeadline = true;
 
+  const resetSolutionForm = () => {
+    setForm({
+      title: "",
+      summary: "",
+      methodology: "",
+      deliverables: {},
+      reviewerNote: "",
+    });
+    setTeamMembers([
+      {
+        id: 1,
+        name: "Adebayo Oladipo",
+        role: "Lead Analyst",
+        badge: "You",
+        avatar: "https://i.pravatar.cc/100?img=32",
+      },
+      {
+        id: 2,
+        name: "Fatima Sule",
+        role: "Data Visualisation",
+        badge: "",
+        avatar: "https://i.pravatar.cc/100?img=47",
+      },
+    ]);
+    setIsSubmitted(false);
+    setNewMember({ name: "", role: "" });
+  };
+  const { slug } = useParams();
+  const challenge = slug ? getChallengeBySlug(slug) : challengeRecords[0];
+
+  const completedChecklist = useMemo(
+    () => [
+      Boolean(form.title.trim()),
+      Boolean(form.summary.trim()),
+      Boolean(form.methodology.trim()),
+      Boolean(
+        form.deliverables.report?.fileName || form.deliverables.report?.link,
+      ),
+      Boolean(form.deliverables.deck?.fileName || form.deliverables.deck?.link),
+      Boolean(form.reviewerNote.trim()),
+      Boolean(
+        form.title &&
+        form.summary &&
+        form.methodology &&
+        (form.deliverables.report?.fileName || form.deliverables.report?.link),
+      ),
+    ],
+    [form],
+  );
+
+  const readiness = completedChecklist.filter(Boolean).length;
+
+  if (slug && !challenge) {
+    return <Navigate to="/challenges" replace />;
+  }
+
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
@@ -224,34 +247,12 @@ export default function SubmitSolutionPage() {
     );
   };
 
-  const completedChecklist = useMemo(
-    () => [
-      Boolean(form.title.trim()),
-      Boolean(form.summary.trim()),
-      Boolean(form.methodology.trim()),
-      Boolean(
-        form.deliverables.report?.fileName || form.deliverables.report?.link,
-      ),
-      Boolean(form.deliverables.deck?.fileName || form.deliverables.deck?.link),
-      Boolean(form.reviewerNote.trim()),
-      Boolean(
-        form.title &&
-        form.summary &&
-        form.methodology &&
-        (form.deliverables.report?.fileName || form.deliverables.report?.link),
-      ),
-    ],
-    [form],
-  );
-
-  const readiness = completedChecklist.filter(Boolean).length;
-
   return (
     <DashboardLayout
-      navItems={submitSolutionNavItems}
-      activeIndex={1}
+      navItems={studentDashboardNavItems}
+      activeIndex={2}
       bottomPanel={null}
-      topbar={<SubmissionTopbar />}
+      topbar={<Topbar />}
     >
       <motion.main
         className="mx-auto max-w-[1180px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"
@@ -264,31 +265,37 @@ export default function SubmitSolutionPage() {
             Challenges
           </Link>
           <ChevronRight size={15} />
-          <span>Supply Chain Optimization</span>
+          <span>{challenge.title}</span>
           <ChevronRight size={15} />
           <span className="text-white">Submit Solution</span>
         </div>
 
         <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-7">
-            <section className="flex items-center justify-between gap-5 rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.16)] sm:p-6">
-              <div className="flex min-w-0 items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#1E1B4B]">
-                  J
+            <section className="flex flex-col gap-5 rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.16)] sm:p-6">
+              <div className="flex items-center justify-between gap-5">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#1E1B4B]">
+                    {challenge.initials}
+                  </div>
+                  <div className="min-w-0">
+                    <h1 className="truncate text-[18px] font-extrabold text-white sm:text-[20px]">
+                      {challenge.title} Challenge
+                    </h1>
+                    <p className="mt-1 text-[13px] font-semibold text-[#9AA7BA]">
+                      {challenge.company.legalName} - Deadline:{" "}
+                      {challenge.deadline}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h1 className="truncate text-[18px] font-extrabold text-white sm:text-[20px]">
-                    Supply Chain Optimization Challenge
-                  </h1>
-                  <p className="mt-1 text-[13px] font-semibold text-[#9AA7BA]">
-                    Jumia Inc. - Deadline: Oct 24, 2024
-                  </p>
-                </div>
+                <span className="flex shrink-0 items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
+                  <Zap size={17} />
+                  {challenge.xp}
+                </span>
               </div>
-              <span className="flex shrink-0 items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
-                <Zap size={17} />
-                1,200 XP
-              </span>
+              <p className="text-[14px] leading-7 text-[#AAB4C3]">
+                {challenge.summary}
+              </p>
             </section>
 
             <Panel icon={Pencil} title="Solution Overview">
@@ -517,26 +524,6 @@ export default function SubmitSolutionPage() {
                   </button>
                 </div>
               </div>
-
-              <FormField
-                helper="Optional: Include anything you want reviewers to know - context, constraints, assumptions."
-                label="Message to Reviewers"
-              >
-                <div className="rounded-[22px] bg-[#1A2639] p-4 ring-1 ring-white/[0.03] focus-within:ring-[#8B5CF6]/45">
-                  <textarea
-                    className="min-h-[100px] w-full resize-none bg-transparent text-[14px] font-semibold leading-6 text-white placeholder:text-[#8390A5] outline-none"
-                    maxLength={300}
-                    onChange={(event) =>
-                      updateField("reviewerNote", event.target.value)
-                    }
-                    placeholder="Any additional context, caveats, or notes for the reviewing team..."
-                    value={form.reviewerNote}
-                  />
-                  <p className="text-right text-[12px] font-bold text-[#7F8EA5]">
-                    {form.reviewerNote.length}/300
-                  </p>
-                </div>
-              </FormField>
             </Panel>
 
             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
@@ -550,7 +537,9 @@ export default function SubmitSolutionPage() {
               <button
                 className="flex h-14 flex-1 items-center justify-center gap-2 rounded-[22px] bg-[#8B5CF6] px-8 text-[16px] font-extrabold text-white shadow-[0_18px_42px_rgba(139,92,246,0.38)] transition hover:bg-[#9568ff]"
                 disabled={isSubmitted && !canUpdateBeforeDeadline}
-                onClick={() => setIsSubmitted(true)}
+                onClick={() => {
+                  resetSolutionForm();
+                }}
                 type="button"
               >
                 <Send size={19} />
@@ -605,35 +594,6 @@ export default function SubmitSolutionPage() {
                   <span className="text-white">{readiness}/7</span>
                 </div>
                 <ProgressBar value={(readiness / 7) * 100} />
-              </div>
-            </section>
-
-            <section className="rounded-[22px] border border-amber-400/24 bg-amber-400/5 p-6 shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-              <h2 className="mb-4 flex items-center gap-2 text-[16px] font-extrabold text-[#F59E0B]">
-                <Timer size={18} />
-                Deadline Approaching
-              </h2>
-              <p className="text-[12px] font-semibold text-[#9AA7BA]">
-                This challenge closes on Oct 24, 2024.
-              </p>
-              <div className="mt-5 grid grid-cols-3 gap-3">
-                {[
-                  ["02", "Days"],
-                  ["14", "Hours"],
-                  ["33", "Mins"],
-                ].map(([value, label]) => (
-                  <div
-                    className="rounded-2xl bg-[#0E1728] p-3 text-center"
-                    key={label}
-                  >
-                    <p className="text-[22px] font-extrabold text-white">
-                      {value}
-                    </p>
-                    <p className="text-[11px] font-semibold text-[#9AA7BA]">
-                      {label}
-                    </p>
-                  </div>
-                ))}
               </div>
             </section>
           </aside>

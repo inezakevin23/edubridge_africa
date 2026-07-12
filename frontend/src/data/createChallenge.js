@@ -15,8 +15,6 @@ import {
 export const createChallengeNavItems = [
   ["Dashboard", LayoutDashboard],
   ["Manage Challenges", BriefcaseBusiness],
-  ["Talent Discovery", UsersRound],
-  ["Analytics", ChartPie],
   ["Submissions", CheckSquare],
 ];
 

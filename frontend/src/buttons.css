@@ -1,0 +1,20 @@
+/* Ensures all interactive elements have a pointer cursor */
+
+button,
+[role="button"],
+a[role="button"] {
+  cursor: pointer;
+}
+
+/* Also apply to common button-like classnames (tailwind + custom) */
+button[class*="btn"],
+button[class*="button"],
+[class*="button"].clickable {
+  cursor: pointer;
+}
+
+button:hover,
+[role="button"]:hover,
+a[role="button"]:hover {
+  cursor: pointer;
+}

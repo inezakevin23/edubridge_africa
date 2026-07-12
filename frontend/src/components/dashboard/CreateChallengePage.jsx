@@ -1,17 +1,14 @@
 import { useState } from "react";
 import {
   Award,
-  Bell,
   Calendar,
   ChevronDown,
   ClipboardList,
   Eye,
-  Globe2,
   Link as LinkIcon,
   Megaphone,
   Plus,
   Save,
-  Search,
   Send,
   Trash2,
   Upload,
@@ -28,47 +25,13 @@ import {
   createChallengeFormatOptions,
   createChallengeNavItems,
 } from "../../data/createChallenge";
+import CompanyTopbar from "../layout/CompanyTopbar";
 
 // Keep existing variable names used throughout the component
 const steps = createChallengeSteps;
 const initialForm = createChallengeInitialForm;
 const formatOptions = createChallengeFormatOptions;
 const navItems = createChallengeNavItems;
-
-function CompanyTopbar() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#0B1020]/92 px-4 py-4 backdrop-blur-xl sm:px-8 xl:px-10">
-      <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
-        <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-white/[0.06] bg-[#172136] px-5 text-[#9AA7BA] shadow-inner shadow-white/[0.02] sm:max-w-[560px]">
-          <Search size={19} />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
-            placeholder="Search students, submissions..."
-            type="search"
-          />
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <button
-            aria-label="Notifications"
-            className="relative hidden h-11 w-11 items-center justify-center rounded-full text-[#B5C0D2] transition hover:bg-white/[0.06] hover:text-white sm:flex"
-            type="button"
-          >
-            <Bell size={21} />
-            <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[#8B5CF6]" />
-          </button>
-          <Link
-            className="flex h-11 items-center gap-2 rounded-full bg-[#182237] px-5 text-[14px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:bg-[#22304A]"
-            to="/create-challenge"
-          >
-            <Plus className="text-[#9B6CFF]" size={18} />
-            Post Challenge
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function FormField({ label, children, helper }) {
   return (
@@ -354,19 +317,6 @@ export default function CreateChallengePage() {
                       <option>Product Design</option>
                     </SelectInput>
                   </FormField>
-                  <FormField label="Industry">
-                    <SelectInput
-                      onChange={(event) =>
-                        updateField("industry", event.target.value)
-                      }
-                      value={form.industry}
-                    >
-                      <option value="">e.g. E-Commerce</option>
-                      <option>E-Commerce</option>
-                      <option>Fintech</option>
-                      <option>Logistics</option>
-                    </SelectInput>
-                  </FormField>
                 </div>
 
                 <FormField label="Required Skills">
@@ -410,35 +360,6 @@ export default function CreateChallengePage() {
                     </button>
                   </div>
                 </FormField>
-
-                <div className="grid gap-5 md:grid-cols-2">
-                  <FormField label="Difficulty Level">
-                    <SelectInput
-                      onChange={(event) =>
-                        updateField("difficulty", event.target.value)
-                      }
-                      value={form.difficulty}
-                    >
-                      <option value="">Select level</option>
-                      <option>Beginner</option>
-                      <option>Intermediate</option>
-                      <option>Advanced</option>
-                    </SelectInput>
-                  </FormField>
-                  <FormField label="Expected Duration">
-                    <SelectInput
-                      onChange={(event) =>
-                        updateField("duration", event.target.value)
-                      }
-                      value={form.duration}
-                    >
-                      <option value="">e.g. 1-2 weeks</option>
-                      <option>1-2 weeks</option>
-                      <option>3-4 weeks</option>
-                      <option>1-2 months</option>
-                    </SelectInput>
-                  </FormField>
-                </div>
               </div>
             </SectionCard>
           ) : null}
@@ -612,16 +533,6 @@ export default function CreateChallengePage() {
             >
               <div className="space-y-6">
                 <div className="grid gap-5 md:grid-cols-2">
-                  <FormField label="XP Reward">
-                    <TextInput
-                      icon={LinkIcon}
-                      onChange={(event) =>
-                        updateField("xpReward", event.target.value)
-                      }
-                      placeholder="e.g. 1200"
-                      value={form.xpReward}
-                    />
-                  </FormField>
                   <FormField label="Submission Deadline">
                     <TextInput
                       icon={Calendar}
@@ -655,26 +566,6 @@ export default function CreateChallengePage() {
                       <option>Top performers</option>
                     </SelectInput>
                   </FormField>
-                </div>
-
-                <div>
-                  <h3 className="mb-3 text-[15px] font-extrabold text-white">
-                    Challenge Access Type
-                  </h3>
-                  <div className="flex min-h-[86px] items-center gap-4 rounded-[22px] border border-[#8B5CF6]/65 bg-[#2B285A] p-4 text-left text-[#A78BFA]">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-500/12">
-                      <Globe2 size={18} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-extrabold">
-                        Open Challenge
-                      </span>
-                      <span className="mt-1 block text-[12px] font-semibold text-[#C4B5FD]">
-                        Visible to all students on EduBridge.
-                      </span>
-                    </span>
-                    <span className="h-4 w-4 rounded-full border border-[#8B5CF6] bg-[#8B5CF6]" />
-                  </div>
                 </div>
 
                 <FormField label="Cash / Physical Prize (Optional)">
@@ -793,6 +684,13 @@ export default function CreateChallengePage() {
                 <button
                   className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#F59E0B] px-5 text-[14px] font-extrabold text-white shadow-[0_14px_30px_rgba(245,158,11,0.24)] transition hover:bg-[#F97316]"
                   type="submit"
+                  onClick={() => {
+                    // Reset form UI after publish while staying on the same page.
+                    setForm(initialForm);
+                    setCurrentStep(1);
+                    setIsPreviewOpen(false);
+                    setNewSkill("");
+                  }}
                 >
                   <Send size={17} />
                   Publish Challenge

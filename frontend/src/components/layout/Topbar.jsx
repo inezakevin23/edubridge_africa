@@ -1,21 +1,9 @@
-import { Bell, Flame, Search } from "lucide-react";
+import { Bell, Flame } from "lucide-react";
 
-export default function Topbar({
-  searchPlaceholder = "Search challenges, companies...",
-  xp = "2,450 XP",
-}) {
+export default function Topbar({ xp = "2,450 XP" }) {
   return (
     <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#0B1020]/92 px-4 py-4 backdrop-blur-xl sm:px-8 xl:px-10">
       <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
-        <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-white/[0.06] bg-[#172136] px-5 text-[#9AA7BA] shadow-inner shadow-white/[0.02] sm:max-w-[560px]">
-          <Search size={19} />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
-            placeholder={searchPlaceholder}
-            type="search"
-          />
-        </div>
-
         <div className="flex shrink-0 items-center gap-4">
           <button
             aria-label="Notifications"

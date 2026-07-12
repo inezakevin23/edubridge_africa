@@ -17,7 +17,7 @@ export default function Navbar() {
           <li>
             <Link
               className="hover:text-white cursor-pointer transition"
-              to="/register"
+              to="/student-dashboard"
             >
               For Interns
             </Link>
@@ -26,7 +26,7 @@ export default function Navbar() {
           <li>
             <Link
               className="hover:text-white cursor-pointer transition"
-              to="/company-registration"
+              to="/company-dashboard"
             >
               For Companies
             </Link>

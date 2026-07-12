@@ -1,11 +1,11 @@
-import { Star } from "lucide-react";
 import { motion } from "framer-motion";
 import EduBridgeLogo from "../layout/Logo";
+import TestimonialCard from "./TestimonialCard";
 
 export default function CompanyRegistrationLeft() {
   return (
     <motion.aside
-      className="relative hidden min-h-screen overflow-hidden bg-[linear-gradient(120deg,#20194E_0%,#162338_52%,#0F172A_100%)] px-8 py-10 lg:flex lg:flex-col lg:px-[53px] lg:py-14"
+      className="relative hidden h-screen min-h-screen overflow-hidden bg-[linear-gradient(120deg,#20194E_0%,#162338_52%,#0F172A_100%)] px-8 py-10 lg:sticky lg:top-0 lg:flex lg:flex-col lg:px-[53px] lg:py-14"
       initial={{ opacity: 0, x: -40 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7 }}
@@ -39,30 +39,14 @@ export default function CompanyRegistrationLeft() {
         </div>
       </div>
 
-      <div className="relative z-10 rounded-[16px] border border-white/10 bg-white/[0.055] p-5 shadow-2xl shadow-black/10 backdrop-blur-xl">
-        <div className="mb-4 flex gap-1">
-          {[...Array(5)].map((_, index) => (
-            <Star key={index} size={15} fill="#F59E0B" color="#F59E0B" />
-          ))}
-        </div>
-        <p className="text-[15px] leading-[1.6] text-white">
-          "EduBridge helped me land a role at Flutterwave right after
-          graduation. My reputation passport did the talking."
-        </p>
-        <div className="mt-5 flex items-center gap-3">
-          <img
-            alt="Amina Bello"
-            className="h-10 w-10 rounded-full border border-white/20 object-cover"
-            src="https://i.pravatar.cc/100?img=32"
-          />
-          <div>
-            <h3 className="text-[14px] font-bold leading-tight">Amina Bello</h3>
-            <p className="mt-1 text-[12px] text-[#A6B1C4]">
-              Product Designer, Flutterwave
-            </p>
-          </div>
-        </div>
-      </div>
+      <TestimonialCard
+        avatar="https://i.pravatar.cc/100?img=11"
+        className="rounded-[16px] p-5"
+        name="Nandi Mbeki"
+        quote="EduBridge helped us identify practical, job-ready analysts through real challenge submissions, not just polished CVs."
+        role="Talent Lead, Safaricom Ventures"
+        starSize={15}
+      />
     </motion.aside>
   );
 }

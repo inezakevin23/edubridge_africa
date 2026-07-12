@@ -1,16 +1,13 @@
 import { useState } from "react";
 import {
-  Bell,
   Bot,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Download,
   Eye,
   Mail,
   MessageSquare,
   Paperclip,
-  Plus,
   Search,
   Send,
   SlidersHorizontal,
@@ -18,68 +15,13 @@ import {
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import {
   companySubmissionsNavItems,
   companySubmissionsReviewItems,
   companySubmissionsStats,
 } from "../../data/companySubmissionsReview";
-
-function CompanyTopbar() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#0B1020]/92 px-4 py-4 backdrop-blur-xl sm:px-8 xl:px-10">
-      <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
-        <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-white/[0.06] bg-[#172136] px-5 text-[#9AA7BA] shadow-inner shadow-white/[0.02] sm:max-w-[560px]">
-          <Search size={19} />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
-            placeholder="Search students, submissions..."
-            type="search"
-          />
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <button
-            aria-label="Notifications"
-            className="relative hidden h-11 w-11 items-center justify-center rounded-full text-[#B5C0D2] transition hover:bg-white/[0.06] hover:text-white sm:flex"
-            type="button"
-          >
-            <Bell size={21} />
-            <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[#8B5CF6]" />
-          </button>
-          <Link
-            className="flex h-11 items-center gap-2 rounded-full bg-[#182237] px-4 text-[14px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:bg-[#22304A] sm:px-5"
-            to="/create-challenge"
-          >
-            <Plus className="text-[#9B6CFF]" size={18} />
-            <span className="hidden sm:inline">Post Challenge</span>
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function CompanyPanel() {
-  return (
-    <div className="rounded-[20px] border border-white/[0.06] bg-[#111A2A] p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[22px] font-extrabold text-[#8B5CF6]">
-          J
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-[15px] font-extrabold text-white">
-            Jumia Inc.
-          </p>
-          <p className="truncate text-[13px] font-semibold text-[#7F8EA5]">
-            Enterprise Plan
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+import CompanyTopbar from "../layout/CompanyTopbar";
 
 function StatCard({ stat }) {
   const Icon = stat.icon;
@@ -337,7 +279,6 @@ export default function CompanySubmissionsReviewPage() {
     <DashboardLayout
       navItems={companySubmissionsNavItems}
       activeIndex={4}
-      bottomPanel={<CompanyPanel />}
       topbar={<CompanyTopbar />}
     >
       <motion.main
@@ -363,13 +304,6 @@ export default function CompanySubmissionsReviewPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
-              className="flex h-12 items-center gap-2 rounded-full bg-[#182237] px-5 text-[14px] font-bold text-white transition hover:bg-[#22304A]"
-              type="button"
-            >
-              <Download size={17} />
-              Export CSV
-            </button>
             <button
               className="flex h-12 items-center gap-2 rounded-full bg-[#F59E0B] px-5 text-[14px] font-extrabold text-white shadow-[0_14px_30px_rgba(245,158,11,0.26)] transition hover:bg-[#f8a91f]"
               type="button"

@@ -95,38 +95,67 @@ export default function SubmitSolutionPage() {
     reviewerNote: "",
   });
 
-  const deliverables = [
+  // Use the same accepted submission format config used in CreateChallengePage.
+  // Challenge mock data currently does not include selected formats, so we treat
+  // the full config as allowed formats for the student solution form.
+  // (This keeps UI parity and enables multi-format submissions.)
+  const acceptedFormatOptions = [
     {
-      key: "report",
-      title: "Written Report",
-      copy: "Upload your report file or provide a link.",
-      linkOnly: false,
-      primary: true,
+      label: "Written Report",
+      sublabel: "PDF / DOCX upload or link",
+      mode: "fileOrLink",
+      accept: ".pdf,.doc,.docx",
       icon: Paperclip,
-      accept: "application/pdf,.pdf",
-      placeholder: "Paste report link",
     },
     {
-      key: "deck",
-      title: "Presentation Deck",
-      copy: "Upload slides (PDF) or provide a link.",
-      linkOnly: false,
-      primary: false,
+      label: "Design File",
+      sublabel: "Figma link or file upload",
+      mode: "fileOrLink",
+      accept: ".fig,.sketch,.pdf,.png,.jpg,.jpeg",
       icon: Paperclip,
-      accept: "application/pdf,.pdf",
-      placeholder: "Paste deck link",
     },
     {
-      key: "supplement",
-      title: "Optional Supplement",
-      copy: "Provide additional materials if any.",
-      linkOnly: true,
-      primary: false,
-      icon: LinkIcon,
+      label: "Code Repository",
+      sublabel: "GitHub link",
+      mode: "linkOnly",
       accept: "",
-      placeholder: "Paste link",
+      icon: LinkIcon,
+    },
+    {
+      label: "Slide Deck",
+      sublabel: "PPT / PDF upload or link",
+      mode: "fileOrLink",
+      accept: ".ppt,.pptx,.pdf",
+      icon: Paperclip,
+    },
+    {
+      label: "Video Walkthrough",
+      sublabel: "Video link",
+      mode: "linkOnly",
+      accept: "",
+      icon: LinkIcon,
+    },
+    {
+      label: "Spreadsheet",
+      sublabel: "Excel / CSV upload or link",
+      mode: "fileOrLink",
+      accept: ".xls,.xlsx,.csv",
+      icon: Paperclip,
     },
   ];
+
+  // UI fields (in student solution) are now keyed by accepted format label.
+  const deliverables = acceptedFormatOptions.map((opt) => ({
+    key: opt.label,
+    title: opt.label,
+    copy: opt.sublabel,
+    linkOnly: opt.mode === "linkOnly",
+    primary: false,
+    icon: opt.icon,
+    accept: opt.accept,
+    placeholder:
+      opt.mode === "linkOnly" ? "Paste link" : "Paste link (optional)",
+  }));
   const [teamMembers, setTeamMembers] = useState([
     {
       id: 1,
@@ -177,25 +206,27 @@ export default function SubmitSolutionPage() {
   const { slug } = useParams();
   const challenge = slug ? getChallengeBySlug(slug) : challengeRecords[0];
 
-  const completedChecklist = useMemo(
-    () => [
+  const completedChecklist = useMemo(() => {
+    const deliverablesFilled = deliverables
+      .filter((d) => d.key)
+      .some((d) =>
+        Boolean(
+          form.deliverables[d.key]?.fileName || form.deliverables[d.key]?.link,
+        ),
+      );
+
+    return [
       Boolean(form.title.trim()),
       Boolean(form.summary.trim()),
       Boolean(form.methodology.trim()),
-      Boolean(
-        form.deliverables.report?.fileName || form.deliverables.report?.link,
-      ),
-      Boolean(form.deliverables.deck?.fileName || form.deliverables.deck?.link),
+      deliverablesFilled,
+      deliverablesFilled,
       Boolean(form.reviewerNote.trim()),
       Boolean(
-        form.title &&
-        form.summary &&
-        form.methodology &&
-        (form.deliverables.report?.fileName || form.deliverables.report?.link),
+        form.title && form.summary && form.methodology && deliverablesFilled,
       ),
-    ],
-    [form],
-  );
+    ];
+  }, [form, deliverables]);
 
   const readiness = completedChecklist.filter(Boolean).length;
 

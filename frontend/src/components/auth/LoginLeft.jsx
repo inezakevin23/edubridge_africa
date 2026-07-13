@@ -1,6 +1,6 @@
-import { Globe } from "lucide-react";
 import TestimonialCard from "./TestimonialCard";
 import { motion } from "framer-motion";
+import EduBridgeLogo from "../layout/Logo";
 
 export default function LoginLeft() {
   return (
@@ -19,13 +19,7 @@ export default function LoginLeft() {
 
       <div className="relative z-10">
         <div className="flex items-center gap-3">
-          <div className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#7C4DDE] shadow-[0_0_34px_rgba(139,92,246,0.55)]">
-            <Globe size={27} strokeWidth={2.5} />
-          </div>
-
-          <h1 className="text-[32px] font-bold leading-none tracking-[-0.01em]">
-            EduBridge
-          </h1>
+          <EduBridgeLogo />
         </div>
 
         <h2 className="mt-[86px] max-w-[510px] text-[44px] font-extrabold leading-[1.22] tracking-normal sm:text-[48px]">

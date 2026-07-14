@@ -1,18 +1,21 @@
-from rest_framework import generics, permissions
-from rest_framework.response import Response
+from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from .jwt import EmailTokenObtainPairSerializer
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
 )
-
-from .jwt import EmailTokenObtainPairSerializer
+from .utils import generate_tokens_for_user
+from common.responses import success_response
 
 
 class RegisterView(generics.CreateAPIView):
+    """
+    Register a new user and immediately return JWT tokens.
+    """
 
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
@@ -26,32 +29,52 @@ class RegisterView(generics.CreateAPIView):
 
         tokens = generate_tokens_for_user(user)
 
-        return Response(
-            {
+        return success_response(
+            message="Registration successful.",
+            status_code=status.HTTP_201_CREATED,
+            data={
                 "user": UserSerializer(user).data,
-                **tokens,
+                "tokens": tokens,
             },
-            status=status.HTTP_201_CREATED,
         )
 
 
-class EmailLoginView(TokenObtainPairView):
+class EmailLoginView(APIView):
     """
     Login using email and password.
     """
 
-    serializer_class = EmailTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+
+        serializer = EmailTokenObtainPairSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.user
+
+        return success_response(
+            message="Login successful.",
+            data={
+                "user": UserSerializer(user).data,
+                "tokens": serializer.validated_data,
+            },
+        )
 
 
 class MeView(APIView):
     """
-    Return authenticated user.
+    Return the authenticated user's information.
     """
 
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
 
-        serializer = UserSerializer(request.user)
-
-        return Response(serializer.data)
+        return success_response(
+            message="User retrieved successfully.",
+            data=UserSerializer(request.user).data,
+        )

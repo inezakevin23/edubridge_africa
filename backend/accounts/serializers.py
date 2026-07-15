@@ -29,6 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "last_name",
             "phone_number",
             "role",
+            "username",
             "password",
             "confirm_password",
         )
@@ -76,6 +77,7 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "phone_number",
             "role",
+            "username",
             "is_verified",
             "created_at",
         )

@@ -32,6 +32,12 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         default=Roles.INTERN,
     )
 
+    username = models.CharField(
+        max_length=50,
+        unique=True,
+        db_index=True,
+    )
+
     is_verified = models.BooleanField(default=False)
 
     is_active = models.BooleanField(default=True)

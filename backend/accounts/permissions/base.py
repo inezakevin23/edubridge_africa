@@ -16,7 +16,10 @@ class IsAuthenticatedAndRole(BasePermission):
 
         if not request.user.is_authenticated:
             return False
-        return (
-            request.user.is_authenticated
-            and request.user.role == self.required_role
-        )
+
+        if request.user.role != self.required_role:
+            raise RolePermissionDenied(
+                detail=f"Only {self.role_name} users can perform this action."
+            )
+        
+        return True

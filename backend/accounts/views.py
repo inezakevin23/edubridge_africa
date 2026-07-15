@@ -9,7 +9,7 @@ from .serializers import (
     UserSerializer,
 )
 from .utils import generate_tokens_for_user
-from common.responses import success_response
+from common.responses import api_response
 
 
 class RegisterView(generics.CreateAPIView):
@@ -29,13 +29,14 @@ class RegisterView(generics.CreateAPIView):
 
         tokens = generate_tokens_for_user(user)
 
-        return success_response(
-            message="Registration successful.",
-            status_code=status.HTTP_201_CREATED,
+        return api_response(
+            success=True,
+            message="User registered successfully.",
             data={
                 "user": UserSerializer(user).data,
                 "tokens": tokens,
             },
+            status_code=status.HTTP_201_CREATED,
         )
 
 
@@ -56,12 +57,14 @@ class EmailLoginView(APIView):
 
         user = serializer.user
 
-        return success_response(
+        return api_response(
+            success=True,
             message="Login successful.",
             data={
                 "user": UserSerializer(user).data,
                 "tokens": serializer.validated_data,
             },
+            status_code=status.HTTP_200_OK,
         )
 
 
@@ -74,7 +77,9 @@ class MeView(APIView):
 
     def get(self, request):
 
-        return success_response(
-            message="User retrieved successfully.",
+        return api_response(
+            success=True,
+            message="User information retrieved successfully.",
             data=UserSerializer(request.user).data,
+            status_code=status.HTTP_200_OK,
         )

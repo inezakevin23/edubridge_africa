@@ -1,79 +1,65 @@
+from django.http import Http404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.http import Http404
 
 from accounts.permissions import (
-    IsIntern,
+    IsAdmin,
     IsCompany,
+    IsIntern,
 )
+from common.responses import api_response
 
 from .models import (
+    CompanyProfile,
     Industry,
     InternProfile,
-    CompanyProfile,
+)
+from .serializers import (
+    CompanyProfileCreateSerializer,
+    CompanyProfileSerializer,
+    IndustrySerializer,
+    InternProfileCreateSerializer, 
+    InternProfileSerializer,
 )
 
-from .serializers import (
-    IndustrySerializer,
-    InternProfileSerializer,
-    CompanyProfileSerializer,
-    CompanyProfileCreateSerializer,
-)
 
 class IndustryListView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
         industries = Industry.objects.all()
+        serializer = IndustrySerializer(industries, many=True)
 
-        serializer = IndustrySerializer(
-            industries,
-            many=True,
+        return api_response(
+            success=True,
+            message="Industries retrieved successfully.",
+            data=serializer.data,
+            status_code=status.HTTP_200_OK,
         )
 
-        return Response(
-            {
-                "success": True,
-                "message": "Industries retrieved successfully.",
-                "data": serializer.data,
-            }
-        )
 
 class InternProfileCreateView(APIView):
-
     permission_classes = [
         IsAuthenticated,
         IsIntern,
     ]
 
     def post(self, request):
-
-        serializer = InternProfileSerializer(
+        serializer = InternProfileCreateSerializer(
             data=request.data,
             context={"request": request},
         )
+        serializer.is_valid(raise_exception=True)
+        intern_profile = serializer.save()
 
-        serializer.is_valid(
-            raise_exception=True
+        return api_response(
+            success=True,
+            message="Intern profile created successfully.",
+            data=InternProfileSerializer(intern_profile).data,
+            status_code=status.HTTP_201_CREATED,
         )
 
-        serializer.save(
-            user=request.user
-        )
-
-        return Response(
-            {
-                "success": True,
-                "message":
-                "Intern profile created successfully.",
-                "data": serializer.data,
-            },
-            status=status.HTTP_201_CREATED,
-        )
 
 class InternProfileView(APIView):
     permission_classes = [
@@ -89,72 +75,55 @@ class InternProfileView(APIView):
 
     def get(self, request):
         profile = self.get_object(request.user)
-
         serializer = InternProfileSerializer(profile)
 
-        return Response(
-            {
-                "success": True,
-                "message": "Intern profile retrieved successfully.",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
+        return api_response(
+            success=True,
+            message="Intern profile retrieved successfully.",
+            data=serializer.data,
+            status_code=status.HTTP_200_OK,
         )
 
     def put(self, request):
         profile = self.get_object(request.user)
-
         serializer = InternProfileSerializer(
             profile,
             data=request.data,
             partial=True,
             context={"request": request},
         )
-
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(
-            {
-                "success": True,
-                "message": "Intern profile updated successfully.",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
+        return api_response(
+            success=True,
+            message="Intern profile updated successfully.",
+            data=serializer.data,
+            status_code=status.HTTP_200_OK,
         )
 
-class CompanyProfileCreateView(APIView):
 
+class CompanyProfileCreateView(APIView):
     permission_classes = [
         IsAuthenticated,
         IsCompany,
     ]
 
     def post(self, request):
-
         serializer = CompanyProfileCreateSerializer(
             data=request.data,
             context={"request": request},
         )
-
-        serializer.is_valid(
-            raise_exception=True
-        )
-
+        serializer.is_valid(raise_exception=True)
         company = serializer.save()
 
-        return Response(
-            {
-                "success": True,
-                "message":
-                "Company profile created successfully.",
-                "data":
-                CompanyProfileSerializer(
-                    company
-                ).data,
-            },
-            status=status.HTTP_201_CREATED,
+        return api_response(
+            success=True,
+            message="Company profile created successfully.",
+            data=CompanyProfileSerializer(company).data,
+            status_code=status.HTTP_201_CREATED,
         )
+
 
 class CompanyProfileView(APIView):
     permission_classes = [
@@ -170,37 +139,29 @@ class CompanyProfileView(APIView):
 
     def get(self, request):
         profile = self.get_object(request.user)
-
         serializer = CompanyProfileSerializer(profile)
 
-        return Response(
-            {
-                "success": True,
-                "message": "Company profile retrieved successfully.",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
+        return api_response(
+            success=True,
+            message="Company profile retrieved successfully.",
+            data=serializer.data,
+            status_code=status.HTTP_200_OK,
         )
 
     def put(self, request):
         profile = self.get_object(request.user)
-
         serializer = CompanyProfileSerializer(
             profile,
             data=request.data,
             partial=True,
             context={"request": request},
         )
-
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(
-            {
-                "success": True,
-                "message": "Company profile updated successfully.",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
+        return api_response(
+            success=True,
+            message="Company profile updated successfully.",
+            data=serializer.data,
+            status_code=status.HTTP_200_OK,
         )
-

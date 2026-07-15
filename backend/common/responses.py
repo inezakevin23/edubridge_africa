@@ -1,30 +1,24 @@
+from rest_framework import status
 from rest_framework.response import Response
 
 
-def success_response(
+def api_response(
+    *,
+    success: bool,
+    message: str,
     data=None,
-    message="Success",
-    status_code=200,
+    errors=None,
+    status_code=status.HTTP_200_OK,
 ):
+    """
+    Standard API response format used across the project.
+    """
+
     return Response(
         {
-            "success": True,
+            "success": success,
             "message": message,
             "data": data,
-        },
-        status=status_code,
-    )
-
-
-def error_response(
-    errors=None,
-    message="Request failed",
-    status_code=400,
-):
-    return Response(
-        {
-            "success": False,
-            "message": message,
             "errors": errors,
         },
         status=status_code,

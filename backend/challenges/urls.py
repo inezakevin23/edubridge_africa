@@ -7,6 +7,12 @@ from .views import (
     ChallengeUpdateView,
     ChallengeDeleteView,
     MyChallengesView,
+    CreateChallengeTeamView,
+    MyTeamsView,
+    CreateChallengeInviteView,
+    ReceivedInvitesView,
+    AcceptChallengeInviteView,
+    DeclineChallengeInviteView,
 )
 
 urlpatterns = [
@@ -45,5 +51,41 @@ urlpatterns = [
         "<int:pk>/delete/",
         ChallengeDeleteView.as_view(),
         name="challenge-delete",
+    ),
+     path(
+        "teams/",
+        CreateChallengeTeamView.as_view(),
+        name="create-team",
+    ),
+
+    path(
+        "teams/my/",
+        MyTeamsView.as_view(),
+        name="my-teams",
+    ),
+
+    # Invitations
+    path(
+        "invites/",
+        CreateChallengeInviteView.as_view(),
+        name="create-invite",
+    ),
+
+    path(
+        "invites/received/",
+        ReceivedInvitesView.as_view(),
+        name="received-invites",
+    ),
+
+    path(
+        "invites/<int:pk>/accept/",
+        AcceptChallengeInviteView.as_view(),
+        name="accept-invite",
+    ),
+
+    path(
+        "invites/<int:pk>/decline/",
+        DeclineChallengeInviteView.as_view(),
+        name="decline-invite",
     ),
 ]

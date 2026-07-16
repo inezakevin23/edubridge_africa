@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "reputation",
     "notifications",
     "common",
+    "profiles",
 ]
 
 MIDDLEWARE = [

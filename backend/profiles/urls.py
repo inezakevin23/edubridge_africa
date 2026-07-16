@@ -1,11 +1,11 @@
 from django.urls import path
 
 from .views import (
+    CompanyProfileCreateView,
+    CompanyProfileView,
     IndustryListView,
     InternProfileCreateView,
     InternProfileView,
-    CompanyProfileCreateView,
-    CompanyProfileView,
 )
 
 urlpatterns = [
@@ -14,7 +14,6 @@ urlpatterns = [
         IndustryListView.as_view(),
         name="industry-list",
     ),
-
     path(
         "intern/",
         InternProfileCreateView.as_view(),
@@ -25,7 +24,6 @@ urlpatterns = [
         InternProfileView.as_view(),
         name="intern-profile",
     ),
-
     path(
         "company/",
         CompanyProfileCreateView.as_view(),

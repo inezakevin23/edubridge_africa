@@ -2,10 +2,10 @@ from django.contrib import admin
 
 from .models import (
     Challenge,
+    ChallengeInvite,
     ChallengeRequirement,
     ChallengeTeam,
     TeamMember,
-    ChallengeInvite,
 )
 
 
@@ -21,7 +21,7 @@ class ChallengeAdmin(admin.ModelAdmin):
         "company",
         "industry",
         "status",
-        "deadline",
+        "submission_deadline", 
         "created_at",
     )
 
@@ -34,7 +34,7 @@ class ChallengeAdmin(admin.ModelAdmin):
     search_fields = (
         "title",
         "description",
-        "company__organization_name",
+        "company__company_name",
     )
 
     readonly_fields = (

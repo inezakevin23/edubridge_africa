@@ -1,17 +1,19 @@
 from rest_framework import serializers
+
+from accounts.models import User
+from notifications.models import Notification
+from profiles.serializers import CompanyProfileSerializer
+
 from .models import (
     Challenge,
+    ChallengeInvite,
     ChallengeRequirement,
     ChallengeTeam,
     TeamMember,
-    ChallengeInvite,
 )
-from profiles.models import CompanyProfile
-from profiles.serializers import CompanyProfileSerializer
-from notifications.models import Notification
+
 
 class ChallengeRequirementSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ChallengeRequirement
         fields = (
@@ -20,13 +22,12 @@ class ChallengeRequirementSerializer(serializers.ModelSerializer):
             "order",
         )
 
-class ChallengeListSerializer(serializers.ModelSerializer):
 
+class ChallengeListSerializer(serializers.ModelSerializer):
     company = serializers.CharField(
-        source="company.organization_name",
+        source="company.company_name",
         read_only=True,
     )
-
     industry = serializers.CharField(
         source="industry.name",
         read_only=True,
@@ -34,7 +35,6 @@ class ChallengeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challenge
-
         fields = (
             "id",
             "title",
@@ -45,111 +45,77 @@ class ChallengeListSerializer(serializers.ModelSerializer):
             "status",
         )
 
+
 class ChallengeDetailSerializer(serializers.ModelSerializer):
-
-    company = CompanyProfileSerializer(
-        read_only=True,
-    )
-
-    industry = serializers.CharField(
-        source="industry.name",
-        read_only=True,
-    )
-
-    requirements = ChallengeRequirementSerializer(
-        many=True,
-        read_only=True,
-    )
+    company = CompanyProfileSerializer(read_only=True)
+    industry = serializers.CharField(source="industry.name", read_only=True)
+    requirements = ChallengeRequirementSerializer(many=True, read_only=True)
 
     class Meta:
         model = Challenge
-
         fields = "__all__"
 
-class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
 
-    requirements = ChallengeRequirementSerializer(
-        many=True,
-        write_only=True,
-    )
+class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
+    requirements = ChallengeRequirementSerializer(many=True, write_only=True)
 
     class Meta:
         model = Challenge
-
         exclude = (
-            "company",
+            "company", 
             "created_at",
             "updated_at",
         )
 
     def create(self, validated_data):
-        requirements = validated_data.pop(
-            "requirements"
-        )
+        requirements = validated_data.pop("requirements", [])
+        
+        company = validated_data.pop("company")
 
         challenge = Challenge.objects.create(
-            company=self.context["request"]
-            .user
-            .company_profile,
+            company=company,
             **validated_data,
         )
 
         ChallengeRequirement.objects.bulk_create(
             [
-                ChallengeRequirement(
-                    challenge=challenge,
-                    **requirement,
-                )
+                ChallengeRequirement(challenge=challenge, **requirement)
                 for requirement in requirements
             ]
         )
-
         return challenge
 
     def update(self, instance, validated_data):
-        requirements = validated_data.pop(
-            "requirements",
-            None,
-        )
+        requirements = validated_data.pop("requirements", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
         instance.save()
 
         if requirements is not None:
             instance.requirements.all().delete()
             ChallengeRequirement.objects.bulk_create(
                 [
-                    ChallengeRequirement(
-                        challenge=instance,
-                        **requirement,
-                    )
+                    ChallengeRequirement(challenge=instance, **requirement)
                     for requirement in requirements
                 ]
             )
         return instance
 
-class TeamMemberSerializer(
-    serializers.ModelSerializer
-):
 
-    user_id = serializers.IntegerField(
+class TeamMemberSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField(
         source="user.id",
         read_only=True,
     )
-
     username = serializers.CharField(
         source="user.username",
         read_only=True,
     )
-
     full_name = serializers.SerializerMethodField()
 
     class Meta:
-
         model = TeamMember
-
         fields = (
             "id",
             "user_id",
@@ -157,7 +123,6 @@ class TeamMemberSerializer(
             "full_name",
             "joined_at",
         )
-
         read_only_fields = (
             "id",
             "user_id",
@@ -167,24 +132,15 @@ class TeamMemberSerializer(
         )
 
     def get_full_name(self, obj):
-
         return obj.user.get_full_name()
 
-class ChallengeTeamSerializer(
-    serializers.ModelSerializer
-):
 
+class ChallengeTeamSerializer(serializers.ModelSerializer):
     leader_name = serializers.SerializerMethodField()
-
-    members = TeamMemberSerializer(
-        many=True,
-        read_only=True,
-    )
+    members = TeamMemberSerializer(many=True, read_only=True)
 
     class Meta:
-
         model = ChallengeTeam
-
         fields = (
             "id",
             "challenge",
@@ -193,7 +149,6 @@ class ChallengeTeamSerializer(
             "members",
             "created_at",
         )
-
         read_only_fields = (
             "id",
             "leader",
@@ -203,11 +158,10 @@ class ChallengeTeamSerializer(
         )
 
     def get_leader_name(self, obj):
-
         return obj.leader.get_full_name()
 
-class ChallengeInviteSerializer(serializers.ModelSerializer):
 
+class ChallengeInviteSerializer(serializers.ModelSerializer):
     sender_name = serializers.SerializerMethodField()
     receiver_name = serializers.SerializerMethodField()
     challenge_title = serializers.CharField(
@@ -250,37 +204,22 @@ class ChallengeInviteSerializer(serializers.ModelSerializer):
 
         if team.leader != request.user:
             raise serializers.ValidationError(
-                {
-                    "team":
-                    "Only the team leader can invite collaborators."
-                }
+                {"team": "Only the team leader can invite collaborators."}
             )
 
         if receiver == request.user:
             raise serializers.ValidationError(
-                {
-                    "receiver":
-                    "You cannot invite yourself."
-                }
+                {"receiver": "You cannot invite yourself."}
             )
 
-        if receiver.role != "intern":
+        if receiver.role != User.Roles.INTERN:
             raise serializers.ValidationError(
-                {
-                    "receiver":
-                    "Only intern users can be invited."
-                }
+                {"receiver": "Only intern users can be invited."}
             )
 
-        if TeamMember.objects.filter(
-            team=team,
-            user=receiver,
-        ).exists():
+        if TeamMember.objects.filter(team=team, user=receiver).exists():
             raise serializers.ValidationError(
-                {
-                    "receiver":
-                    "This user is already a member of the team."
-                }
+                {"receiver": "This user is already a member of the team."}
             )
         return attrs
 
@@ -288,6 +227,7 @@ class ChallengeInviteSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         team = validated_data["team"]
         receiver = validated_data["receiver"]
+        
         invite = ChallengeInvite.objects.create(
             team=team,
             sender=request.user,
@@ -300,13 +240,9 @@ class ChallengeInviteSerializer(serializers.ModelSerializer):
             message=(
                 f"{request.user.get_full_name()} "
                 f"invited you to collaborate on "
-                f"the challenge "
-                f"'{team.challenge.title}'."
+                f"the challenge '{team.challenge.title}'."
             ),
-            notification_type=(
-                Notification.NotificationType
-                .CHALLENGE_INVITATION
-            ),
+            notification_type=Notification.NotificationType.CHALLENGE_INVITATION,
             related_object_id=invite.id,
         )
         return invite

@@ -1,74 +1,42 @@
 import uuid
 from django.db import models
+from common.models import BaseModel 
+from .validators import validate_file_size, validate_image, validate_pdf
+
 
 def profile_picture_upload_path(instance, filename):
     extension = filename.split(".")[-1]
-
-    return (
-        f"profile_pictures/"
-        f"{instance.user.id}/"
-        f"{uuid.uuid4()}.{extension}"
-    )
+    return f"profile_pictures/{instance.user.id}/{uuid.uuid4()}.{extension}"
 
 def identity_document_upload_path(instance, filename):
     extension = filename.split(".")[-1]
-
-    return (
-        f"identity_documents/"
-        f"{instance.user.id}/"
-        f"{uuid.uuid4()}.{extension}"
-    )
+    return f"identity_documents/{instance.user.id}/{uuid.uuid4()}.{extension}"
 
 def registration_certificate_upload(instance, filename):
     extension = filename.split(".")[-1]
-
-    return (
-        f"company_documents/registration_certificates/"
-        f"{instance.user.id}/"
-        f"{uuid.uuid4()}.{extension}"
-    )
+    return f"company_documents/registration_certificates/{instance.user.id}/{uuid.uuid4()}.{extension}"
 
 def tax_document_upload(instance, filename):
     extension = filename.split(".")[-1]
-
-    return (
-        f"company_documents/tax_documents/"
-        f"{instance.user.id}/"
-        f"{uuid.uuid4()}.{extension}"
-    )
+    return f"company_documents/tax_documents/{instance.user.id}/{uuid.uuid4()}.{extension}"
 
 def operating_license_upload(instance, filename):
     extension = filename.split(".")[-1]
-
-    return (
-        f"company_documents/operating_licenses/"
-        f"{instance.user.id}/"
-        f"{uuid.uuid4()}.{extension}"
-    )
-
+    return f"company_documents/operating_licenses/{instance.user.id}/{uuid.uuid4()}.{extension}"
 
 def ngo_certificate_upload(instance, filename):
     extension = filename.split(".")[-1]
-
-    return (
-        f"company_documents/ngo_certificates/"
-        f"{instance.user.id}/"
-        f"{uuid.uuid4()}.{extension}"
-    )
-
+    return f"company_documents/ngo_certificates/{instance.user.id}/{uuid.uuid4()}.{extension}"
 
 def accreditation_upload(instance, filename):
     extension = filename.split(".")[-1]
+    return f"company_documents/government_accreditation/{instance.user.id}/{uuid.uuid4()}.{extension}"
 
-    return (
-        f"company_documents/government_accreditation/"
-        f"{instance.user.id}/"
-        f"{uuid.uuid4()}.{extension}"
-    )
 
 class GenderChoices(models.TextChoices):
     MALE = "male", "Male"
     FEMALE = "female", "Female"
+
 
 class CurrentStatusChoices(models.TextChoices):
     STUDENT = "student", "Student"
@@ -77,6 +45,7 @@ class CurrentStatusChoices(models.TextChoices):
     JOB_SEEKER = "job_seeker", "Job Seeker"
     PROFESSIONAL = "professional", "Professional"
 
+
 class BusinessTypeChoices(models.TextChoices):
     STARTUP = "startup", "Startup"
     SME = "sme", "SME"
@@ -84,6 +53,7 @@ class BusinessTypeChoices(models.TextChoices):
     NGO = "ngo", "NGO"
     GOVERNMENT = "government", "Government"
     EDUCATIONAL = "educational", "Educational Institution"
+
 
 class AfricanCountries(models.TextChoices):
     ALGERIA = "Algeria", "Algeria"
@@ -131,7 +101,7 @@ class AfricanCountries(models.TextChoices):
     SEYCHELLES = "Seychelles", "Seychelles"
     SIERRA_LEONE = "Sierra Leone", "Sierra Leone"
     SOMALIA = "Somalia", "Somalia"
-    SOUTH_AFRICA = "South Africa", "South Africa"
+    SOUTH_AFRICAN = "South Africa", "South Africa"
     SOUTH_SUDAN = "South Sudan", "South Sudan"
     SUDAN = "Sudan", "Sudan"
     TANZANIA = "Tanzania", "Tanzania"
@@ -141,101 +111,60 @@ class AfricanCountries(models.TextChoices):
     ZAMBIA = "Zambia", "Zambia"
     ZIMBABWE = "Zimbabwe", "Zimbabwe"
 
+
 class VerificationStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     VERIFIED = "verified", "Verified"
     REJECTED = "rejected", "Rejected"
 
 
-class InternProfile(models.Model):
+class Industry(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["name"]
+        verbose_name_plural = "Industries"
+
+    def __str__(self):
+        return self.name
+
+
+class InternProfile(BaseModel):
     user = models.OneToOneField(
         "accounts.User",
         on_delete=models.CASCADE,
         related_name="intern_profile",
     )
-
-    country = models.CharField(
-        max_length=50,
-        choices=AfricanCountries.choices,
-    )
-
-    city = models.CharField(
-        max_length=100,
-    )
-
+    country = models.CharField(max_length=50, choices=AfricanCountries.choices)
+    city = models.CharField(max_length=100)
     date_of_birth = models.DateField()
-
-    gender = models.CharField(
-        max_length=10,
-        choices=GenderChoices.choices,
-    )
-
+    gender = models.CharField(max_length=10, choices=GenderChoices.choices)
     current_status = models.CharField(
         max_length=20,
         choices=CurrentStatusChoices.choices,
         db_index=True,
     )
-
-    institution = models.CharField(
-        max_length=255,
-        blank=True,
-    )
-
-    field_of_study = models.CharField(
-        max_length=255,
-        blank=True,
-    )
-
-    graduation_year = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-    )
-
-    years_of_experience = models.PositiveIntegerField(
-        default=0,
-    )
-
-    skills = models.TextField(
-        help_text="Separate skills using commas.",
-    )
-
-    portfolio_url = models.URLField(
-        blank=True,
-    )
-
+    institution = models.CharField(max_length=255, blank=True)
+    field_of_study = models.CharField(max_length=255, blank=True)
+    graduation_year = models.PositiveIntegerField(null=True, blank=True)
+    years_of_experience = models.PositiveIntegerField(default=0)
+    skills = models.TextField(help_text="Separate skills using commas.")
+    portfolio_url = models.URLField(blank=True)
+    
     national_or_student_id_document = models.FileField(
         upload_to=identity_document_upload_path,
-        validators=[
-            validate_pdf,
-            validate_file_size,
-        ],
+        validators=[validate_pdf, validate_file_size],
     )
-
     profile_picture = models.ImageField(
         upload_to=profile_picture_upload_path,
-        validators=[
-            validate_image,
-            validate_file_size,
-        ],
+        validators=[validate_image, validate_file_size],
     )
-
-    bio = models.TextField(
-        blank=True,
-    )
-
+    bio = models.TextField(blank=True)
     verification_status = models.CharField(
         max_length=20,
         choices=VerificationStatus.choices,
         default=VerificationStatus.PENDING,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
     )
 
     class Meta:
@@ -244,159 +173,82 @@ class InternProfile(models.Model):
         verbose_name_plural = "Intern Profiles"
 
     def __str__(self):
-        return self.user.get_full_name()
-
-class Industry(models.Model):
-
-    name = models.CharField(
-        max_length=100,
-        unique=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-        ordering = ["name"]
-
-    def __str__(self):
-        return self.name
+        return self.user.get_full_name() if self.user else "Unlinked Intern Profile"
 
 
-class CompanyProfile(models.Model):
-
+class CompanyProfile(BaseModel):
     user = models.OneToOneField(
         "accounts.User",
         on_delete=models.CASCADE,
         related_name="company_profile",
     )
-
-    company_name = models.CharField(
-        max_length=255,
-        unique=True,
-    )
-
-    business_type = models.CharField(
-        max_length=30,
-        choices=BusinessTypeChoices.choices,
-    )
-
+    company_name = models.CharField(max_length=255, unique=True)
+    business_type = models.CharField(max_length=30, choices=BusinessTypeChoices.choices)
     industry = models.ForeignKey(
         Industry,
         on_delete=models.PROTECT,
         related_name="companies",
     )
-
-    country = models.CharField(
-        max_length=50,
-        choices=AfricanCountries.choices,
-    )
-
-    city = models.CharField(
-        max_length=100,
-    )
-
-    website = models.URLField(
-        blank=True,
-    )
-
+    country = models.CharField(max_length=50, choices=AfricanCountries.choices)
+    city = models.CharField(max_length=100)
+    website = models.URLField(blank=True)
     description = models.TextField()
-
+    
     registration_certificate = models.FileField(
         upload_to=registration_certificate_upload,
-        validators=[
-            validate_pdf,
-            validate_file_size,
-        ],
+        validators=[validate_pdf, validate_file_size],
     )
-
     tax_document = models.FileField(
         upload_to=tax_document_upload,
-        validators=[
-            validate_pdf,
-            validate_file_size,
-        ],
+        validators=[validate_pdf, validate_file_size],
         blank=True,
         null=True,
     )
-
     operating_license = models.FileField(
         upload_to=operating_license_upload,
-        validators=[
-            validate_pdf,
-            validate_file_size,
-        ],
+        validators=[validate_pdf, validate_file_size],
         blank=True,
         null=True,
     )
-
     ngo_certificate = models.FileField(
         upload_to=ngo_certificate_upload,
-        validators=[
-            validate_pdf,
-            validate_file_size,
-        ],
+        validators=[validate_pdf, validate_file_size],
         blank=True,
         null=True,
     )
-
     government_accreditation = models.FileField(
         upload_to=accreditation_upload,
-        validators=[
-            validate_pdf,
-            validate_file_size,
-        ],
+        validators=[validate_pdf, validate_file_size],
         blank=True,
         null=True,
     )
-
     verification_status = models.CharField(
         max_length=20,
         choices=VerificationStatus.choices,
         default=VerificationStatus.PENDING,
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
     class Meta:
-        ordering = ["organization_name"]
+        ordering = ["company_name"]
+        verbose_name = "Company Profile"
+        verbose_name_plural = "Company Profiles"
 
     def __str__(self):
-        return self.organization_name
+        return self.company_name
 
 
-class CompanyRepresentative(models.Model):
-
+class CompanyRepresentative(BaseModel):
     company = models.OneToOneField(
         CompanyProfile,
         on_delete=models.CASCADE,
         related_name="representative",
     )
-
-    job_title = models.CharField(
-        max_length=150,
-    )
-
+    job_title = models.CharField(max_length=150)
     corporate_email = models.EmailField()
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
 
     class Meta:
         verbose_name = "Company Representative"
         verbose_name_plural = "Company Representatives"
 
     def __str__(self):
-        return self.company.user.get_full_name()
+        return f"{self.job_title} ({self.corporate_email})"

@@ -1,27 +1,32 @@
 from django.contrib import admin
-
 from .models import Submission
 
 
 @admin.register(Submission)
 class SubmissionAdmin(admin.ModelAdmin):
-
     list_display = (
+        "title",
         "challenge",
-        "talent",
+        "intern",
+        "team",                
         "status",
         "company_score",
-        "is_shortlisted",
-        "submitted_at",
+        "shortlisted",         
+        "created_at",         
     )
 
     list_filter = (
         "status",
-        "is_shortlisted",
+        "shortlisted",        
+        "challenge__industry",
     )
 
     search_fields = (
+        "title",
         "challenge__title",
-        "talent__user__first_name",
-        "talent__user__last_name",
+        "intern__first_name", 
+        "intern__last_name",
+        "intern__email",
     )
+    
+    readonly_fields = ("created_at", "updated_at")

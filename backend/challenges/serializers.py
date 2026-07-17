@@ -41,7 +41,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
             "company",
             "industry",
             "cash_prize",
-            "deadline",
+            "submission_deadline",
             "status",
         )
 
@@ -57,19 +57,18 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
 
 
 class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
-    requirements = ChallengeRequirementSerializer(many=True, write_only=True)
+    requirements = ChallengeRequirementSerializer(many=True, write_only=True, required=False)
 
     class Meta:
         model = Challenge
         exclude = (
-            "company", 
+            "company",
             "created_at",
             "updated_at",
         )
 
     def create(self, validated_data):
         requirements = validated_data.pop("requirements", [])
-        
         company = validated_data.pop("company")
 
         challenge = Challenge.objects.create(
@@ -77,12 +76,8 @@ class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-        ChallengeRequirement.objects.bulk_create(
-            [
-                ChallengeRequirement(challenge=challenge, **requirement)
-                for requirement in requirements
-            ]
-        )
+        for requirement in requirements:
+            ChallengeRequirement.objects.create(challenge=challenge, **requirement)
         return challenge
 
     def update(self, instance, validated_data):
@@ -94,12 +89,8 @@ class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
 
         if requirements is not None:
             instance.requirements.all().delete()
-            ChallengeRequirement.objects.bulk_create(
-                [
-                    ChallengeRequirement(challenge=instance, **requirement)
-                    for requirement in requirements
-                ]
-            )
+            for requirement in requirements:
+                ChallengeRequirement.objects.create(challenge=instance, **requirement)
         return instance
 
 

@@ -152,7 +152,15 @@ class ChallengeModuleTests(APITestCase):
     def test_only_owner_company_can_update_challenge(self):
         """Tests object ownership lock configurations on editing features."""
         update_url = reverse("challenge-update", kwargs={"pk": self.challenge.id})
-        payload = {"title": "Altered AI Innovation Challenge", "submission_deadline": "2026-12-31T23:59:59Z"}
+        
+        # Complete valid challenge data payload
+        payload = {
+            "title": "Altered AI Innovation Challenge", 
+            "description": "Updated challenge description block context.",
+            "submission_deadline": "2026-12-31T23:59:59Z",
+            "industry": self.industry.id,
+            "skills": "Python, AI, Django",
+        }
 
         # Unauthorized Company Attempt
         self.client.force_authenticate(user=self.other_company_user)

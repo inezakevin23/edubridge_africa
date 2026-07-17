@@ -6,6 +6,7 @@ from .models import (
     Industry,
     InternProfile,
 )
+from .validators import validate_file_size, validate_image, validate_pdf
 
 
 class IndustrySerializer(serializers.ModelSerializer):
@@ -36,6 +37,9 @@ class InternProfileSerializer(serializers.ModelSerializer):
         )
 
 class InternProfileCreateSerializer(serializers.ModelSerializer):
+    national_or_student_id_document = serializers.FileField(required=True)
+    profile_picture = serializers.ImageField(required=True)
+
     class Meta:
         model = InternProfile
         exclude = (
@@ -57,13 +61,28 @@ class InternProfileCreateSerializer(serializers.ModelSerializer):
                 {"detail": "An intern profile already exists for this user account."}
             )
 
+        id_doc = attrs.get("national_or_student_id_document")
+        prof_pic = attrs.get("profile_picture")
+
+        if id_doc:
+            try:
+                validate_pdf(id_doc)
+                validate_file_size(id_doc)
+            except serializers.ValidationError as e:
+                raise serializers.ValidationError({"national_or_student_id_document": e.detail})
+
+        if prof_pic:
+            try:
+                validate_image(prof_pic)
+                validate_file_size(prof_pic)
+            except serializers.ValidationError as e:
+                raise serializers.ValidationError({"profile_picture": e.detail})
         return attrs
 
     def create(self, validated_data):
-        return InternProfile.objects.create(
-            user=self.context["request"].user,
-            **validated_data
-        )
+        validated_data["user"] = self.context["request"].user
+        return InternProfile.objects.create(**validated_data)
+
 
 
 class CompanyRepresentativeSerializer(serializers.ModelSerializer):

@@ -87,7 +87,7 @@ class ChallengeCreateView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        challenge = serializer.save(company=request.user.company_profile)
         return api_response(
             success=True,
             message="Challenge created successfully.",

@@ -3,7 +3,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
+from PIL import Image
+import io
 from accounts.models import User
 from .models import CompanyProfile, CompanyRepresentative, Industry, InternProfile
 
@@ -36,10 +37,16 @@ class ProfileModuleTests(APITestCase):
 
         # 4. Generate Mock Files for Payload Tests
         # Valid Mock Image (1x1 PNG data payload)
-        png_data = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
-        self.valid_image = SimpleUploadedFile("avatar.png", png_data, content_type="image/png")
+        avatar_buffer = io.BytesIO()
+        img = Image.new("RGB", (100, 100), color="blue")
+        img.save(avatar_buffer, format="JPEG")
+        avatar_buffer.seek(0)
+        self.valid_image = SimpleUploadedFile(
+            "avatar.jpg", 
+            avatar_buffer.read(), 
+            content_type="image/jpeg"
+        )
         self.valid_pdf = SimpleUploadedFile("resume.pdf", b"dummy pdf content", content_type="application/pdf")
-        
         # Invalid Mock Extensions to trigger your custom validators.py file checks
         self.invalid_file_ext = SimpleUploadedFile("malicious.exe", b"exe binary payload", content_type="application/x-msdownload")
         
@@ -105,7 +112,7 @@ class ProfileModuleTests(APITestCase):
         self.client.force_authenticate(user=self.company_user)
         payload = {"country": "Rwanda", "city": "Kigali"}
         response = self.client.post(self.intern_create_url, payload, format="multipart")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     #  FILE VALIDATION CHECKPOINT TESTS 
 

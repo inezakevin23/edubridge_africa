@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import {
   companySubmissionsNavItems,
@@ -214,13 +215,13 @@ function SubmissionCard({ item }) {
             <MessageSquare size={16} />
             {sentFeedback ? "Edit Feedback" : "Give Feedback"}
           </button>
-          <button
+          <Link
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#0E1728] px-4 text-[13px] font-bold text-[#9AA7BA] transition hover:bg-[#182237] hover:text-white"
-            type="button"
+            to={`/submissions/${item.id}`}
           >
             <Eye size={16} />
             View Full Solution
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -278,8 +279,9 @@ export default function CompanySubmissionsReviewPage() {
   return (
     <DashboardLayout
       navItems={companySubmissionsNavItems}
-      activeIndex={4}
+      activeIndex={2}
       topbar={<CompanyTopbar />}
+      workspace="company"
     >
       <motion.main
         className="mx-auto max-w-[1500px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"

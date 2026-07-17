@@ -30,8 +30,6 @@ import {
 } from "../../data/companyRegistration";
 import { africanCountries } from "../../data/studentRegistration";
 
-const emailPattern = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
-const phonePattern = "^\\+?[0-9\\s()-]{7,20}$";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
 
@@ -607,7 +605,7 @@ export default function CompanyRegistrationForm() {
                 {companyRegistrationDocuments.map((document, index) => (
                   <DocumentUpload
                     file={documents[document]}
-                    key={document}
+                    key={`${document}-${fileInputResetKey}`}
                     onChange={(event) =>
                       updateDocument(document, event.target.files?.[0] || null)
                     }

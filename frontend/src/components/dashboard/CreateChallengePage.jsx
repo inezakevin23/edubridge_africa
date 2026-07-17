@@ -188,6 +188,7 @@ export default function CreateChallengePage() {
       activeIndex={1}
       bottomPanel={null}
       topbar={<CompanyTopbar />}
+      workspace="company"
     >
       <motion.main
         className="mx-auto max-w-[1040px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"

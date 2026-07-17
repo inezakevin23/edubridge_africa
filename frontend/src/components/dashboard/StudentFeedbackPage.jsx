@@ -164,13 +164,13 @@ function FeedbackCard({ feedback }) {
               <Share2 size={15} />
               Share Feedback
             </button>
-            <button
+            <Link
               className="flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 text-[13px] font-bold text-[#AAB5C7] transition hover:bg-[#22304A] hover:text-white"
-              type="button"
+              to={`/submissions/${feedback.solutionId}`}
             >
               <Eye size={15} />
               View Solution
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -227,6 +227,7 @@ export default function StudentFeedbackPage() {
       activeIndex={3}
       bottomPanel={<SidebarBottomPanel />}
       topbar={<Topbar />}
+      workspace="student"
     >
       <motion.main
         className="mx-auto max-w-[1100px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"

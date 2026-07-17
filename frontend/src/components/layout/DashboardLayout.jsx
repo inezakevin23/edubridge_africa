@@ -5,6 +5,7 @@ export default function DashboardLayout({
   activeIndex = 0,
   bottomPanel,
   topbar,
+  workspace = "student",
   children,
 }) {
   return (
@@ -13,6 +14,7 @@ export default function DashboardLayout({
         navItems={navItems}
         activeIndex={activeIndex}
         bottomPanel={bottomPanel}
+        workspace={workspace}
       />
 
       <div className="min-w-0 flex-1">

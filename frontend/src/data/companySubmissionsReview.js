@@ -5,6 +5,7 @@ import {
   CheckSquare,
   Clock3,
   Inbox,
+  UserRound,
   UsersRound,
 } from "lucide-react";
 
@@ -41,6 +42,7 @@ export const companySubmissionsStats = [
 
 export const companySubmissionsReviewItems = [
   {
+    id: "e3aa37a0-7c4d-4d37-af27-2bd9106a9021",
     rank: 1,
     name: "Amina Bello",
     university: "University of Lagos",
@@ -58,6 +60,7 @@ export const companySubmissionsReviewItems = [
     xp: "1,200",
   },
   {
+    id: "65d6ffdf-03ce-4655-ae4a-bef810bdb5a2",
     rank: 2,
     name: "Kwame Asante",
     university: "KNUST, Ghana",
@@ -75,6 +78,7 @@ export const companySubmissionsReviewItems = [
     xp: "1,200",
   },
   {
+    id: "f9581f2d-f9a6-41e7-9f99-8254ed0791a5",
     rank: 3,
     name: "Fatima Sule",
     university: "ABU Zaria",
@@ -92,6 +96,7 @@ export const companySubmissionsReviewItems = [
     xp: "1,200",
   },
   {
+    id: "5d268622-b988-49ca-a3a7-29e6d9112015",
     rank: 4,
     name: "Chukwuemeka Obi",
     university: "University of Ibadan",
@@ -109,6 +114,7 @@ export const companySubmissionsReviewItems = [
     xp: "1,200",
   },
   {
+    id: "9bf85a8d-5dfa-4e5a-8e08-3b2e916f0e7d",
     rank: 5,
     name: "Zainab Musa",
     university: "Makerere University",
@@ -131,4 +137,5 @@ export const companySubmissionsNavItems = [
   ["Dashboard", ChartPie],
   ["Manage Challenges", BriefcaseBusiness],
   ["Submissions", CheckSquare],
+  ["Profile", UserRound],
 ];

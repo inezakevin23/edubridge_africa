@@ -6,12 +6,14 @@ import {
   Inbox,
   Star,
   UsersRound,
+  UserRound,
 } from "lucide-react";
 
 export const companyDashboardNavItems = [
   ["Dashboard", ChartPie],
   ["Manage Challenges", BriefcaseBusiness],
   ["Submissions", CheckSquare],
+  ["Profile", UserRound],
 ];
 
 export const companyDashboardMetrics = [

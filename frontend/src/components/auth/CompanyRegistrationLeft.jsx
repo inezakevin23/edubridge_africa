@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
 import EduBridgeLogo from "../layout/Logo";
-import TestimonialCard from "./TestimonialCard";
 
 export default function CompanyRegistrationLeft() {
   return (
     <motion.aside
-      className="relative hidden h-screen min-h-screen overflow-hidden bg-[linear-gradient(120deg,#20194E_0%,#162338_52%,#0F172A_100%)] px-8 py-10 lg:sticky lg:top-0 lg:flex lg:flex-col lg:px-[53px] lg:py-14"
+      className="relative hidden min-h-screen overflow-hidden bg-[linear-gradient(120deg,#20194E_0%,#162338_52%,#0F172A_100%)] px-8 py-10 lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:px-[53px] lg:py-14"
       initial={{ opacity: 0, x: -40 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7 }}
@@ -39,14 +38,6 @@ export default function CompanyRegistrationLeft() {
         </div>
       </div>
 
-      <TestimonialCard
-        avatar="https://i.pravatar.cc/100?img=11"
-        className="rounded-[16px] p-5"
-        name="Nandi Mbeki"
-        quote="EduBridge helped us identify practical, job-ready analysts through real challenge submissions, not just polished CVs."
-        role="Talent Lead, Safaricom Ventures"
-        starSize={15}
-      />
     </motion.aside>
   );
 }

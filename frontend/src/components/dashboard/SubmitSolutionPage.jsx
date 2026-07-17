@@ -284,6 +284,7 @@ export default function SubmitSolutionPage() {
       activeIndex={2}
       bottomPanel={null}
       topbar={<Topbar />}
+      workspace="student"
     >
       <motion.main
         className="mx-auto max-w-[1180px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"

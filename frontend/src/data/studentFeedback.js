@@ -8,6 +8,7 @@ import {
 
 export const studentFeedbackStats = [
   {
+    solutionId: "e3aa37a0-7c4d-4d37-af27-2bd9106a9021",
     label: "Total Reviews",
     value: "3",
     icon: MessageSquare,
@@ -15,6 +16,7 @@ export const studentFeedbackStats = [
     background: "bg-violet-500/12",
   },
   {
+    solutionId: "65d6ffdf-03ce-4655-ae4a-bef810bdb5a2",
     label: "Average Score",
     value: "86",
     icon: ChartColumn,
@@ -22,6 +24,7 @@ export const studentFeedbackStats = [
     background: "bg-amber-500/10",
   },
   {
+    solutionId: "f9581f2d-f9a6-41e7-9f99-8254ed0791a5",
     label: "Times Shortlisted",
     value: "1",
     icon: UserCheck,

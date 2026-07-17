@@ -1,4 +1,3 @@
-import TestimonialCard from "./TestimonialCard";
 import { motion } from "framer-motion";
 import EduBridgeLogo from "../layout/Logo";
 
@@ -59,7 +58,6 @@ export default function LoginLeft() {
           <p className="mt-3 text-[15px] text-[#A6B1C4]">In Opportunities</p>
         </div>
       </div>
-      <TestimonialCard />
     </motion.section>
   );
 }

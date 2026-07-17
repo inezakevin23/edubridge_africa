@@ -3,9 +3,7 @@ import {
   ArrowRight,
   Clock3,
   Coins,
-  GraduationCap,
   Globe,
-  Medal,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../layout/DashboardLayout";
@@ -14,6 +12,7 @@ import {
   studentDashboardNavItems,
   studentDashboardFilters,
   studentDashboardChallenges,
+  studentDashboardStats,
 } from "../../data/studentDashboard";
 
 function SidebarBottomPanel() {
@@ -44,83 +43,17 @@ function SidebarBottomPanel() {
   );
 }
 
-function ReputationCard() {
-  return (
-    <section className="relative flex min-h-[260px] flex-col overflow-hidden rounded-[22px] border border-white/[0.08] bg-[linear-gradient(145deg,#131D31_0%,#101827_100%)] p-7 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
-      <div className="absolute -right-14 -top-20 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[14px] font-medium text-[#9AA7BA]">
-            Reputation Score
-          </p>
-          <h2 className="mt-2 text-[54px] font-extrabold leading-none text-white">
-            842
-          </h2>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-[#A879FF]">
-          <Medal size={23} />
-        </div>
-      </div>
+function MetricCard({ metric }) {
+  const Icon = metric.icon;
 
-      <div className="mt-auto">
-        <div className="mb-3 flex items-center justify-between text-[13px]">
-          <span className="font-bold text-[#A879FF]">Level 12</span>
-          <span className="text-[#9AA7BA]">
-            158 to <strong className="text-white">Level 13</strong>
-          </span>
-        </div>
-        <div className="h-3 overflow-hidden rounded-full bg-[#1B263A]">
-          <div className="h-full w-[84%] rounded-full bg-[linear-gradient(90deg,#8B5CF6_0%,#CA8EE8_48%,#F59E0B_100%)]" />
-        </div>
-        <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-2xl bg-white/[0.035] p-3">
-            <p className="text-[#9AA7BA]">Rank</p>
-            <p className="mt-1 font-bold text-white">Top 8%</p>
-          </div>
-          <div className="rounded-2xl bg-white/[0.035] p-3">
-            <p className="text-[#9AA7BA]">Streak</p>
-            <p className="mt-1 font-bold text-white">14 days</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function WelcomeCard() {
   return (
-    <section className="relative min-h-[260px] overflow-hidden rounded-[22px] border border-violet-200/10 bg-[radial-gradient(circle_at_84%_22%,rgba(139,92,246,0.48)_0%,rgba(75,55,145,0.34)_28%,transparent_56%),linear-gradient(135deg,#312B68_0%,#202A4A_52%,#172136_100%)] p-7 shadow-[0_22px_60px_rgba(0,0,0,0.22)] sm:p-8">
-      <div className="absolute bottom-0 right-0 h-32 w-80 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.05))]" />
-      <div className="relative flex h-full flex-col">
-        <span className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[13px] font-bold text-[#D8D0FF]">
-          <GraduationCap size={16} />
-          Student Workspace
-        </span>
-        <h2 className="max-w-[760px] text-[34px] font-extrabold leading-tight text-white lg:text-[40px]">
-          Welcome back, Adebayo!
-        </h2>
-        <p className="mt-3 max-w-[700px] text-[17px] leading-7 text-[#C2CAD8]">
-          You have 2 challenges closing soon. Keep your momentum up and push
-          toward Gold tier this month.
-        </p>
-        <div className="mt-7 flex flex-wrap items-center gap-4">
-          <button
-            className="h-12 rounded-2xl bg-[#8B5CF6] px-6 text-[15px] font-bold text-white shadow-[0_14px_30px_rgba(76,29,149,0.42)] transition hover:bg-[#9568ff]"
-            type="button"
-          >
-            View Pending Tasks
-          </button>
-          <div className="flex items-center gap-6 text-sm text-[#C2CAD8]">
-            <span>
-              <strong className="text-white">6</strong> active submissions
-            </span>
-            <span>
-              <strong className="text-white">3</strong> mentor reviews
-            </span>
-          </div>
-        </div>
+    <article className="relative min-h-[132px] overflow-hidden rounded-[18px] border border-white/[0.07] bg-[linear-gradient(145deg,#141D30_0%,#111827_100%)] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.17)]">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0D1626]">
+        <Icon className={metric.color} size={19} />
       </div>
-    </section>
+      <h2 className="mt-5 text-[30px] font-extrabold leading-none text-white">{metric.value}</h2>
+      <p className="mt-2 text-[13px] text-[#9AA7BA]">{metric.label}</p>
+    </article>
   );
 }
 
@@ -175,6 +108,7 @@ export default function StudentDashboard() {
       activeIndex={0}
       bottomPanel={<SidebarBottomPanel />}
       topbar={<Topbar />}
+      workspace="student"
     >
       <motion.main
         className="mx-auto max-w-[1500px] px-4 py-8 sm:px-8 lg:px-10 xl:py-10"
@@ -189,9 +123,10 @@ export default function StudentDashboard() {
           <h1 className="text-[24px] font-extrabold">EduBridge</h1>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,390px)]">
-          <WelcomeCard />
-          <ReputationCard />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {studentDashboardStats.map((metric) => (
+            <MetricCard key={metric.label} metric={metric} />
+          ))}
         </div>
 
         <div className="mt-9 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

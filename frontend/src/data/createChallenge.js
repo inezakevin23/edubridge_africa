@@ -7,6 +7,7 @@ import {
   FileArchive,
   FileText,
   LayoutDashboard,
+  UserRound,
   UsersRound,
   Video,
   WalletCards,
@@ -16,6 +17,7 @@ export const createChallengeNavItems = [
   ["Dashboard", LayoutDashboard],
   ["Manage Challenges", BriefcaseBusiness],
   ["Submissions", CheckSquare],
+  ["Profile", UserRound],
 ];
 
 export const createChallengeSteps = [

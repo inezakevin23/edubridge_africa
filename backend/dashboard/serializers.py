@@ -5,6 +5,7 @@ class InternDashboardStatsSerializer(serializers.Serializer):
     my_submissions = serializers.IntegerField()
     shortlisted_submissions = serializers.IntegerField()
     unread_notifications = serializers.IntegerField()
+    total_score_points = serializers.IntegerField()
 
 
 class CompanyDashboardStatsSerializer(serializers.Serializer):

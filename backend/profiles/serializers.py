@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from django.db.models import Sum
 from .models import (
     CompanyProfile,
     CompanyRepresentative,
@@ -24,6 +24,7 @@ class InternProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source="user.first_name")
     last_name = serializers.ReadOnlyField(source="user.last_name")
     phone_number = serializers.ReadOnlyField(source="user.phone_number")
+    total_score_points = serializers.SerializerMethodField()
 
     class Meta:
         model = InternProfile
@@ -35,6 +36,19 @@ class InternProfileSerializer(serializers.ModelSerializer):
             "updated_at",
             "verification_status",
         )
+
+    def get_total_score_points(self, obj):
+        user = obj.user
+        if not user:
+            return 0
+
+        from submissions.models import Submission
+        
+        stats = Submission.objects.filter(
+            intern=user, 
+            company_score__isnull=False
+        ).aggregate(total=Sum("company_score"))
+        return stats["total"] if stats["total"] is not None else 0
 
 class InternProfileCreateSerializer(serializers.ModelSerializer):
     national_or_student_id_document = serializers.FileField(required=True)

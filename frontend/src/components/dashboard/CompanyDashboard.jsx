@@ -1,7 +1,5 @@
 import {
   Building2,
-  ChevronDown,
-  CircleAlert,
   Globe,
   Mail,
   Sparkles,
@@ -13,8 +11,6 @@ import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import {
-  companyDashboardChartData,
-  companyDashboardReviewItems,
   companyDashboardActiveChallenges,
   companyDashboardTalent,
   companyDashboardMetrics,
@@ -42,116 +38,6 @@ function MetricCard({ metric }) {
       </h3>
       <p className="mt-2 text-[13px] text-[#9AA7BA]">{metric.label}</p>
     </article>
-  );
-}
-
-function TrendChart() {
-  return (
-    <section className="rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-7 shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-      <div className="mb-7 flex items-center justify-between gap-4">
-        <h2 className="text-[22px] font-extrabold text-white">
-          Engagement & Quality Trends
-        </h2>
-        <button
-          className="flex h-10 items-center gap-2 rounded-2xl border border-white/[0.06] bg-[#0F1728] px-4 text-[14px] font-semibold text-[#9AA7BA]"
-          type="button"
-        >
-          Last 30 Days
-          <ChevronDown size={16} />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-[42px_1fr] gap-5">
-        <div className="flex h-[270px] flex-col justify-between pb-8 text-[13px] text-[#9AA7BA]">
-          <span>100</span>
-          <span>75</span>
-          <span>50</span>
-          <span>25</span>
-          <span>0</span>
-        </div>
-        <div className="flex h-[270px] items-end justify-between gap-4 border-b border-white/[0.04] pb-8">
-          {companyDashboardChartData.map(([day, views, quality]) => (
-            <div className="flex h-full flex-1 flex-col justify-end" key={day}>
-              <div className="flex h-full items-end justify-center">
-                <div className="relative h-full w-full max-w-[56px]">
-                  <div
-                    className="absolute bottom-0 left-0 right-0 rounded-t-md bg-[#332B68]"
-                    style={{ height: `${views}%` }}
-                  />
-                  <div
-                    className="absolute bottom-0 left-0 right-0 rounded-t-md bg-[#8B5CF6] shadow-[0_0_22px_rgba(139,92,246,0.2)]"
-                    style={{ height: `${quality}%` }}
-                  />
-                </div>
-              </div>
-              <span className="mt-3 text-center text-[13px] text-[#9AA7BA]">
-                {day}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-5 flex items-center justify-center gap-8 text-[14px] text-[#9AA7BA]">
-        <span className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-[#332B68]" />
-          Total Views
-        </span>
-        <span className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-[#8B5CF6]" />
-          Reviewed Submissions
-        </span>
-      </div>
-    </section>
-  );
-}
-
-function ReviewPanel() {
-  return (
-    <section className="rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-7 shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="flex items-center gap-3 text-[22px] font-extrabold text-white">
-          <CircleAlert className="text-[#F59E0B]" size={25} />
-          Needs Review
-        </h2>
-        <span className="rounded-full bg-[#F59E0B]/15 px-2.5 py-1 text-[13px] font-extrabold text-[#F59E0B]">
-          12
-        </span>
-      </div>
-
-      <div className="space-y-4">
-        {companyDashboardReviewItems.map((item) => (
-          <article
-            className="flex items-center gap-4 rounded-[20px] border border-white/[0.05] bg-[#0E1728] p-4"
-            key={item.name}
-          >
-            <img
-              alt={item.name}
-              className="h-12 w-12 rounded-2xl object-cover"
-              src={item.avatar}
-            />
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate text-[16px] font-extrabold text-white">
-                {item.name}
-              </h3>
-              <p className="truncate text-[13px] text-[#9AA7BA]">
-                {item.project}
-              </p>
-            </div>
-            <span className="rounded-xl bg-emerald-500/10 px-2.5 py-1 text-[13px] font-extrabold text-[#22C55E]">
-              {item.score}
-            </span>
-          </article>
-        ))}
-      </div>
-
-      <button
-        className="mt-5 h-11 w-full rounded-2xl bg-[#1C273A] text-[14px] font-bold text-white transition hover:bg-[#24324A]"
-        type="button"
-      >
-        Review All Submissions
-      </button>
-    </section>
   );
 }
 
@@ -318,11 +204,9 @@ export default function CompanyDashboard() {
 
         <div className="mt-9 grid gap-8 min-[1180px]:grid-cols-[minmax(0,1fr)_420px]">
           <div className="space-y-8">
-            <TrendChart />
             <ActiveChallengesTable />
           </div>
           <div className="space-y-8">
-            <ReviewPanel />
             <ShortlistedSubmissions />
           </div>
         </div>

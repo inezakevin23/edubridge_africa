@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-
+from django.db.models import Sum
 from accounts.permissions import IsCompany, IsIntern 
 from challenges.models import Challenge
 from common.responses import api_response
@@ -23,12 +23,18 @@ class InternDashboardStatsView(APIView):
         my_submissions = Submission.objects.filter(intern=user).count()
         shortlisted_submissions = Submission.objects.filter(intern=user, shortlisted=True).count()
         unread_notifications = Notification.objects.filter(recipient=user, is_read=False).count()
+        score_stats = Submission.objects.filter(
+            intern=user, 
+            company_score__isnull=False
+        ).aggregate(total=Sum("company_score"))
+        total_score_points = score_stats["total"] if score_stats["total"] is not None else 0   
 
         data = {
             "active_challenges": active_challenges,
             "my_submissions": my_submissions,
             "shortlisted_submissions": shortlisted_submissions,
             "unread_notifications": unread_notifications,
+            "total_score_points": total_score_points,
         }
 
         serializer = InternDashboardStatsSerializer(data)

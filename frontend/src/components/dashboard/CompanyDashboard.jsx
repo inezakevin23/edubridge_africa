@@ -99,7 +99,7 @@ function TrendChart() {
         </span>
         <span className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-full bg-[#8B5CF6]" />
-          Quality Submissions
+          Reviewed Submissions
         </span>
       </div>
     </section>
@@ -213,12 +213,12 @@ function ActiveChallengesTable() {
   );
 }
 
-function TalentPipeline() {
+function ShortlistedSubmissions() {
   return (
     <section className="rounded-[22px] border border-violet-400/15 bg-[radial-gradient(circle_at_90%_0%,rgba(139,92,246,0.42)_0%,transparent_38%),linear-gradient(145deg,#171B3A_0%,#111827_100%)] p-7 shadow-[0_22px_62px_rgba(0,0,0,0.22)]">
       <h2 className="mb-7 flex items-center gap-3 text-[22px] font-extrabold text-white">
         <Sparkles className="text-[#9B6CFF]" size={25} />
-        Top Talent Pipeline
+        Shortlisted Submissions
       </h2>
 
       <div className="space-y-5">
@@ -323,7 +323,7 @@ export default function CompanyDashboard() {
           </div>
           <div className="space-y-8">
             <ReviewPanel />
-            <TalentPipeline />
+            <ShortlistedSubmissions />
           </div>
         </div>
       </motion.main>

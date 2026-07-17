@@ -49,10 +49,9 @@ INSTALLED_APPS = [
     "drf_spectacular",
     # Local apps
     "accounts",
-    "companies",
     "challenges",
     "submissions",
-    "reputation",
+    "dashboard",
     "notifications",
     "common",
     "profiles",

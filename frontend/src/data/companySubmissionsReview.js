@@ -31,8 +31,8 @@ export const companySubmissionsStats = [
     background: "bg-amber-500/10",
   },
   {
-    label: "Avg. AI Score",
-    value: "81%",
+    label: "Reviewed Submissions",
+    value: "81",
     icon: Award,
     color: "text-[#8B5CF6]",
     background: "bg-violet-500/12",

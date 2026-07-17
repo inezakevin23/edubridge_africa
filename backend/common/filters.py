@@ -1,2 +1,0 @@
-from rest_framework.filters import OrderingFilter
-from rest_framework.filters import SearchFilter

@@ -30,14 +30,14 @@ export const companyDashboardMetrics = [
     color: "text-[#60A5FA]",
   },
   {
-    label: "Avg. Submission Quality",
-    value: "92%",
+    label: "Reviewed Submissions",
+    value: "92",
     trend: "+5%",
     icon: Star,
     color: "text-[#F59E0B]",
   },
   {
-    label: "Talent Pipeline",
+    label: "Shortlisted Submissions",
     value: "38",
     trend: "+12",
     icon: UsersRound,

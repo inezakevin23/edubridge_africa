@@ -80,7 +80,6 @@ export const africanCountries = [
 
 const currentYear = new Date().getFullYear();
 
-export const graduationYears = Array.from(
-  { length: 17 },
-  (_, index) => String(currentYear - 8 + index),
+export const graduationYears = Array.from({ length: 17 }, (_, index) =>
+  String(currentYear - 8 + index),
 );

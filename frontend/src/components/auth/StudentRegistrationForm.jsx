@@ -175,7 +175,11 @@ function FileUpload({
           />
         ) : (
           <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.06] text-[#A6B1C4]">
-            {accept.includes("image") ? <Image size={24} /> : <UploadCloud size={24} />}
+            {accept.includes("image") ? (
+              <Image size={24} />
+            ) : (
+              <UploadCloud size={24} />
+            )}
           </span>
         )}
         <span className="text-[14px] font-semibold text-white">
@@ -234,7 +238,8 @@ function getPasswordStrength(password) {
 
   if (score <= 1) {
     return {
-      label: "Weak password - use at least 8 characters, numbers, and a symbol.",
+      label:
+        "Weak password - use at least 8 characters, numbers, and a symbol.",
       color: "text-[#F43F5E]",
       activeBars: 1,
     };
@@ -242,7 +247,8 @@ function getPasswordStrength(password) {
 
   if (score === 2 || score === 3) {
     return {
-      label: "Medium strength - add uppercase letters or a symbol to strengthen.",
+      label:
+        "Medium strength - add uppercase letters or a symbol to strengthen.",
       color: "text-[#F59E0B]",
       activeBars: 3,
     };
@@ -467,10 +473,7 @@ export default function StudentRegistrationForm() {
 
         <div className="mt-5 rounded-[18px] border border-violet-400/15 bg-violet-500/[0.06] p-4 text-[13px] text-[#AAB4C3] sm:hidden">
           Registering a company?{" "}
-          <Link
-            className="font-bold text-[#B894FF]"
-            to="/company-registration"
-          >
+          <Link className="font-bold text-[#B894FF]" to="/company-registration">
             Register Company
           </Link>
         </div>
@@ -896,7 +899,9 @@ export default function StudentRegistrationForm() {
                   helper="PDF only - max 5MB"
                   key={`id-${fileInputResetKey}`}
                   label="National ID or Student ID"
-                  onChange={(event) => setIdFile(event.target.files?.[0] || null)}
+                  onChange={(event) =>
+                    setIdFile(event.target.files?.[0] || null)
+                  }
                   required
                   title="Upload a PDF ID document"
                 />
@@ -923,8 +928,8 @@ export default function StudentRegistrationForm() {
                       Email Verification
                     </h3>
                     <p className="mt-1 truncate text-[12px] text-[#8D99AE]">
-                      A 6-digit OTP will be sent to{" "}
-                      {form.email || "your email"} once you submit.
+                      A 6-digit OTP will be sent to {form.email || "your email"}{" "}
+                      once you submit.
                     </p>
                   </div>
                 </div>

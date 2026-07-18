@@ -1,6 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { LogOut, UserRound } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import EduBridgeLogo from "./Logo";
+import { useAuth } from "../../context/AuthContext";
 
 const routeForLabel = (label, role) => {
   // Role-aware route mapping.
@@ -32,6 +34,8 @@ export default function DashboardSidebar({
   workspace = "student",
 }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const studentRouteLabels = {
     "/dashboard": "Dashboard",
     "/student-dashboard": "Dashboard",
@@ -44,6 +48,7 @@ export default function DashboardSidebar({
     ? navItems.findIndex(([label]) => label === activeLabel)
     : activeIndex;
   const role = workspace === "company" ? "company" : "student";
+  const displayName = user?.first_name || user?.username || user?.email?.split("@")[0] || (workspace === "company" ? "Company account" : "Student account");
 
   return (
     <aside className="hidden min-h-screen w-[280px] shrink-0 border-r border-white/[0.07] bg-[#111A2A] px-7 py-8 xl:flex xl:flex-col">
@@ -70,6 +75,13 @@ export default function DashboardSidebar({
       </nav>
 
       {bottomPanel ? <div className="mt-auto">{bottomPanel}</div> : null}
+      <div className={bottomPanel ? "mt-4" : "mt-auto"}>
+        <div className="flex items-center gap-3 border-t border-white/[0.06] pt-5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-[#A78BFA]"><UserRound size={17} /></span>
+          <p className="min-w-0 flex-1 truncate text-[13px] font-bold text-white">{displayName}</p>
+          <button aria-label="Log out" className="flex h-9 w-9 items-center justify-center rounded-lg text-[#9AA7BA] transition hover:bg-white/[0.06] hover:text-white" onClick={() => { logout(); navigate("/login"); }} type="button"><LogOut size={17} /></button>
+        </div>
+      </div>
     </aside>
   );
 }

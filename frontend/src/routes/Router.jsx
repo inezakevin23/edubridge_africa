@@ -27,6 +27,7 @@ export default function Router() {
         {/* protected route */}
         <Route path="/company-dashboard" element={<CompanyDashboardPage />} />
         <Route path="/company-profile" element={<ProfilePage type="company" />} />
+        <Route path="/complete-profile/company" element={<ProfilePage type="company" />} />
         {/* protected route */}
         <Route path="/create-challenge" element={<CreateChallengePage />} />
         {/* protected route */}
@@ -46,6 +47,7 @@ export default function Router() {
         {/* protected route */}
         <Route path="/student-dashboard" element={<StudentDashboardPage />} />
         <Route path="/profile" element={<ProfilePage type="intern" />} />
+        <Route path="/complete-profile/intern" element={<ProfilePage type="intern" />} />
         {/* protected route */}
         <Route path="/student-feedback" element={<StudentFeedbackPage />} />
         <Route path="/student-registration" element={<StudentRegistration />} />

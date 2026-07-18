@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, Coins } from "lucide-react";
+import { ArrowRight, Banknote, Clock3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ChallengeCard({ challenge, compact = false }) {
@@ -24,9 +24,6 @@ export default function ChallengeCard({ challenge, compact = false }) {
             </p>
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-emerald-500/10 px-3 py-1.5 text-[12px] font-extrabold text-[#22C55E]">
-          {challenge.status}
-        </span>
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
@@ -42,8 +39,8 @@ export default function ChallengeCard({ challenge, compact = false }) {
 
       <div className="mt-auto flex items-center justify-between border-t border-white/[0.07] pt-5">
         <div className="flex items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
-          <Coins size={18} />
-          {challenge.xp}
+          <Banknote size={18} />
+          {challenge.cash_prize ? `Cash prize: ${challenge.cash_prize}` : "No cash prize"}
         </div>
         <div className="flex items-center gap-3 text-[12px] font-semibold text-[#9AA7BA]">
           <span className="flex items-center gap-1">

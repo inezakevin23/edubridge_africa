@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bot,
   ChevronDown,
@@ -10,7 +10,6 @@ import {
   Paperclip,
   Search,
   Send,
-  SlidersHorizontal,
   UserPlus,
   X,
 } from "lucide-react";
@@ -23,6 +22,7 @@ import {
   companySubmissionsStats,
 } from "../../data/companySubmissionsReview";
 import CompanyTopbar from "../layout/CompanyTopbar";
+import { addLocalNotification } from "../../data/localNotifications";
 
 function StatCard({ stat }) {
   const Icon = stat.icon;
@@ -73,7 +73,7 @@ function StatusBadge({ status, tone }) {
     <span
       className={`rounded-full px-2.5 py-1 text-[12px] font-extrabold ${toneClass}`}
     >
-      {status}
+      {status.replaceAll("_", " ")}
     </span>
   );
 }
@@ -100,15 +100,20 @@ function SubmissionCard({ item }) {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [sentFeedback, setSentFeedback] = useState("");
+  const [companyScore, setCompanyScore] = useState(item.score);
+  const [cashPrizeAwarded, setCashPrizeAwarded] = useState("");
+  const [shortlisted, setShortlisted] = useState(Boolean(item.shortlisted));
+  const [submissionStatus, setSubmissionStatus] = useState(item.status);
 
   const sendFeedback = () => {
     const trimmedFeedback = feedback.trim();
 
-    if (!trimmedFeedback) {
+    if (!trimmedFeedback || Number(companyScore) < 0 || Number(companyScore) > 100) {
       return;
     }
 
-    setSentFeedback(trimmedFeedback);
+    setSentFeedback(`${trimmedFeedback} (${companyScore}/100)`);
+    setSubmissionStatus("reviewed");
     setFeedback("");
     setIsFeedbackOpen(false);
   };
@@ -140,7 +145,7 @@ function SubmissionCard({ item }) {
                 <h2 className="text-[17px] font-extrabold text-white">
                   {item.name}
                 </h2>
-                <StatusBadge status={item.status} tone={item.statusTone} />
+                <StatusBadge status={submissionStatus} tone={submissionStatus === "reviewed" ? "emerald" : item.statusTone} />
               </div>
               <p className="mt-1 text-[13px] font-medium text-[#9AA7BA]">
                 {item.university} · Submitted {item.submitted}
@@ -174,8 +179,8 @@ function SubmissionCard({ item }) {
                 ))}
                 <span className="inline-flex items-center gap-2 text-[#9AA7BA]">
                   <Bot className="text-[#8B5CF6]" size={16} />
-                  AI Score:
-                  <strong className="text-white">{item.aiScore}/100</strong>
+                  Company score:
+                  <strong className="text-white">{companyScore}/100</strong>
                 </span>
               </div>
             </div>
@@ -186,26 +191,18 @@ function SubmissionCard({ item }) {
           <div className="flex items-center justify-between gap-4 lg:block">
             <ScoreRing score={item.score} tone={item.scoreTone} />
             <div className="min-w-[150px] lg:mt-4">
-              <label className="mb-2 block text-[12px] font-semibold text-[#9AA7BA]">
-                Award XP Credits
-              </label>
-              <button
-                className="flex h-10 w-full items-center justify-between gap-3 rounded-full border border-white/[0.05] bg-[#0F1728] px-4 text-[14px] font-extrabold text-white"
-                type="button"
-              >
-                <span className="text-[#F59E0B]">∞</span>
-                {item.xp}
-                <ChevronDown size={14} className="text-[#8EA0B8]" />
-              </button>
+              <label className="mb-2 block text-[12px] font-semibold text-[#9AA7BA]">Cash prize awarded</label>
+              <input className="h-10 w-full rounded-full border border-white/[0.05] bg-[#0F1728] px-4 text-[14px] font-extrabold text-white outline-none focus:border-violet-400/50" min="0" onChange={(event) => setCashPrizeAwarded(event.target.value)} placeholder="Optional amount" type="number" value={cashPrizeAwarded} />
             </div>
           </div>
 
           <button
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#1A2639] px-4 text-[13px] font-extrabold text-white transition hover:bg-[#24324A]"
+            onClick={() => { setShortlisted((value) => !value); if (!shortlisted) addLocalNotification({ title: "Challenge shortlist", message: `You were shortlisted for ${item.name}'s challenge submission.`, notification_type: "shortlisted", related_object_id: item.id }); }}
             type="button"
           >
             <UserPlus size={16} />
-            Shortlist Intern
+            {shortlisted ? "Shortlisted" : "Shortlist Intern"}
           </button>
           <button
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#2B215A] px-4 text-[13px] font-extrabold text-[#A78BFA] transition hover:bg-[#382877] hover:text-white"
@@ -213,7 +210,7 @@ function SubmissionCard({ item }) {
             type="button"
           >
             <MessageSquare size={16} />
-            {sentFeedback ? "Edit Feedback" : "Give Feedback"}
+            {sentFeedback ? "Edit Feedback" : "Mark Complete & Give Feedback"}
           </button>
           <Link
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#0E1728] px-4 text-[13px] font-bold text-[#9AA7BA] transition hover:bg-[#182237] hover:text-white"
@@ -246,6 +243,7 @@ function SubmissionCard({ item }) {
             placeholder="Write clear, constructive feedback for the student's submission..."
             value={feedback}
           />
+          <label className="mt-4 block text-[13px] font-semibold text-[#9AA7BA]">Company score (0-100)<input className="mt-2 h-10 w-full rounded-xl border border-white/[0.06] bg-[#131C2E] px-3 text-white outline-none focus:border-violet-400/45" max="100" min="0" onChange={(event) => setCompanyScore(event.target.value)} type="number" value={companyScore} /></label>
           <div className="mt-4 flex flex-wrap justify-end gap-3">
             <button
               className="h-10 rounded-full bg-[#182237] px-5 text-[13px] font-bold text-[#B9C5D7] transition hover:bg-[#22304A] hover:text-white"
@@ -260,7 +258,7 @@ function SubmissionCard({ item }) {
               type="button"
             >
               <Send size={15} />
-              Send Feedback
+              Save Review
             </button>
           </div>
         </div>
@@ -276,6 +274,20 @@ function SubmissionCard({ item }) {
 }
 
 export default function CompanySubmissionsReviewPage() {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("highest_score");
+  const [notifyMessage, setNotifyMessage] = useState("");
+  const filteredSubmissions = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const list = companySubmissionsReviewItems.filter((item) => (!needle || [item.name, item.university, ...item.tags].join(" ").toLowerCase().includes(needle)) && (statusFilter === "all" || item.status === statusFilter));
+    return list.slice().sort((a, b) => sortBy === "lowest_score" ? a.score - b.score : sortBy === "newest" ? a.rank - b.rank : b.score - a.score);
+  }, [query, statusFilter, sortBy]);
+  const notifyShortlisted = () => {
+    const shortlisted = companySubmissionsReviewItems.filter((item) => item.shortlisted);
+    shortlisted.forEach((item) => addLocalNotification({ title: "Challenge shortlist", message: `Congratulations ${item.name}, you have been shortlisted.`, notification_type: "shortlisted", related_object_id: item.id }));
+    setNotifyMessage(shortlisted.length ? `${shortlisted.length} shortlisted intern notified.` : "No shortlisted interns to notify.");
+  };
   return (
     <DashboardLayout
       navItems={companySubmissionsNavItems}
@@ -308,6 +320,7 @@ export default function CompanySubmissionsReviewPage() {
           <div className="flex flex-wrap gap-3">
             <button
               className="flex h-12 items-center gap-2 rounded-full bg-[#F59E0B] px-5 text-[14px] font-extrabold text-white shadow-[0_14px_30px_rgba(245,158,11,0.26)] transition hover:bg-[#f8a91f]"
+              onClick={notifyShortlisted}
               type="button"
             >
               <Mail size={17} />
@@ -329,15 +342,18 @@ export default function CompanySubmissionsReviewPage() {
               className="min-w-0 flex-1 bg-transparent text-[14px] text-white placeholder:text-[#8E9AAF] outline-none"
               placeholder="Search by student name, university, skill..."
               type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
             />
           </div>
           <FilterButton>All Challenges</FilterButton>
-          <FilterButton>All Statuses</FilterButton>
-          <FilterButton icon={SlidersHorizontal}>Highest Score</FilterButton>
+          <select aria-label="Filter submissions" className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none" onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}><option value="all">All statuses</option><option value="submitted">Submitted</option><option value="under_review">Under review</option><option value="reviewed">Reviewed</option></select>
+          <select aria-label="Sort submissions" className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none" onChange={(event) => setSortBy(event.target.value)} value={sortBy}><option value="highest_score">Highest score</option><option value="lowest_score">Lowest score</option><option value="newest">Newest</option></select>
         </div>
+        {notifyMessage ? <p className="mt-4 text-[13px] font-semibold text-emerald-400">{notifyMessage}</p> : null}
 
         <div className="mt-8 space-y-5">
-          {companySubmissionsReviewItems.map((item) => (
+          {filteredSubmissions.map((item) => (
             <SubmissionCard item={item} key={item.name} />
           ))}
         </div>

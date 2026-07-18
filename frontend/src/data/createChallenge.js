@@ -2,13 +2,11 @@
 import {
   BriefcaseBusiness,
   CheckSquare,
-  ChartPie,
   Code2,
   FileArchive,
   FileText,
   LayoutDashboard,
   UserRound,
-  UsersRound,
   Video,
   WalletCards,
 } from "lucide-react";
@@ -38,7 +36,7 @@ export const createChallengeInitialForm = {
   requirements: ["", "", ""],
   formats: ["Written Report", "Design File", "Code Repository"],
   formatDetails: {},
-  xpReward: "",
+  cash_prize: "",
   deadline: "",
   maxTeamSize: "",
   participantStatus: "",

@@ -6,6 +6,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, Navigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
@@ -50,9 +51,6 @@ function HeroCard({ challenge }) {
             </div>
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-emerald-500/10 px-3 py-1.5 text-[12px] font-extrabold text-[#22C55E]">
-          {challenge.status}
-        </span>
       </div>
       <p className="mt-7 max-w-[720px] text-[15px] leading-7 text-[#AAB4C3]">
         {challenge.description}
@@ -140,6 +138,8 @@ function CompanyCard({ company }) {
 }
 
 export default function ChallengeDetailsPage() {
+  const [invitee, setInvitee] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
   const { slug } = useParams();
   const challenge = getChallengeBySlug(slug);
 
@@ -229,15 +229,19 @@ export default function ChallengeDetailsPage() {
                 <input
                   className="h-11 min-w-0 flex-1 rounded-full bg-[#0D1626] px-4 text-[13px] text-white placeholder:text-[#8E9AAF] outline-none"
                   placeholder="Invite by username or email..."
+                  onChange={(event) => setInvitee(event.target.value)}
+                  value={invitee}
                 />
                 <button
                   className="flex h-11 items-center gap-2 rounded-2xl bg-[#1C273A] px-4 text-[13px] font-bold text-white"
+                  onClick={() => { const value = invitee.trim(); if (value) { setInviteMessage(`Invitation sent to ${value}.`); setInvitee(""); } }}
                   type="button"
                 >
                   <UserPlus size={16} />
                   Invite
                 </button>
               </div>
+              {inviteMessage ? <p className="mt-3 text-[13px] font-semibold text-emerald-400">{inviteMessage}</p> : null}
             </Panel>
           </div>
 

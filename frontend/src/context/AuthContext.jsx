@@ -12,13 +12,16 @@ export function AuthProvider({ children }) {
   });
 
   const login = (role, email) => {
-    const nextUser = { role, email };
+    const username = email.split("@")[0];
+    const nextUser = { role, email, first_name: username };
     localStorage.setItem("edubridge_user", JSON.stringify(nextUser));
     setUser(nextUser);
   };
 
   const logout = () => {
     localStorage.removeItem("edubridge_user");
+    localStorage.removeItem("edubridge_access_token");
+    localStorage.removeItem("edubridge_refresh_token");
     setUser(null);
   };
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   AtSign,
@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 import {
   africanCountries,
   graduationYears,
@@ -255,6 +256,8 @@ function getPasswordStrength(password) {
 }
 
 export default function StudentRegistrationForm() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [showPassword, setShowPassword] = useState(false);
@@ -320,9 +323,8 @@ export default function StudentRegistrationForm() {
     if (profilePreview) {
       localStorage.setItem("edubridgeStudentProfilePic", profilePreview);
     }
-    setFormMessage(
-      "Registration details saved. Your profile picture is ready for the student sidebar.",
-    );
+    login("intern", form.email);
+    navigate("/complete-profile/intern");
     setForm(initialForm);
     setSelectedSkills([]);
     setSkillInput("");
@@ -343,6 +345,7 @@ export default function StudentRegistrationForm() {
         emailRegex.test(form.email) &&
         form.phone &&
         phoneRegex.test(form.phone) &&
+        form.country &&
         form.city &&
         form.dateOfBirth &&
         form.gender;
@@ -372,10 +375,11 @@ export default function StudentRegistrationForm() {
         form.username &&
         form.password &&
         form.confirmPassword &&
-        form.password === form.confirmPassword;
+        form.password === form.confirmPassword &&
+        form.password.length >= 8;
 
       setFormMessage(
-        hasAccountDetails ? "" : "Passwords must be filled in and match.",
+        hasAccountDetails ? "" : "Password must be at least 8 characters and match the confirmation.",
       );
       return Boolean(hasAccountDetails);
     }
@@ -508,9 +512,9 @@ export default function StudentRegistrationForm() {
                   label="Country"
                   name="country"
                   onChange={updateForm}
-                  optional
                   options={africanCountries}
                   placeholder="Select country"
+                  required
                   value={form.country}
                 />
                 <Field

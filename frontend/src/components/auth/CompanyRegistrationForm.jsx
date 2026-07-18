@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   AtSign,
@@ -22,6 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 import {
   companyRegistrationBusinessTypes,
   companyRegistrationDocuments,
@@ -268,6 +269,8 @@ function getPasswordStrength(password) {
 }
 
 export default function CompanyRegistrationForm() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [documents, setDocuments] = useState({});
@@ -348,11 +351,12 @@ export default function CompanyRegistrationForm() {
       form.username &&
       form.password &&
       form.confirmPassword &&
-      form.password === form.confirmPassword;
+      form.password === form.confirmPassword &&
+      form.password.length >= 8;
     setFormMessage(
       hasAccountDetails
         ? ""
-        : "Passwords must be filled in and match before registering.",
+        : "Password must be at least 8 characters and match before registering.",
     );
     return Boolean(hasAccountDetails);
   };
@@ -372,9 +376,8 @@ export default function CompanyRegistrationForm() {
       return;
     }
 
-    setFormMessage(
-      "Company registration details saved. Documents are ready for review.",
-    );
+    login("company", form.email);
+    navigate("/complete-profile/company");
     setForm(initialForm);
     setDocuments({});
     setShowPassword(false);

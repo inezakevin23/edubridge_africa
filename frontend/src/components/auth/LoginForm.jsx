@@ -19,7 +19,7 @@ export default function LoginForm() {
     const formData = new FormData(event.target);
     const email = formData.get("email") || "user@example.com";
 
-    login(role, email);
+    login(role === "student" ? "intern" : "company", email);
     navigate(role === "company" ? "/company-dashboard" : "/dashboard");
   };
 

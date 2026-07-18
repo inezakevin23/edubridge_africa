@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   ArrowRight,
   Clock3,
-  Coins,
+  Banknote,
   Globe,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -89,8 +89,8 @@ function ChallengeCard({ challenge }) {
 
       <div className="mt-auto flex items-center justify-between border-t border-white/[0.07] pt-5">
         <div className="flex items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
-          <Coins size={18} />
-          {challenge.xp}
+          <Banknote size={18} />
+          {challenge.cash_prize ? `Cash prize: ${challenge.cash_prize}` : "No cash prize"}
         </div>
         <div className="flex items-center gap-2 text-[14px] font-medium text-[#9AA7BA]">
           <Clock3 size={18} />
@@ -147,7 +147,7 @@ export default function StudentDashboard() {
 
         <div className="mt-9 flex items-center justify-between gap-4">
           <h2 className="text-[24px] font-extrabold text-white">
-            Recommended for You
+            Latest Challenges
           </h2>
           <a
             className="flex items-center gap-2 text-[15px] font-bold text-[#8B5CF6] transition hover:text-[#A879FF]"

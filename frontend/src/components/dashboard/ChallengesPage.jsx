@@ -132,7 +132,7 @@ function Pagination({ page, pageCount, onPageChange }) {
 export default function ChallengesPage() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [sortNewestFirst, setSortNewestFirst] = useState(true);
+  const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
@@ -179,11 +179,12 @@ export default function ChallengesPage() {
       return matchesCategory && matchesQuery;
     });
 
-    // We don't have timestamps in the mock data; keeping stable order.
-    if (!sortNewestFirst) list = list.slice().reverse();
+    if (sortBy === "oldest") list = list.slice().reverse();
+    if (sortBy === "alphabetical") list = list.slice().sort((a, b) => a.title.localeCompare(b.title));
+    if (sortBy === "deadline") list = list.slice().sort((a, b) => new Date(a.deadline || "9999-12-31") - new Date(b.deadline || "9999-12-31"));
 
     return list;
-  }, [query, activeCategory, sortNewestFirst]);
+  }, [query, activeCategory, sortBy]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, pageCount);
@@ -196,7 +197,7 @@ export default function ChallengesPage() {
   const clearAll = () => {
     setQuery("");
     setActiveCategory("All");
-    setSortNewestFirst(true);
+    setSortBy("newest");
     setPage(1);
   };
 
@@ -278,9 +279,9 @@ export default function ChallengesPage() {
           <div className="flex items-center gap-3">
             <label className="relative flex">
               <select
-                value={sortNewestFirst ? "newest" : "oldest"}
+                value={sortBy}
                 onChange={(e) => {
-                  setSortNewestFirst(e.target.value === "newest");
+                  setSortBy(e.target.value);
                   setPage(1);
                 }}
                 className="appearance-none flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 pr-9 text-[14px] font-semibold text-[#9AA7BA] outline-none focus:ring-2 focus:ring-violet-400/30"
@@ -288,6 +289,8 @@ export default function ChallengesPage() {
               >
                 <option value="newest">Sort by: Newest</option>
                 <option value="oldest">Sort by: Oldest</option>
+                <option value="alphabetical">Sort by: A-Z</option>
+                <option value="deadline">Sort by: Deadline</option>
               </select>
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#9AA7BA]">
                 <ChevronDown size={15} />

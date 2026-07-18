@@ -47,7 +47,8 @@ export const companySubmissionsReviewItems = [
     name: "Amina Bello",
     university: "University of Lagos",
     submitted: "Oct 20, 2024",
-    status: "Shortlisted",
+    status: "reviewed",
+    shortlisted: true,
     statusTone: "emerald",
     avatar: "https://i.pravatar.cc/120?img=47",
     summary:
@@ -65,7 +66,7 @@ export const companySubmissionsReviewItems = [
     name: "Kwame Asante",
     university: "KNUST, Ghana",
     submitted: "Oct 19, 2024",
-    status: "Under Review",
+    status: "under_review",
     statusTone: "violet",
     avatar: "https://i.pravatar.cc/120?img=12",
     summary:
@@ -83,7 +84,7 @@ export const companySubmissionsReviewItems = [
     name: "Fatima Sule",
     university: "ABU Zaria",
     submitted: "Oct 18, 2024",
-    status: "Under Review",
+    status: "under_review",
     statusTone: "violet",
     avatar: "https://i.pravatar.cc/120?img=45",
     summary:
@@ -101,7 +102,7 @@ export const companySubmissionsReviewItems = [
     name: "Chukwuemeka Obi",
     university: "University of Ibadan",
     submitted: "Oct 17, 2024",
-    status: "Pending",
+    status: "submitted",
     statusTone: "slate",
     avatar: "https://i.pravatar.cc/120?img=33",
     summary:
@@ -119,7 +120,7 @@ export const companySubmissionsReviewItems = [
     name: "Zainab Musa",
     university: "Makerere University",
     submitted: "Oct 16, 2024",
-    status: "Pending",
+    status: "submitted",
     statusTone: "slate",
     avatar: "https://i.pravatar.cc/120?img=49",
     summary:

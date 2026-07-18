@@ -602,7 +602,7 @@ export default function CreateChallengePage() {
                     ["Deadline", form.deadline || "Not set"],
                     [
                       "XP Reward",
-                      form.xpReward ? `${form.xpReward} XP` : "1,200 XP",
+                      form.cash_prize ? `R ${form.cash_prize}` : "No cash prize",
                     ],
                     [
                       "Requirements",
@@ -736,7 +736,7 @@ export default function CreateChallengePage() {
                   ["Deadline", form.deadline || "Not set"],
                   [
                     "XP Reward",
-                    form.xpReward ? `${form.xpReward} XP` : "Not set",
+                    form.cash_prize ? `R ${form.cash_prize}` : "Not set",
                   ],
                 ].map(([label, value]) => (
                   <div className="rounded-2xl bg-[#1A2639] p-4" key={label}>

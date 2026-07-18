@@ -90,7 +90,6 @@ export default function SubmitSolutionPage() {
   const [form, setForm] = useState({
     title: "",
     summary: "",
-    methodology: "",
     deliverables: {},
     reviewerNote: "",
   });
@@ -180,7 +179,6 @@ export default function SubmitSolutionPage() {
     setForm({
       title: "",
       summary: "",
-      methodology: "",
       deliverables: {},
       reviewerNote: "",
     });
@@ -218,12 +216,11 @@ export default function SubmitSolutionPage() {
     return [
       Boolean(form.title.trim()),
       Boolean(form.summary.trim()),
-      Boolean(form.methodology.trim()),
       deliverablesFilled,
       deliverablesFilled,
       Boolean(form.reviewerNote.trim()),
       Boolean(
-        form.title && form.summary && form.methodology && deliverablesFilled,
+        form.title && form.summary && deliverablesFilled,
       ),
     ];
   }, [form, deliverables]);
@@ -322,7 +319,7 @@ export default function SubmitSolutionPage() {
                 </div>
                 <span className="flex shrink-0 items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
                   <Zap size={17} />
-                  {challenge.xp}
+                  {challenge.cash_prize ? `Cash prize: R ${challenge.cash_prize}` : "No cash prize"}
                 </span>
               </div>
               <p className="text-[14px] leading-7 text-[#AAB4C3]">
@@ -363,25 +360,6 @@ export default function SubmitSolutionPage() {
                   </div>
                 </FormField>
 
-                <FormField
-                  helper="Explain the tools, frameworks, and data sources used."
-                  label="Methodology"
-                >
-                  <div className="rounded-[22px] bg-[#1A2639] p-4 ring-1 ring-white/[0.03] focus-within:ring-[#8B5CF6]/45">
-                    <textarea
-                      className="min-h-[100px] w-full resize-none bg-transparent text-[14px] font-semibold leading-6 text-white placeholder:text-[#8390A5] outline-none"
-                      maxLength={600}
-                      onChange={(event) =>
-                        updateField("methodology", event.target.value)
-                      }
-                      placeholder="e.g. Used Python (pandas, scikit-learn) to cluster delivery zones by demand density..."
-                      value={form.methodology}
-                    />
-                    <p className="text-right text-[12px] font-bold text-[#7F8EA5]">
-                      {form.methodology.length}/600
-                    </p>
-                  </div>
-                </FormField>
               </div>
             </Panel>
 
@@ -595,7 +573,6 @@ export default function SubmitSolutionPage() {
                 {[
                   "Solution title added",
                   "Executive summary written",
-                  "Methodology explained",
                   "Written report uploaded",
                   "Presentation deck uploaded",
                   "Reviewer note added",
@@ -623,9 +600,9 @@ export default function SubmitSolutionPage() {
               <div className="mt-6 border-t border-white/[0.06] pt-4">
                 <div className="flex items-center justify-between text-[12px] font-extrabold">
                   <span className="text-[#7F8EA5]">Readiness</span>
-                  <span className="text-white">{readiness}/7</span>
+                  <span className="text-white">{readiness}/6</span>
                 </div>
-                <ProgressBar value={(readiness / 7) * 100} />
+                <ProgressBar value={(readiness / 6) * 100} />
               </div>
             </section>
           </aside>

@@ -199,6 +199,7 @@ function FileUpload({
 
 const initialForm = {
   fullName: "",
+  username: "",
   email: "",
   phone: "",
   country: "",
@@ -211,7 +212,6 @@ const initialForm = {
   graduationYear: "",
   yearsOfExperience: "",
   portfolio: "",
-  username: "",
   password: "",
   confirmPassword: "",
 };
@@ -339,10 +339,26 @@ export default function StudentRegistrationForm() {
 
   const validateStep = (step) => {
     if (step === 1) {
-      const hasRequiredDetails =
-        form.fullName &&
+      const hasAccountDetails =
         form.email &&
         emailRegex.test(form.email) &&
+        form.password &&
+        form.confirmPassword &&
+        form.password === form.confirmPassword &&
+        form.password.length >= 8;
+
+      setFormMessage(
+        hasAccountDetails
+          ? ""
+          : "Enter a valid email and make sure the password matches the confirmation.",
+      );
+      return Boolean(hasAccountDetails);
+    }
+
+    if (step === 2) {
+      const hasRequiredDetails =
+        form.fullName &&
+        form.username &&
         form.phone &&
         phoneRegex.test(form.phone) &&
         form.country &&
@@ -353,12 +369,12 @@ export default function StudentRegistrationForm() {
       setFormMessage(
         hasRequiredDetails
           ? ""
-          : "Complete all required personal fields with a valid email and phone number before continuing.",
+          : "Complete all required personal fields with a valid username and phone number before continuing.",
       );
       return Boolean(hasRequiredDetails);
     }
 
-    if (step === 2) {
+    if (step === 3) {
       const hasProfessionalDetails =
         form.currentStatus && selectedSkills.length > 0;
 
@@ -370,27 +386,17 @@ export default function StudentRegistrationForm() {
       return Boolean(hasProfessionalDetails);
     }
 
-    if (step === 3) {
-      const hasAccountDetails =
-        form.username &&
-        form.password &&
-        form.confirmPassword &&
-        form.password === form.confirmPassword &&
-        form.password.length >= 8;
-
+    if (step === 4) {
+      const hasVerificationFiles = idFile && profilePic;
       setFormMessage(
-        hasAccountDetails ? "" : "Password must be at least 8 characters and match the confirmation.",
+        hasVerificationFiles
+          ? ""
+          : "Upload your PDF ID and profile picture to complete registration.",
       );
-      return Boolean(hasAccountDetails);
+      return Boolean(hasVerificationFiles);
     }
 
-    const hasVerificationFiles = idFile && profilePic;
-    setFormMessage(
-      hasVerificationFiles
-        ? ""
-        : "Upload your PDF ID and profile picture to complete registration.",
-    );
-    return Boolean(hasVerificationFiles);
+    return false;
   };
 
   const goToNextStep = () => {
@@ -473,6 +479,99 @@ export default function StudentRegistrationForm() {
           {currentStep === 1 ? (
             <Section
               step="1"
+              title="Account Information"
+              icon={<KeyRound size={18} />}
+            >
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <Field
+                    label="Email"
+                    icon={<Mail size={17} />}
+                    name="email"
+                    onChange={updateForm}
+                    placeholder="you@example.com"
+                    required
+                    type="email"
+                    pattern={emailPattern}
+                    value={form.email}
+                  />
+                </div>
+                <Field
+                  label="Password"
+                  icon={<Lock size={17} />}
+                  name="password"
+                  onChange={updateForm}
+                  placeholder="Create a strong password"
+                  required
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  rightIcon={
+                    <button
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                      className="transition hover:text-white"
+                      onClick={() => setShowPassword((value) => !value)}
+                      type="button"
+                    >
+                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  }
+                />
+                <Field
+                  label="Confirm Password"
+                  icon={<Lock size={17} />}
+                  name="confirmPassword"
+                  onChange={updateForm}
+                  placeholder="Repeat password"
+                  required
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={form.confirmPassword}
+                  rightIcon={
+                    <button
+                      aria-label={
+                        showConfirmPassword ? "Hide password" : "Show password"
+                      }
+                      className="transition hover:text-white"
+                      onClick={() => setShowConfirmPassword((value) => !value)}
+                      type="button"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={17} />
+                      ) : (
+                        <Eye size={17} />
+                      )}
+                    </button>
+                  }
+                />
+              </div>
+              <div className="mt-4 grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((bar) => (
+                  <span
+                    className={`h-[5px] rounded-full ${
+                      bar <= passwordStrength.activeBars
+                        ? bar === 1
+                          ? "bg-[#F43F5E]"
+                          : bar < 4
+                            ? "bg-[#F59E0B]"
+                            : "bg-[#22C55E]"
+                        : "bg-[#1A2438]"
+                    }`}
+                    key={bar}
+                  />
+                ))}
+              </div>
+              <p
+                className={`mt-3 text-[12px] font-semibold ${passwordStrength.color}`}
+              >
+                {passwordStrength.label}
+              </p>
+            </Section>
+          ) : null}
+
+          {currentStep === 2 ? (
+            <Section
+              step="2"
               title="Personal Information"
               icon={<User size={18} />}
             >
@@ -487,15 +586,13 @@ export default function StudentRegistrationForm() {
                   value={form.fullName}
                 />
                 <Field
-                  label="Email Address"
-                  icon={<Mail size={17} />}
-                  name="email"
+                  label="Username"
+                  icon={<AtSign size={17} />}
+                  name="username"
                   onChange={updateForm}
-                  pattern={emailPattern}
-                  placeholder="you@example.com"
+                  placeholder="adebayo_o"
                   required
-                  type="email"
-                  value={form.email}
+                  value={form.username}
                 />
                 <Field
                   label="Phone Number"
@@ -549,9 +646,9 @@ export default function StudentRegistrationForm() {
             </Section>
           ) : null}
 
-          {currentStep === 2 ? (
+          {currentStep === 3 ? (
             <Section
-              step="2"
+              step="3"
               title="Professional Information"
               icon={<Briefcase size={18} />}
             >
@@ -703,13 +800,14 @@ export default function StudentRegistrationForm() {
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <Field
-                    label="Username"
-                    icon={<AtSign size={17} />}
-                    name="username"
+                    label="Email"
+                    icon={<Mail size={17} />}
+                    name="email"
                     onChange={updateForm}
-                    placeholder="@adebayo_o"
+                    placeholder="you@example.com"
                     required
-                    value={form.username}
+                    type="email"
+                    value={form.email}
                   />
                 </div>
                 <Field
@@ -850,7 +948,7 @@ export default function StudentRegistrationForm() {
 
           <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              {currentStep > 1 ? (
+              {currentStep > 3 ? (
                 <button
                   className="flex h-12 w-full items-center justify-center rounded-[24px] bg-[#182237]/95 px-7 text-[14px] font-bold text-white transition hover:bg-white/[0.09] sm:w-auto"
                   onClick={() =>
@@ -863,7 +961,7 @@ export default function StudentRegistrationForm() {
               ) : null}
             </div>
 
-            {currentStep < 4 ? (
+            {currentStep < 3 ? (
               <button
                 className="flex h-12 items-center justify-center gap-3 rounded-[24px] bg-[#8B5CF6] px-8 text-[14px] font-bold text-white shadow-[0_18px_36px_rgba(76,29,149,0.36)] transition hover:bg-[#9568ff]"
                 onClick={goToNextStep}

@@ -1,9 +1,9 @@
 // Mock response for GET /api/registration/company/metadata
 export const companyRegistrationStepLabels = [
+  "Account",
   "Organization",
   "Documents",
   "Representative",
-  "Account",
 ];
 
 export const companyRegistrationBusinessTypes = [

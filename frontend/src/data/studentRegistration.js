@@ -1,8 +1,8 @@
 // Mock response for GET /api/registration/student/metadata
 export const studentRegistrationStepLabels = [
+  "Account",
   "Personal",
   "Professional",
-  "Account",
   "Verify",
 ];
 

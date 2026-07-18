@@ -216,13 +216,13 @@ const initialForm = {
   city: "",
   website: "",
   email: "",
+  username: "",
   phone: "",
   description: "",
   representativeName: "",
   representativeTitle: "",
-  representativeEmail: "",
+  representativeUsername: "",
   representativePhone: "",
-  username: "",
   password: "",
   confirmPassword: "",
 };
@@ -295,6 +295,23 @@ export default function CompanyRegistrationForm() {
 
   const validateStep = (step) => {
     if (step === 1) {
+      const hasAccountDetails =
+        form.email &&
+        emailRegex.test(form.email) &&
+        form.password &&
+        form.confirmPassword &&
+        form.password === form.confirmPassword &&
+        form.password.length >= 8;
+
+      setFormMessage(
+        hasAccountDetails
+          ? ""
+          : "Enter a valid email and make sure the password matches before continuing.",
+      );
+      return Boolean(hasAccountDetails);
+    }
+
+    if (step === 2) {
       const hasIndustry =
         form.industry && (form.industry !== "Other" || form.otherIndustry);
       const hasOrganizationDetails =
@@ -303,8 +320,7 @@ export default function CompanyRegistrationForm() {
         hasIndustry &&
         form.country &&
         form.city &&
-        form.email &&
-        emailRegex.test(form.email) &&
+        form.username &&
         form.phone &&
         phoneRegex.test(form.phone) &&
         form.description;
@@ -312,12 +328,12 @@ export default function CompanyRegistrationForm() {
       setFormMessage(
         hasOrganizationDetails
           ? ""
-          : "Complete all required organization fields with a valid email and phone number before continuing.",
+          : "Complete all required organization fields with a valid username and phone number before continuing.",
       );
       return Boolean(hasOrganizationDetails);
     }
 
-    if (step === 2) {
+    if (step === 3) {
       const hasRequiredDocuments =
         documents["Business Registration Certificate"] &&
         documents["Tax Registration Document (TIN)"];
@@ -330,12 +346,11 @@ export default function CompanyRegistrationForm() {
       return Boolean(hasRequiredDocuments);
     }
 
-    if (step === 3) {
+    if (step === 4) {
       const hasRepresentativeDetails =
         form.representativeName &&
         form.representativeTitle &&
-        form.representativeEmail &&
-        emailRegex.test(form.representativeEmail) &&
+        form.representativeUsername &&
         form.representativePhone &&
         phoneRegex.test(form.representativePhone);
 
@@ -347,18 +362,7 @@ export default function CompanyRegistrationForm() {
       return Boolean(hasRepresentativeDetails);
     }
 
-    const hasAccountDetails =
-      form.username &&
-      form.password &&
-      form.confirmPassword &&
-      form.password === form.confirmPassword &&
-      form.password.length >= 8;
-    setFormMessage(
-      hasAccountDetails
-        ? ""
-        : "Password must be at least 8 characters and match before registering.",
-    );
-    return Boolean(hasAccountDetails);
+    return false;
   };
 
   const goToNextStep = () => {
@@ -452,9 +456,9 @@ export default function CompanyRegistrationForm() {
         </div>
 
         <form className="py-9" onSubmit={handleSubmit}>
-          {currentStep === 1 ? (
+          {currentStep === 2 ? (
             <Section
-              step="1"
+              step="2"
               title="Organization Information"
               icon={<Building2 size={18} />}
             >
@@ -562,14 +566,13 @@ export default function CompanyRegistrationForm() {
                   value={form.website}
                 />
                 <Field
-                  label="Official Email Address"
-                  icon={<Mail size={17} />}
-                  name="email"
+                  label="Organization Username"
+                  icon={<AtSign size={17} />}
+                  name="username"
                   onChange={updateForm}
-                  placeholder="hr@company.com"
+                  placeholder="jumia_inc"
                   required
-                  type="email"
-                  value={form.email}
+                  value={form.username}
                 />
                 <Field
                   label="Business Phone Number"
@@ -594,9 +597,9 @@ export default function CompanyRegistrationForm() {
             </Section>
           ) : null}
 
-          {currentStep === 2 ? (
+          {currentStep === 3 ? (
             <Section
-              step="2"
+              step="3"
               title="Registration & Verification Documents"
               icon={<FileText size={18} />}
             >
@@ -629,9 +632,9 @@ export default function CompanyRegistrationForm() {
             </Section>
           ) : null}
 
-          {currentStep === 3 ? (
+          {currentStep === 4 ? (
             <Section
-              step="3"
+              step="4"
               title="Authorized Representative"
               icon={<Users size={18} />}
             >
@@ -655,14 +658,13 @@ export default function CompanyRegistrationForm() {
                   value={form.representativeTitle}
                 />
                 <Field
-                  label="Corporate Email"
-                  icon={<Mail size={17} />}
-                  name="representativeEmail"
+                  label="Representative Username"
+                  icon={<AtSign size={17} />}
+                  name="representativeUsername"
                   onChange={updateForm}
-                  placeholder="chidi@company.com"
+                  placeholder="chidi.company"
                   required
-                  type="email"
-                  value={form.representativeEmail}
+                  value={form.representativeUsername}
                 />
                 <Field
                   label="Phone Number"
@@ -688,22 +690,23 @@ export default function CompanyRegistrationForm() {
             </Section>
           ) : null}
 
-          {currentStep === 4 ? (
+          {currentStep === 1 ? (
             <Section
-              step="4"
+              step="1"
               title="Account Information"
               icon={<KeyRound size={18} />}
             >
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <Field
-                    label="Username"
-                    icon={<AtSign size={17} />}
-                    name="username"
+                    label="Email"
+                    icon={<Mail size={17} />}
+                    name="email"
                     onChange={updateForm}
-                    placeholder="@jumia_inc"
+                    placeholder="company@example.com"
                     required
-                    value={form.username}
+                    type="email"
+                    value={form.email}
                   />
                 </div>
                 <Field
@@ -816,7 +819,7 @@ export default function CompanyRegistrationForm() {
 
           <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              {currentStep > 1 ? (
+              {currentStep > 4 ? (
                 <button
                   className="flex h-12 w-full items-center justify-center rounded-[24px] bg-[#182237]/95 px-7 text-[14px] font-bold text-white transition hover:bg-white/[0.09] sm:w-auto"
                   onClick={() =>

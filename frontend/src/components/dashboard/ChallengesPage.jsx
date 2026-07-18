@@ -7,16 +7,14 @@ import {
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import ChallengeCard from "../challenges/ChallengeCard";
-import { challengeCategories, challengeList } from "../../data/challengesPage";
+import { challengeCategories } from "../../data/challengesPage";
 
 import { studentDashboardNavItems } from "../../data/studentDashboard";
-
-// Local aliases used by this page.
-const challenges = challengeList;
+import { fetchChallenges } from "../../services/challengeService";
 
 function SearchFilters({ query, onQueryChange, activeCategory, onClearAll }) {
   return (
@@ -134,7 +132,30 @@ export default function ChallengesPage() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
+  const [challenges, setChallenges] = useState([]);
+  const [loading, setLoading] = useState(true);
   const pageSize = 8;
+
+  useEffect(() => {
+    let mounted = true;
+    fetchChallenges()
+      .then((data) => {
+        if (mounted) {
+          setChallenges(data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setChallenges([]);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -180,11 +201,19 @@ export default function ChallengesPage() {
     });
 
     if (sortBy === "oldest") list = list.slice().reverse();
-    if (sortBy === "alphabetical") list = list.slice().sort((a, b) => a.title.localeCompare(b.title));
-    if (sortBy === "deadline") list = list.slice().sort((a, b) => new Date(a.deadline || "9999-12-31") - new Date(b.deadline || "9999-12-31"));
+    if (sortBy === "alphabetical")
+      list = list.slice().sort((a, b) => a.title.localeCompare(b.title));
+    if (sortBy === "deadline")
+      list = list
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(a.deadline || "9999-12-31") -
+            new Date(b.deadline || "9999-12-31"),
+        );
 
     return list;
-  }, [query, activeCategory, sortBy]);
+  }, [challenges, query, activeCategory, sortBy]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, pageCount);
@@ -298,6 +327,12 @@ export default function ChallengesPage() {
             </label>
           </div>
         </div>
+
+        {loading ? (
+          <p className="mt-8 text-[14px] font-semibold text-[#9AA7BA]">
+            Loading live challenges...
+          </p>
+        ) : null}
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 min-[1240px]:grid-cols-3">
           {pagedChallenges.map((challenge) => (

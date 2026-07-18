@@ -6,17 +6,13 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, Navigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
-import {
-  getChallengeApplyRows,
-  getChallengeBySlug,
-} from "../../data/challengeDetails";
-
 import { studentDashboardNavItems } from "../../data/studentDashboard";
+import { fetchChallengeBySlug } from "../../services/challengeService";
 
 function HeroCard({ challenge }) {
   return (
@@ -72,7 +68,15 @@ function Panel({ icon: Icon, title, iconColor = "text-[#8B5CF6]", children }) {
 }
 
 function ApplyCard({ challenge }) {
-  const applyRows = getChallengeApplyRows(challenge);
+  const applyRows = [
+    [
+      "Reward",
+      challenge.cash_prize ? `$${challenge.cash_prize}` : "No cash prize",
+      ChevronRight,
+    ],
+    ["Deadline", challenge.deadline || "Flexible", ClipboardList],
+    ["Format", challenge.level || "Open", FileText],
+  ];
 
   return (
     <aside className="rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-6 shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
@@ -140,8 +144,26 @@ function CompanyCard({ company }) {
 export default function ChallengeDetailsPage() {
   const [invitee, setInvitee] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
+  const [challenge, setChallenge] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { slug } = useParams();
-  const challenge = getChallengeBySlug(slug);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchChallengeBySlug(slug).then((data) => {
+      if (mounted) {
+        setChallenge(data);
+        setLoading(false);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return <p className="p-8 text-white">Loading challenge details...</p>;
+  }
 
   if (!challenge) {
     return <Navigate to="/challenges" replace />;
@@ -234,14 +256,24 @@ export default function ChallengeDetailsPage() {
                 />
                 <button
                   className="flex h-11 items-center gap-2 rounded-2xl bg-[#1C273A] px-4 text-[13px] font-bold text-white"
-                  onClick={() => { const value = invitee.trim(); if (value) { setInviteMessage(`Invitation sent to ${value}.`); setInvitee(""); } }}
+                  onClick={() => {
+                    const value = invitee.trim();
+                    if (value) {
+                      setInviteMessage(`Invitation sent to ${value}.`);
+                      setInvitee("");
+                    }
+                  }}
                   type="button"
                 >
                   <UserPlus size={16} />
                   Invite
                 </button>
               </div>
-              {inviteMessage ? <p className="mt-3 text-[13px] font-semibold text-emerald-400">{inviteMessage}</p> : null}
+              {inviteMessage ? (
+                <p className="mt-3 text-[13px] font-semibold text-emerald-400">
+                  {inviteMessage}
+                </p>
+              ) : null}
             </Panel>
           </div>
 

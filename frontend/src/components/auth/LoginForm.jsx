@@ -7,20 +7,44 @@ import UserToggle from "./UserToggle";
 import AuthInput from "./AuthInput";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
+import { loginUser } from "../../services/authService";
 
 export default function LoginForm() {
   const [role, setRole] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const email = formData.get("email") || "user@example.com";
+    const email = formData.get("email") || "";
+    const password = formData.get("password") || "";
 
-    login(role === "student" ? "intern" : "company", email);
-    navigate(role === "company" ? "/company-dashboard" : "/dashboard");
+    try {
+      const response = await loginUser({ email, password });
+      const tokens = response?.tokens || response?.data?.tokens || null;
+      if (tokens?.access) {
+        localStorage.setItem("edubridge_access_token", tokens.access);
+      }
+      if (tokens?.refresh) {
+        localStorage.setItem("edubridge_refresh_token", tokens.refresh);
+      }
+
+      await login(
+        role === "student" ? "intern" : "company",
+        email,
+        response?.user ||
+          response?.data?.user || {
+            role: role === "student" ? "intern" : "company",
+            email,
+          },
+      );
+      navigate(role === "company" ? "/company-dashboard" : "/dashboard");
+    } catch (error) {
+      setErrorMessage(error.message || "Unable to sign in right now.");
+    }
   };
 
   return (
@@ -93,6 +117,12 @@ export default function LoginForm() {
             }
           />
         </div>
+
+        {errorMessage ? (
+          <p className="mt-5 rounded-[20px] border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-[14px] font-semibold text-rose-200">
+            {errorMessage}
+          </p>
+        ) : null}
 
         <div className="mt-7 flex items-center gap-4 text-[17px] text-[#A6B1C4]">
           <span className="flex h-6 w-6 items-center justify-center rounded-lg border-2 border-[#8B5CF6] bg-violet-500/10 text-[#8B5CF6]">

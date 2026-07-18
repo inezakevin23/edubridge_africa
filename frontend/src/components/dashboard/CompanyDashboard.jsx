@@ -7,15 +7,17 @@ import {
   Trophy,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import {
-  companyDashboardActiveChallenges,
   companyDashboardTalent,
   companyDashboardMetrics,
   companyDashboardNavItems,
 } from "../../data/companyDashboard";
+import { fetchChallenges } from "../../services/challengeService";
+import { fetchCompanyDashboardStats } from "../../services/dashboardService";
 
 function MetricCard({ metric }) {
   const Icon = metric.icon;
@@ -41,7 +43,7 @@ function MetricCard({ metric }) {
   );
 }
 
-function ActiveChallengesTable() {
+function ActiveChallengesTable({ challenges }) {
   return (
     <section className="overflow-hidden rounded-[22px] border border-white/[0.07] bg-[#131C2E] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
       <div className="flex items-center justify-between border-b border-white/[0.06] p-7">
@@ -65,33 +67,27 @@ function ActiveChallengesTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.05] text-[15px]">
-            {companyDashboardActiveChallenges.map(
-              ([title, type, submissions, deadline, status]) => (
-                <tr key={title}>
-                  <td className="px-7 py-5 font-bold text-white">{title}</td>
-                  <td className="px-5 py-5">
-                    <span className="rounded-lg bg-white/[0.045] px-3 py-1.5 text-[#9AA7BA]">
-                      {type}
-                    </span>
-                  </td>
-                  <td className="px-5 py-5 font-bold text-white">
-                    {submissions}
-                  </td>
-                  <td className="px-5 py-5 text-[#9AA7BA]">{deadline}</td>
-                  <td className="px-5 py-5">
-                    <span
-                      className={`rounded-full px-3 py-1.5 text-[13px] font-extrabold ${
-                        status === "Active"
-                          ? "bg-emerald-500/10 text-[#22C55E]"
-                          : "bg-amber-500/10 text-[#F59E0B]"
-                      }`}
-                    >
-                      {status}
-                    </span>
-                  </td>
-                </tr>
-              ),
-            )}
+            {challenges.map((challenge) => (
+              <tr key={challenge.id || challenge.title}>
+                <td className="px-7 py-5 font-bold text-white">
+                  {challenge.title}
+                </td>
+                <td className="px-5 py-5">
+                  <span className="rounded-lg bg-white/[0.045] px-3 py-1.5 text-[#9AA7BA]">
+                    {challenge.tags?.[0] || "Challenge"}
+                  </span>
+                </td>
+                <td className="px-5 py-5 font-bold text-white">
+                  {challenge.submissions || 0}
+                </td>
+                <td className="px-5 py-5 text-[#9AA7BA]">{challenge.time}</td>
+                <td className="px-5 py-5">
+                  <span className="rounded-full bg-emerald-500/10 px-3 py-1.5 text-[13px] font-extrabold text-[#22C55E]">
+                    Active
+                  </span>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -155,6 +151,24 @@ function ShortlistedSubmissions() {
 }
 
 export default function CompanyDashboard() {
+  const [challenges, setChallenges] = useState([]);
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([fetchChallenges(), fetchCompanyDashboardStats()]).then(
+      ([challengeData, statsData]) => {
+        if (mounted) {
+          setChallenges(challengeData);
+          setStats(statsData);
+        }
+      },
+    );
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <DashboardLayout
       navItems={companyDashboardNavItems}
@@ -198,14 +212,46 @@ export default function CompanyDashboard() {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {companyDashboardMetrics.map((metric) => (
+          {(stats
+            ? [
+                {
+                  label: "Active challenges",
+                  value: stats.active_challenges ?? 0,
+                  trend: "+0",
+                  icon: Building2,
+                  color: "text-[#8B5CF6]",
+                },
+                {
+                  label: "Total submissions",
+                  value: stats.total_submissions ?? 0,
+                  trend: "+0",
+                  icon: Trophy,
+                  color: "text-[#F59E0B]",
+                },
+                {
+                  label: "Reviewed",
+                  value: stats.reviewed_submissions ?? 0,
+                  trend: "+0",
+                  icon: TrendingUp,
+                  color: "text-[#22C55E]",
+                },
+                {
+                  label: "Shortlisted",
+                  value: stats.shortlisted_submissions ?? 0,
+                  trend: "+0",
+                  icon: Sparkles,
+                  color: "text-[#A78BFA]",
+                },
+              ]
+            : companyDashboardMetrics
+          ).map((metric) => (
             <MetricCard key={metric.label} metric={metric} />
           ))}
         </div>
 
         <div className="mt-9 grid gap-8 min-[1180px]:grid-cols-[minmax(0,1fr)_420px]">
           <div className="space-y-8">
-            <ActiveChallengesTable />
+            <ActiveChallengesTable challenges={challenges} />
           </div>
           <div className="space-y-8">
             <ShortlistedSubmissions />

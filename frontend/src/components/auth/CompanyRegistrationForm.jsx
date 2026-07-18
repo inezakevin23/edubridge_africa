@@ -30,6 +30,7 @@ import {
   companyRegistrationStepLabels,
 } from "../../data/companyRegistration";
 import { africanCountries } from "../../data/studentRegistration";
+import { registerCompany } from "../../services/authService";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
@@ -373,21 +374,50 @@ export default function CompanyRegistrationForm() {
     setCurrentStep((step) => Math.min(4, step + 1));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateStep(4)) {
       return;
     }
 
-    login("company", form.email);
-    navigate("/complete-profile/company");
-    setForm(initialForm);
-    setDocuments({});
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    setCurrentStep(1);
-    setFileInputResetKey((key) => key + 1);
+    try {
+      const payload = {
+        ...form,
+        registration_certificate:
+          documents["Business Registration Certificate"],
+        tax_document: documents["Tax Registration Document (TIN)"],
+        operating_license: documents["Operating License"],
+        ngo_certificate: documents["NGO Registration Certificate"],
+        government_accreditation:
+          documents["Government Accreditation Document"],
+      };
+
+      const response = await registerCompany(payload);
+      const tokens = response?.tokens || response?.data?.tokens || null;
+      if (tokens?.access) {
+        localStorage.setItem("edubridge_access_token", tokens.access);
+      }
+      if (tokens?.refresh) {
+        localStorage.setItem("edubridge_refresh_token", tokens.refresh);
+      }
+
+      await login(
+        "company",
+        form.email,
+        response?.user ||
+          response?.data?.user || { role: "company", email: form.email },
+      );
+      navigate("/complete-profile/company");
+      setForm(initialForm);
+      setDocuments({});
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setCurrentStep(1);
+      setFileInputResetKey((key) => key + 1);
+    } catch (error) {
+      setFormMessage(error.message || "Registration failed. Please try again.");
+    }
   };
 
   return (

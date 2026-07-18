@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { getCurrentUser } from "../services/authService";
 
 const AuthContext = createContext(null);
 
@@ -11,11 +12,26 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const login = (role, email) => {
+  const login = async (role, email, nextUserData = null) => {
     const username = email.split("@")[0];
-    const nextUser = { role, email, first_name: username };
+    const nextUser = nextUserData || { role, email, first_name: username };
     localStorage.setItem("edubridge_user", JSON.stringify(nextUser));
     setUser(nextUser);
+    return nextUser;
+  };
+
+  const syncUser = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      const nextUser = currentUser?.user || currentUser;
+      if (nextUser) {
+        localStorage.setItem("edubridge_user", JSON.stringify(nextUser));
+        setUser(nextUser);
+      }
+      return nextUser;
+    } catch {
+      return user;
+    }
   };
 
   const logout = () => {
@@ -27,7 +43,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: Boolean(user), login, logout }}
+      value={{ user, isAuthenticated: Boolean(user), login, logout, syncUser }}
     >
       {children}
     </AuthContext.Provider>

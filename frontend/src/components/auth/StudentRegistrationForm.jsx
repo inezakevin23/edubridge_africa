@@ -32,6 +32,7 @@ import {
   studentRegistrationStatusOptions,
   studentRegistrationSkills,
 } from "../../data/studentRegistration";
+import { registerStudent } from "../../services/authService";
 
 const stepLabels = studentRegistrationStepLabels;
 const statusOptions = studentRegistrationStatusOptions;
@@ -318,29 +319,54 @@ export default function StudentRegistrationForm() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateStep(4)) {
       return;
     }
 
-    localStorage.setItem("edubridgeStudentName", form.fullName);
-    if (profilePreview) {
-      localStorage.setItem("edubridgeStudentProfilePic", profilePreview);
+    try {
+      const payload = {
+        ...form,
+        skills: selectedSkills.join(", "),
+        profile_picture: profilePic,
+        national_or_student_id_document: idFile,
+      };
+
+      const response = await registerStudent(payload);
+      const tokens = response?.tokens || response?.data?.tokens || null;
+      if (tokens?.access) {
+        localStorage.setItem("edubridge_access_token", tokens.access);
+      }
+      if (tokens?.refresh) {
+        localStorage.setItem("edubridge_refresh_token", tokens.refresh);
+      }
+
+      localStorage.setItem("edubridgeStudentName", form.fullName);
+      if (profilePreview) {
+        localStorage.setItem("edubridgeStudentProfilePic", profilePreview);
+      }
+      await login(
+        "intern",
+        form.email,
+        response?.user ||
+          response?.data?.user || { role: "intern", email: form.email },
+      );
+      navigate("/complete-profile/intern");
+      setForm(initialForm);
+      setSelectedSkills([]);
+      setSkillInput("");
+      setIdFile(null);
+      setProfilePic(null);
+      setProfilePreview("");
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setCurrentStep(1);
+      setFileInputResetKey((key) => key + 1);
+    } catch (error) {
+      setFormMessage(error.message || "Registration failed. Please try again.");
     }
-    login("intern", form.email);
-    navigate("/complete-profile/intern");
-    setForm(initialForm);
-    setSelectedSkills([]);
-    setSkillInput("");
-    setIdFile(null);
-    setProfilePic(null);
-    setProfilePreview("");
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    setCurrentStep(1);
-    setFileInputResetKey((key) => key + 1);
   };
 
   const validateStep = (step) => {

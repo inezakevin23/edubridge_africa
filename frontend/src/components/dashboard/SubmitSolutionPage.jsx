@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   ChevronRight,
@@ -18,11 +18,9 @@ import { motion } from "framer-motion";
 import { Link, Navigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
-import {
-  challengeRecords,
-  getChallengeBySlug,
-} from "../../data/challengeDetails";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
+import { fetchChallengeBySlug } from "../../services/challengeService";
+import { createSubmission } from "../../services/authService";
 
 function Panel({ accent = "violet", children, icon: Icon, title }) {
   const iconClass =
@@ -93,6 +91,8 @@ export default function SubmitSolutionPage() {
     deliverables: {},
     reviewerNote: "",
   });
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState("");
 
   // Use the same accepted submission format config used in CreateChallengePage.
   // Challenge mock data currently does not include selected formats, so we treat
@@ -202,7 +202,19 @@ export default function SubmitSolutionPage() {
     setNewMember({ name: "", role: "" });
   };
   const { slug } = useParams();
-  const challenge = slug ? getChallengeBySlug(slug) : challengeRecords[0];
+  const [challenge, setChallenge] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchChallengeBySlug(slug).then((data) => {
+      if (mounted) {
+        setChallenge(data);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
 
   const completedChecklist = useMemo(() => {
     const deliverablesFilled = deliverables
@@ -219,9 +231,7 @@ export default function SubmitSolutionPage() {
       deliverablesFilled,
       deliverablesFilled,
       Boolean(form.reviewerNote.trim()),
-      Boolean(
-        form.title && form.summary && deliverablesFilled,
-      ),
+      Boolean(form.title && form.summary && deliverablesFilled),
     ];
   }, [form, deliverables]);
 
@@ -275,6 +285,35 @@ export default function SubmitSolutionPage() {
     );
   };
 
+  const submitSolution = async () => {
+    try {
+      const payload = {
+        challenge: challenge?.id,
+        title: form.title,
+        summary: form.summary,
+        report_file: form.deliverables["Written Report"]?.file || null,
+        slides_file: form.deliverables["Slide Deck"]?.file || null,
+        spreadsheet_file: form.deliverables["Spreadsheet"]?.file || null,
+        other_file: form.deliverables["Design File"]?.file || null,
+        report_link: form.deliverables["Written Report"]?.link || "",
+        design_link: form.deliverables["Design File"]?.link || "",
+        github_repository: form.deliverables["Code Repository"]?.link || "",
+        slides_link: form.deliverables["Slide Deck"]?.link || "",
+        video_link: form.deliverables["Video Walkthrough"]?.link || "",
+        spreadsheet_link: form.deliverables["Spreadsheet"]?.link || "",
+      };
+
+      const response = await createSubmission(payload);
+      setSubmitSuccess(response?.message || "Submission sent successfully.");
+      setSubmitError("");
+      setIsSubmitted(true);
+      resetSolutionForm();
+    } catch (error) {
+      setSubmitError(error.message || "Unable to submit solution now.");
+      setSubmitSuccess("");
+    }
+  };
+
   return (
     <DashboardLayout
       navItems={studentDashboardNavItems}
@@ -319,7 +358,9 @@ export default function SubmitSolutionPage() {
                 </div>
                 <span className="flex shrink-0 items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
                   <Zap size={17} />
-                  {challenge.cash_prize ? `Cash prize: R ${challenge.cash_prize}` : "No cash prize"}
+                  {challenge.cash_prize
+                    ? `Cash prize: R ${challenge.cash_prize}`
+                    : "No cash prize"}
                 </span>
               </div>
               <p className="text-[14px] leading-7 text-[#AAB4C3]">
@@ -359,7 +400,6 @@ export default function SubmitSolutionPage() {
                     </p>
                   </div>
                 </FormField>
-
               </div>
             </Panel>
 
@@ -412,13 +452,15 @@ export default function SubmitSolutionPage() {
                             <input
                               accept={item.accept}
                               className="sr-only"
-                              onChange={(event) =>
+                              onChange={(event) => {
+                                const file = event.target.files?.[0] || null;
                                 updateDeliverable(
                                   item.key,
                                   "fileName",
-                                  event.target.files?.[0]?.name || "",
-                                )
-                              }
+                                  file?.name || "",
+                                );
+                                updateDeliverable(item.key, "file", file);
+                              }}
                               type="file"
                             />
                           </label>
@@ -547,15 +589,23 @@ export default function SubmitSolutionPage() {
               <button
                 className="flex h-14 flex-1 items-center justify-center gap-2 rounded-[22px] bg-[#8B5CF6] px-8 text-[16px] font-extrabold text-white shadow-[0_18px_42px_rgba(139,92,246,0.38)] transition hover:bg-[#9568ff]"
                 disabled={isSubmitted && !canUpdateBeforeDeadline}
-                onClick={() => {
-                  resetSolutionForm();
-                }}
+                onClick={submitSolution}
                 type="button"
               >
                 <Send size={19} />
                 {isSubmitted ? "Update Solution" : "Submit Solution"}
               </button>
             </div>
+            {submitError ? (
+              <p className="pb-2 text-center text-[13px] font-semibold text-rose-300">
+                {submitError}
+              </p>
+            ) : null}
+            {submitSuccess ? (
+              <p className="pb-2 text-center text-[13px] font-semibold text-emerald-300">
+                {submitSuccess}
+              </p>
+            ) : null}
             <p className="pb-5 text-center text-[12px] font-semibold text-[#7F8EA5]">
               {isSubmitted
                 ? "Submission saved. You can keep updating it until the challenge deadline."

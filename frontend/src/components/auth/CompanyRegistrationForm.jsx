@@ -22,7 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../context/useAuth";
 import {
   companyRegistrationBusinessTypes,
   companyRegistrationDocuments,

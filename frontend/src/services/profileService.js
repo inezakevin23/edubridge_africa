@@ -4,6 +4,14 @@ export async function fetchIndustries() {
   return apiRequest("get", "/api/profiles/industries/");
 }
 
+export async function fetchInternProfile() {
+  return apiRequest("get", "/api/profiles/intern/me/");
+}
+
+export async function fetchCompanyProfile() {
+  return apiRequest("get", "/api/profiles/company/me/");
+}
+
 export async function createInternProfile(payload) {
   const formData = toFormData(payload);
   return apiRequest("post", "/api/profiles/intern/", formData, {

@@ -1,6 +1,23 @@
-import { featuresData } from "../../data/home";
+import { useEffect, useState } from "react";
+import { fetchHomeFeatures } from "../../services/homeService";
 
 export default function Features() {
+  const [features, setFeatures] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchHomeFeatures()
+      .then((resp) => {
+        if (!mounted) return;
+        const list = Array.isArray(resp) ? resp : resp?.data || [];
+        setFeatures(list);
+      })
+      .catch(() => {
+        if (mounted) setFeatures([]);
+      });
+    return () => (mounted = false);
+  }, []);
+
   return (
     <section className="py-28">
       <div className="max-w-7xl mx-auto px-6">
@@ -18,8 +35,8 @@ export default function Features() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
-          {featuresData.map((feature, index) => {
-            const Icon = feature.icon;
+          {features.map((feature, index) => {
+            const Icon = feature.icon || (() => null);
 
             return (
               <div

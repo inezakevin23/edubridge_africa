@@ -1,11 +1,25 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import ChallengeCard from "../challenges/ChallengeCard";
-import { challengeList } from "../../data/challengesPage";
-
-const latestChallenges = challengeList.slice(0, 3);
+import { useEffect, useState } from "react";
+import { fetchChallenges } from "../../services/challengeService";
 
 export default function LatestChallenges() {
+  const [challenges, setChallenges] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchChallenges({ page: 1 })
+      .then((list) => {
+        if (!mounted) return;
+        setChallenges(list.slice(0, 3));
+      })
+      .catch(() => {
+        if (mounted) setChallenges([]);
+      });
+    return () => (mounted = false);
+  }, []);
+
   return (
     <section className="px-6 py-24">
       <div className="mx-auto max-w-6xl">
@@ -33,11 +47,11 @@ export default function LatestChallenges() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {latestChallenges.map((challenge) => (
+          {challenges.map((challenge) => (
             <ChallengeCard
               challenge={challenge}
               compact
-              key={challenge.title}
+              key={challenge.id || challenge.title}
             />
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Check } from "lucide-react";
@@ -6,7 +6,7 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff, Check } from "lucide-react";
 import UserToggle from "./UserToggle";
 import AuthInput from "./AuthInput";
 import { motion } from "framer-motion";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../context/useAuth";
 import { loginUser } from "../../services/authService";
 
 export default function LoginForm() {
@@ -14,7 +14,19 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { user, isAuthenticated, login } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated && user?.role) {
+      // If a session is already alive, deny form viewing and force redirect
+      const targetRole = user.role.toLowerCase();
+      if (targetRole === "company") {
+        navigate("/company-dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -24,26 +36,41 @@ export default function LoginForm() {
 
     try {
       const response = await loginUser({ email, password });
-      const tokens = response?.tokens || response?.data?.tokens || null;
-      if (tokens?.access) {
-        localStorage.setItem("edubridge_access_token", tokens.access);
-      }
-      if (tokens?.refresh) {
-        localStorage.setItem("edubridge_refresh_token", tokens.refresh);
+
+      // Standardize your variable mappings from your common.responses structure
+      const innerPayload = response?.data?.data || response?.data || response;
+      const tokens = innerPayload?.tokens;
+      const backendUser = innerPayload?.user;
+
+      if (!tokens?.access) {
+        throw new Error("Invalid server credentials response structure.");
       }
 
-      await login(
-        role === "student" ? "intern" : "company",
+      localStorage.setItem("edubridge_access_token", tokens.access);
+      localStorage.setItem("edubridge_refresh_token", tokens.refresh);
+
+      // Instantly clear out stale state and save the crisp backend metadata profile
+      localStorage.removeItem("edubridge_user");
+
+      const savedUser = await login(
+        backendUser?.role || "intern",
         email,
-        response?.user ||
-          response?.data?.user || {
-            role: role === "student" ? "intern" : "company",
-            email,
-          },
+        backendUser,
       );
-      navigate(role === "company" ? "/company-dashboard" : "/dashboard");
+      const targetRole = (savedUser?.role || "intern").toLowerCase();
+
+      // Absolute Route Redirection Security Gating
+      if (targetRole === "company") {
+        navigate("/company-dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (error) {
-      setErrorMessage(error.message || "Unable to sign in right now.");
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to sign in right now.",
+      );
     }
   };
 

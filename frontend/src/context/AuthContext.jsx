@@ -1,59 +1,100 @@
-import { createContext, useContext, useState } from "react";
+import { useEffect, useState } from "react";
 import { getCurrentUser } from "../services/authService";
-
-const AuthContext = createContext(null);
+import { normalizeUser } from "./authUtils";
+import {
+  getInitialStoredUser,
+  logoutAndClearTokens,
+} from "./authContextShared";
+import { AuthContext } from "./AuthContextCore";
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("edubridge_user"));
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(() => getInitialStoredUser(normalizeUser));
+  const [isHydrating, setIsHydrating] = useState(true);
 
-  const login = async (role, email, nextUserData = null) => {
+  const persistUser = (nextUser) => {
+    if (nextUser) {
+      localStorage.setItem("edubridge_user", JSON.stringify(nextUser));
+      setUser(nextUser);
+      return nextUser;
+    }
+    localStorage.removeItem("edubridge_user");
+    setUser(null);
+    return null;
+  };
+
+  const logout = () => logoutAndClearTokens(setUser);
+
+  const login = async (fallbackRole, email, nextUserData = null) => {
+    const backendPayload = nextUserData?.data?.data || nextUserData;
+    const backendUser = backendPayload?.user || backendPayload;
+
+    // Safety check: prioritize the actual role returned by the backend
+    const activeRole = backendUser?.role || fallbackRole || "intern";
     const username = email.split("@")[0];
-    const nextUser = nextUserData || { role, email, first_name: username };
-    localStorage.setItem("edubridge_user", JSON.stringify(nextUser));
-    setUser(nextUser);
-    return nextUser;
+
+    const nextUser = normalizeUser(
+      backendUser || null,
+      activeRole.toLowerCase(),
+      backendUser?.email || email,
+      backendUser?.first_name || username,
+    );
+    return persistUser(nextUser);
   };
 
   const syncUser = async () => {
     try {
       const currentUser = await getCurrentUser();
-      const nextUser = currentUser?.user || currentUser;
-      if (nextUser) {
-        localStorage.setItem("edubridge_user", JSON.stringify(nextUser));
-        setUser(nextUser);
-      }
-      return nextUser;
-    } catch {
-      return user;
+
+      const currentUserPayload =
+        currentUser?.data?.data?.user || currentUser?.data?.data || currentUser;
+
+      if (!currentUserPayload) return null;
+
+      const nextUser = normalizeUser(
+        currentUserPayload,
+        currentUserPayload?.role || "intern",
+        currentUserPayload?.email || "",
+        currentUserPayload?.first_name || "",
+      );
+      return persistUser(nextUser);
+    } catch (error) {
+      logout();
+      throw error;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("edubridge_user");
-    localStorage.removeItem("edubridge_access_token");
-    localStorage.removeItem("edubridge_refresh_token");
-    setUser(null);
-  };
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const accessToken = localStorage.getItem("edubridge_access_token");
+      if (!accessToken) {
+        setIsHydrating(false);
+        return;
+      }
+      try {
+        await syncUser();
+      } catch {
+        localStorage.removeItem("edubridge_user");
+        setUser(null);
+      } finally {
+        setIsHydrating(false);
+      }
+    };
+    initializeAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: Boolean(user), login, logout, syncUser }}
+      value={{
+        user,
+        isAuthenticated: Boolean(user),
+        isHydrating,
+        login,
+        logout,
+        syncUser,
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 }

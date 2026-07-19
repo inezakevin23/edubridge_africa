@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Award,
   BadgeCheck,
@@ -22,61 +22,17 @@ import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
 import { companyDashboardNavItems } from "../../data/companyDashboard";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../context/useAuth";
 import {
   createCompanyProfile,
   createInternProfile,
   updateCompanyProfile,
   updateInternProfile,
+  fetchCompanyProfile,
+  fetchInternProfile,
 } from "../../services/profileService";
 
-const internFallback = {
-  first_name: "Adebayo",
-  last_name: "Oladipo",
-  email: "adebayo@example.com",
-  phone_number: "+234 800 000 0000",
-  country: "Nigeria",
-  city: "Lagos",
-  date_of_birth: "2001-06-15",
-  gender: "male",
-  current_status: "student",
-  institution: "University of Lagos",
-  field_of_study: "Computer Science",
-  graduation_year: 2025,
-  years_of_experience: 1,
-  skills: "UI/UX Design, Python, Data Analysis, Product Strategy",
-  portfolio_url: "https://portfolio.example.com",
-  bio: "Aspiring product designer who enjoys turning complex problems into useful digital experiences.",
-  total_score_points: 842,
-  verification_status: "verified",
-  profile_picture: "https://i.pravatar.cc/200?img=12",
-};
-
-const companyFallback = {
-  company_name: "Nourish Africa",
-  business_type: "ngo",
-  industry: { id: 1, name: "Agriculture" },
-  country: "Kenya",
-  city: "Nairobi",
-  website: "https://nourishafrica.example.com",
-  description:
-    "We create practical opportunities for young African talent to solve food-system and climate challenges.",
-  email: "partnerships@nourishafrica.example.com",
-  phone_number: "+254 700 000 000",
-  representative: {
-    job_title: "Talent Partnerships Lead",
-    corporate_email: "partnerships@nourishafrica.example.com",
-  },
-  verification_status: "verified",
-};
-
-const readProfile = (key, fallback) => {
-  try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(key) || "null") };
-  } catch {
-    return fallback;
-  }
-};
+// Profiles are loaded from the backend. No client-side mock fallbacks.
 
 const titleCase = (value = "") =>
   value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -419,10 +375,8 @@ export default function ProfilePage({ type }) {
   const storageKey = isCompany
     ? "edubridgeCompanyProfile"
     : "edubridgeInternProfile";
-  const fallback = isCompany ? companyFallback : internFallback;
-  const [profile, setProfile] = useState(() =>
-    readProfile(storageKey, fallback),
-  );
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [editing, setEditing] = useState(false);
   const [notice, setNotice] = useState("");
   const name = useMemo(
@@ -432,6 +386,34 @@ export default function ProfilePage({ type }) {
         : `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
     [isCompany, profile],
   );
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        setLoadingProfile(true);
+        const resp = isCompany
+          ? await fetchCompanyProfile()
+          : await fetchInternProfile();
+        const nextProfile = resp?.data || resp;
+        if (!mounted) return;
+        if (nextProfile) {
+          localStorage.setItem(storageKey, JSON.stringify(nextProfile));
+          setProfile(nextProfile);
+        } else {
+          setProfile({});
+        }
+      } catch (err) {
+        setProfile({});
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [isCompany, storageKey]);
 
   const changeProfile = (event) => {
     const { name: field, value } = event.target;
@@ -489,9 +471,11 @@ export default function ProfilePage({ type }) {
         : await createInternProfile(payload);
 
       const nextProfile = response?.data || response;
-      localStorage.setItem(storageKey, JSON.stringify(nextProfile));
-      if (!isCompany) localStorage.setItem("edubridgeStudentName", name);
-      setProfile(nextProfile);
+      if (nextProfile) {
+        localStorage.setItem(storageKey, JSON.stringify(nextProfile));
+        if (!isCompany) localStorage.setItem("edubridgeStudentName", name);
+        setProfile(nextProfile);
+      }
       setEditing(false);
       setNotice("Profile saved successfully.");
     } catch (error) {

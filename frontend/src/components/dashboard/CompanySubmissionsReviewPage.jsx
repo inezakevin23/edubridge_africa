@@ -18,11 +18,12 @@ import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import {
   companySubmissionsNavItems,
-  companySubmissionsReviewItems,
   companySubmissionsStats,
 } from "../../data/companySubmissionsReview";
 import CompanyTopbar from "../layout/CompanyTopbar";
-import { addLocalNotification } from "../../data/localNotifications";
+// localNotifications removed; we now rely on backend notifications
+import { fetchSubmissions } from "../../services/submissionService";
+import { fetchCompanyDashboardStats } from "../../services/dashboardService";
 
 function StatCard({ stat }) {
   const Icon = stat.icon;
@@ -108,7 +109,11 @@ function SubmissionCard({ item }) {
   const sendFeedback = () => {
     const trimmedFeedback = feedback.trim();
 
-    if (!trimmedFeedback || Number(companyScore) < 0 || Number(companyScore) > 100) {
+    if (
+      !trimmedFeedback ||
+      Number(companyScore) < 0 ||
+      Number(companyScore) > 100
+    ) {
       return;
     }
 
@@ -145,7 +150,14 @@ function SubmissionCard({ item }) {
                 <h2 className="text-[17px] font-extrabold text-white">
                   {item.name}
                 </h2>
-                <StatusBadge status={submissionStatus} tone={submissionStatus === "reviewed" ? "emerald" : item.statusTone} />
+                <StatusBadge
+                  status={submissionStatus}
+                  tone={
+                    submissionStatus === "reviewed"
+                      ? "emerald"
+                      : item.statusTone
+                  }
+                />
               </div>
               <p className="mt-1 text-[13px] font-medium text-[#9AA7BA]">
                 {item.university} · Submitted {item.submitted}
@@ -191,14 +203,32 @@ function SubmissionCard({ item }) {
           <div className="flex items-center justify-between gap-4 lg:block">
             <ScoreRing score={item.score} tone={item.scoreTone} />
             <div className="min-w-[150px] lg:mt-4">
-              <label className="mb-2 block text-[12px] font-semibold text-[#9AA7BA]">Cash prize awarded</label>
-              <input className="h-10 w-full rounded-full border border-white/[0.05] bg-[#0F1728] px-4 text-[14px] font-extrabold text-white outline-none focus:border-violet-400/50" min="0" onChange={(event) => setCashPrizeAwarded(event.target.value)} placeholder="Optional amount" type="number" value={cashPrizeAwarded} />
+              <label className="mb-2 block text-[12px] font-semibold text-[#9AA7BA]">
+                Cash prize awarded
+              </label>
+              <input
+                className="h-10 w-full rounded-full border border-white/[0.05] bg-[#0F1728] px-4 text-[14px] font-extrabold text-white outline-none focus:border-violet-400/50"
+                min="0"
+                onChange={(event) => setCashPrizeAwarded(event.target.value)}
+                placeholder="Optional amount"
+                type="number"
+                value={cashPrizeAwarded}
+              />
             </div>
           </div>
 
           <button
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#1A2639] px-4 text-[13px] font-extrabold text-white transition hover:bg-[#24324A]"
-            onClick={() => { setShortlisted((value) => !value); if (!shortlisted) addLocalNotification({ title: "Challenge shortlist", message: `You were shortlisted for ${item.name}'s challenge submission.`, notification_type: "shortlisted", related_object_id: item.id }); }}
+            onClick={() => {
+              setShortlisted((value) => !value);
+              if (!shortlisted)
+                addLocalNotification({
+                  title: "Challenge shortlist",
+                  message: `You were shortlisted for ${item.name}'s challenge submission.`,
+                  notification_type: "shortlisted",
+                  related_object_id: item.id,
+                });
+            }}
             type="button"
           >
             <UserPlus size={16} />
@@ -243,7 +273,17 @@ function SubmissionCard({ item }) {
             placeholder="Write clear, constructive feedback for the student's submission..."
             value={feedback}
           />
-          <label className="mt-4 block text-[13px] font-semibold text-[#9AA7BA]">Company score (0-100)<input className="mt-2 h-10 w-full rounded-xl border border-white/[0.06] bg-[#131C2E] px-3 text-white outline-none focus:border-violet-400/45" max="100" min="0" onChange={(event) => setCompanyScore(event.target.value)} type="number" value={companyScore} /></label>
+          <label className="mt-4 block text-[13px] font-semibold text-[#9AA7BA]">
+            Company score (0-100)
+            <input
+              className="mt-2 h-10 w-full rounded-xl border border-white/[0.06] bg-[#131C2E] px-3 text-white outline-none focus:border-violet-400/45"
+              max="100"
+              min="0"
+              onChange={(event) => setCompanyScore(event.target.value)}
+              type="number"
+              value={companyScore}
+            />
+          </label>
           <div className="mt-4 flex flex-wrap justify-end gap-3">
             <button
               className="h-10 rounded-full bg-[#182237] px-5 text-[13px] font-bold text-[#B9C5D7] transition hover:bg-[#22304A] hover:text-white"
@@ -278,15 +318,79 @@ export default function CompanySubmissionsReviewPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("highest_score");
   const [notifyMessage, setNotifyMessage] = useState("");
+  const [submissions, setSubmissions] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([fetchSubmissions({ page }), fetchCompanyDashboardStats()])
+      .then(([subsResp, statsResp]) => {
+        if (!mounted) return;
+        const list = Array.isArray(subsResp)
+          ? subsResp
+          : subsResp?.results || [];
+        const normalized = list.map((item, idx) => ({
+          id: item.id,
+          name: item.submitter?.first_name
+            ? `${item.submitter.first_name} ${item.submitter.last_name || ""}`.trim()
+            : item.submitter?.username || item.title || "Unknown",
+          avatar:
+            item.submitter?.profile_picture ||
+            `https://i.pravatar.cc/100?img=${(idx % 70) + 1}`,
+          university:
+            item.submitter?.institution || item.submitter?.organization || "",
+          submitted: item.submitted_at
+            ? new Date(item.submitted_at).toLocaleDateString()
+            : "",
+          summary: item.summary || item.abstract || item.description || "",
+          tags: item.tags || [],
+          files: item.files || [],
+          score: item.score ?? item.company_score ?? 0,
+          status: item.status || "submitted",
+          shortlisted: Boolean(item.shortlisted),
+          rank: idx + 1,
+        }));
+        setSubmissions(normalized);
+        setStats(statsResp?.data || statsResp || null);
+      })
+      .catch(() => {
+        if (mounted) {
+          setSubmissions([]);
+          setStats(null);
+        }
+      });
+    return () => (mounted = false);
+  }, [page]);
   const filteredSubmissions = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const list = companySubmissionsReviewItems.filter((item) => (!needle || [item.name, item.university, ...item.tags].join(" ").toLowerCase().includes(needle)) && (statusFilter === "all" || item.status === statusFilter));
-    return list.slice().sort((a, b) => sortBy === "lowest_score" ? a.score - b.score : sortBy === "newest" ? a.rank - b.rank : b.score - a.score);
-  }, [query, statusFilter, sortBy]);
+    const list = submissions.filter(
+      (item) =>
+        (!needle ||
+          [item.name, item.university, ...item.tags]
+            .join(" ")
+            .toLowerCase()
+            .includes(needle)) &&
+        (statusFilter === "all" || item.status === statusFilter),
+    );
+    return list
+      .slice()
+      .sort((a, b) =>
+        sortBy === "lowest_score"
+          ? a.score - b.score
+          : sortBy === "newest"
+            ? a.rank - b.rank
+            : b.score - a.score,
+      );
+  }, [query, statusFilter, sortBy, submissions]);
   const notifyShortlisted = () => {
-    const shortlisted = companySubmissionsReviewItems.filter((item) => item.shortlisted);
-    shortlisted.forEach((item) => addLocalNotification({ title: "Challenge shortlist", message: `Congratulations ${item.name}, you have been shortlisted.`, notification_type: "shortlisted", related_object_id: item.id }));
-    setNotifyMessage(shortlisted.length ? `${shortlisted.length} shortlisted intern notified.` : "No shortlisted interns to notify.");
+    const shortlisted = submissions.filter((item) => item.shortlisted);
+    // TODO: Post notifications to backend. For now display UI message only.
+    setNotifyMessage(
+      shortlisted.length
+        ? `${shortlisted.length} shortlisted intern notified.`
+        : "No shortlisted interns to notify.",
+    );
   };
   return (
     <DashboardLayout
@@ -330,7 +434,39 @@ export default function CompanySubmissionsReviewPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {companySubmissionsStats.map((stat) => (
+          {(stats
+            ? [
+                {
+                  label: "Total Submissions",
+                  value: stats.total_submissions ?? 0,
+                  icon: Mail,
+                  background: "bg-[#F59E0B]",
+                  color: "text-white",
+                },
+                {
+                  label: "Reviewed Submissions",
+                  value: stats.reviewed_submissions ?? 0,
+                  icon: Mail,
+                  background: "bg-[#22C55E]",
+                  color: "text-white",
+                },
+                {
+                  label: "Shortlisted",
+                  value: stats.shortlisted_submissions ?? 0,
+                  icon: Mail,
+                  background: "bg-[#A78BFA]",
+                  color: "text-white",
+                },
+                {
+                  label: "Active Challenges",
+                  value: stats.active_challenges ?? 0,
+                  icon: Mail,
+                  background: "bg-[#8B5CF6]",
+                  color: "text-white",
+                },
+              ]
+            : companySubmissionsStats
+          ).map((stat) => (
             <StatCard key={stat.label} stat={stat} />
           ))}
         </div>
@@ -347,10 +483,33 @@ export default function CompanySubmissionsReviewPage() {
             />
           </div>
           <FilterButton>All Challenges</FilterButton>
-          <select aria-label="Filter submissions" className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none" onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}><option value="all">All statuses</option><option value="submitted">Submitted</option><option value="under_review">Under review</option><option value="reviewed">Reviewed</option></select>
-          <select aria-label="Sort submissions" className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none" onChange={(event) => setSortBy(event.target.value)} value={sortBy}><option value="highest_score">Highest score</option><option value="lowest_score">Lowest score</option><option value="newest">Newest</option></select>
+          <select
+            aria-label="Filter submissions"
+            className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none"
+            onChange={(event) => setStatusFilter(event.target.value)}
+            value={statusFilter}
+          >
+            <option value="all">All statuses</option>
+            <option value="submitted">Submitted</option>
+            <option value="under_review">Under review</option>
+            <option value="reviewed">Reviewed</option>
+          </select>
+          <select
+            aria-label="Sort submissions"
+            className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none"
+            onChange={(event) => setSortBy(event.target.value)}
+            value={sortBy}
+          >
+            <option value="highest_score">Highest score</option>
+            <option value="lowest_score">Lowest score</option>
+            <option value="newest">Newest</option>
+          </select>
         </div>
-        {notifyMessage ? <p className="mt-4 text-[13px] font-semibold text-emerald-400">{notifyMessage}</p> : null}
+        {notifyMessage ? (
+          <p className="mt-4 text-[13px] font-semibold text-emerald-400">
+            {notifyMessage}
+          </p>
+        ) : null}
 
         <div className="mt-8 space-y-5">
           {filteredSubmissions.map((item) => (
@@ -365,26 +524,22 @@ export default function CompanySubmissionsReviewPage() {
               aria-label="Previous page"
               className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA] transition hover:bg-[#22304A] hover:text-white"
               type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
             >
               <ChevronLeft size={18} />
             </button>
-            {["1", "2", "3", "...", "29"].map((page) => (
-              <button
-                className={`h-10 min-w-10 rounded-2xl px-3 text-[14px] font-extrabold transition ${
-                  page === "1"
-                    ? "bg-[#F59E0B] text-white"
-                    : "bg-[#182237] text-[#9AA7BA] hover:bg-[#22304A] hover:text-white"
-                }`}
-                type="button"
-                key={page}
-              >
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-[13px] text-[#9AA7BA]">Page</span>
+              <span className="inline-flex items-center justify-center h-10 min-w-[36px] rounded-2xl bg-[#182237] text-[#9AA7BA] px-3">
                 {page}
-              </button>
-            ))}
+              </span>
+            </div>
             <button
               aria-label="Next page"
               className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#182237] text-[#9AA7BA] transition hover:bg-[#22304A] hover:text-white"
               type="button"
+              onClick={() => setPage((p) => p + 1)}
             >
               <ChevronRight size={18} />
             </button>

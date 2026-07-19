@@ -85,6 +85,10 @@ export async function getChallengeById(id) {
   return apiRequest("get", `/api/challenges/${id}/`);
 }
 
-export async function getDashboardStats() {
-  return apiRequest("get", "/api/dashboard/intern/");
+export async function getDashboardStats(userRole) {
+  const path =
+    userRole === "company"
+      ? "/api/dashboard/company/"
+      : "/api/dashboard/intern/";
+  return apiRequest("get", path);
 }

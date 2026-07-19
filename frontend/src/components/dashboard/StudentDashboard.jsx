@@ -1,42 +1,54 @@
-import { useState } from "react";
-import {
-  ArrowRight,
-  Clock3,
-  Banknote,
-  Globe,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, Clock3, Banknote, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
+import useAuth from "../../context/useAuth";
+import { fetchChallenges } from "../../services/challengeService";
+import { fetchInternDashboardStats } from "../../services/dashboardService";
 import {
   studentDashboardNavItems,
   studentDashboardFilters,
-  studentDashboardChallenges,
-  studentDashboardStats,
 } from "../../data/studentDashboard";
 
-function SidebarBottomPanel() {
-  const [studentProfile] = useState(() => {
-    const savedName = localStorage.getItem("edubridgeStudentName");
-    const savedAvatar = localStorage.getItem("edubridgeStudentProfilePic");
+// Note: studentDashboardStats and studentDashboardChallenges are replaced by live backend data
 
-    return {
-      name: savedName || "Adebayo O.",
-      avatar: savedAvatar || "https://i.pravatar.cc/100?img=12",
-    };
-  });
+function SidebarBottomPanel() {
+  const { user } = useAuth();
+  const name = user?.first_name
+    ? `${user.first_name} ${user.last_name || ""}`.trim()
+    : user?.username || "";
+  const avatar = user?.profile_picture || "https://i.pravatar.cc/100?img=12";
+
+  const [stats, setStats] = useState(null);
+  const [challenges, setChallenges] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([fetchInternDashboardStats(), fetchChallenges()])
+      .then(([statsResp, challengesResp]) => {
+        if (!mounted) return;
+        setStats(statsResp?.data || statsResp || null);
+        setChallenges(challengesResp || []);
+      })
+      .catch(() => {
+        if (mounted) {
+          setStats(null);
+          setChallenges([]);
+        }
+      });
+    return () => (mounted = false);
+  }, []);
 
   return (
     <div className="mt-auto flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0D1626] p-3">
       <img
-        alt={studentProfile.name}
+        alt={name || "User"}
         className="h-12 w-12 rounded-full border border-white/10 object-cover"
-        src={studentProfile.avatar}
+        src={avatar}
       />
       <div>
-        <h2 className="text-[15px] font-bold text-white">
-          {studentProfile.name}
-        </h2>
+        <h2 className="text-[15px] font-bold text-white">{name}</h2>
         <p className="mt-1 text-[13px] text-[#9AA7BA]">Level 12 Explorer</p>
       </div>
     </div>
@@ -51,7 +63,9 @@ function MetricCard({ metric }) {
       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0D1626]">
         <Icon className={metric.color} size={19} />
       </div>
-      <h2 className="mt-5 text-[30px] font-extrabold leading-none text-white">{metric.value}</h2>
+      <h2 className="mt-5 text-[30px] font-extrabold leading-none text-white">
+        {metric.value}
+      </h2>
       <p className="mt-2 text-[13px] text-[#9AA7BA]">{metric.label}</p>
     </article>
   );
@@ -90,7 +104,9 @@ function ChallengeCard({ challenge }) {
       <div className="mt-auto flex items-center justify-between border-t border-white/[0.07] pt-5">
         <div className="flex items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
           <Banknote size={18} />
-          {challenge.cash_prize ? `Cash prize: ${challenge.cash_prize}` : "No cash prize"}
+          {challenge.cash_prize
+            ? `Cash prize: ${challenge.cash_prize}`
+            : "No cash prize"}
         </div>
         <div className="flex items-center gap-2 text-[14px] font-medium text-[#9AA7BA]">
           <Clock3 size={18} />
@@ -124,7 +140,60 @@ export default function StudentDashboard() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {studentDashboardStats.map((metric) => (
+          {(stats
+            ? [
+                {
+                  label: "My Submissions",
+                  value: stats.my_submissions ?? 0,
+                  icon: Globe,
+                  color: "text-[#60A5FA]",
+                },
+                {
+                  label: "Score Points",
+                  value: stats.total_score_points ?? 0,
+                  icon: Banknote,
+                  color: "text-[#F59E0B]",
+                },
+                {
+                  label: "Challenges Open",
+                  value: stats.open_challenges ?? 0,
+                  icon: Clock3,
+                  color: "text-[#60A5FA]",
+                },
+                {
+                  label: "Shortlisted",
+                  value: stats.shortlisted ?? 0,
+                  icon: ArrowRight,
+                  color: "text-[#22C55E]",
+                },
+              ]
+            : [
+                {
+                  label: "My Submissions",
+                  value: "—",
+                  icon: Globe,
+                  color: "text-[#60A5FA]",
+                },
+                {
+                  label: "Score Points",
+                  value: "—",
+                  icon: Banknote,
+                  color: "text-[#F59E0B]",
+                },
+                {
+                  label: "Challenges Open",
+                  value: "—",
+                  icon: Clock3,
+                  color: "text-[#60A5FA]",
+                },
+                {
+                  label: "Shortlisted",
+                  value: "—",
+                  icon: ArrowRight,
+                  color: "text-[#22C55E]",
+                },
+              ]
+          ).map((metric) => (
             <MetricCard key={metric.label} metric={metric} />
           ))}
         </div>
@@ -159,8 +228,11 @@ export default function StudentDashboard() {
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2 min-[1300px]:grid-cols-3">
-          {studentDashboardChallenges.map((challenge) => (
-            <ChallengeCard challenge={challenge} key={challenge.title} />
+          {challenges.map((challenge) => (
+            <ChallengeCard
+              challenge={challenge}
+              key={challenge.id || challenge.title}
+            />
           ))}
         </div>
       </motion.main>

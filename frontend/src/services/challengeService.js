@@ -46,8 +46,10 @@ function normalizeChallenge(payload) {
   };
 }
 
-export async function fetchChallenges() {
-  const response = await apiRequest("get", "/api/challenges/");
+export async function fetchChallenges(params = {}) {
+  const config = {};
+  if (params && Object.keys(params).length) config.params = params;
+  const response = await apiRequest("get", "/api/challenges/", null, config);
   const payload = Array.isArray(response) ? response : response?.results || [];
   return payload.map(normalizeChallenge);
 }

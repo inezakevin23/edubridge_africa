@@ -157,6 +157,7 @@ export function buildApiError(error) {
     error?.response?.data?.message || error?.message || "Request failed";
   const apiError = new Error(message);
   apiError.fieldErrors = fieldErrors;
+  apiError.status = error?.response?.status || null;
   return apiError;
 }
 

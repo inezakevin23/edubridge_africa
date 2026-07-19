@@ -14,6 +14,7 @@ import Login from "../pages/Login";
 import StudentDashboardPage from "../pages/StudentDashboardPage";
 import StudentRegistration from "../pages/StudentRegistration";
 import ProtectedRoute from "./ProtectedRoute";
+import useAuth from "../context/useAuth";
 
 export default function Router() {
   return (
@@ -32,104 +33,92 @@ export default function Router() {
         <Route
           path="/create-challenge"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["company"]}>
               <CreateChallengePage />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/company-submissions"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["company"]}>
               <CompanySubmissionsReviewPage />
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/submit-solution"
-          element={
-            <ProtectedRoute>
-              <SubmitSolutionPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/challenges/:slug/submit"
-          element={
-            <ProtectedRoute>
-              <SubmitSolutionPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <StudentDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student-dashboard"
-          element={
-            <ProtectedRoute>
-              <StudentDashboardPage />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/company-dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["company"]}>
               <CompanyDashboardPage />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/company-profile"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["company"]}>
               <ProfilePage type="company" />
             </ProtectedRoute>
           }
         />
+
+        {/* Intern/Student Workspace Boundaries */}
         <Route
-          path="/complete-profile/company"
+          path="/submit-solution"
           element={
-            <ProtectedRoute>
-              <ProfilePage type="company" />
+            <ProtectedRoute allowedRoles={["intern"]}>
+              <SubmitSolutionPage />
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/student-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["intern"]}>
+              <StudentDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/profile"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["intern"]}>
               <ProfilePage type="intern" />
             </ProtectedRoute>
           }
         />
+
+        {/* Smart Conditional Hub Router */}
         <Route
-          path="/complete-profile/intern"
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <ProfilePage type="intern" />
+              {/* If they navigate to /dashboard directly, auto-toggle the page type */}
+              <RoleBasedDashboardRedirect />
             </ProtectedRoute>
           }
         />
+
         <Route
-          path="/student-feedback"
-          element={
-            <ProtectedRoute>
-              <StudentFeedbackPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/submissions/:id"
+          path="/solution/:id"
           element={
             <ProtectedRoute>
               <SolutionDetailPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/feedback/:id"
+          element={
+            <ProtectedRoute>
+              <StudentFeedbackPage />
             </ProtectedRoute>
           }
         />
@@ -138,5 +127,14 @@ export default function Router() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+function RoleBasedDashboardRedirect() {
+  const { user } = useAuth();
+  return user?.role === "company" ? (
+    <CompanyDashboardPage />
+  ) : (
+    <StudentDashboardPage />
   );
 }

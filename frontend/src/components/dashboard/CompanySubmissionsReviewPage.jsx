@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bot,
   ChevronDown,
@@ -16,13 +16,12 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
-import {
-  companySubmissionsNavItems,
-  companySubmissionsStats,
-} from "../../data/companySubmissionsReview";
+import { companySubmissionsNavItems } from "../../data/companySubmissionsReview";
 import CompanyTopbar from "../layout/CompanyTopbar";
-// localNotifications removed; we now rely on backend notifications
-import { fetchSubmissions } from "../../services/submissionService";
+import {
+  fetchSubmissions,
+  reviewSubmission,
+} from "../../services/submissionService";
 import { fetchCompanyDashboardStats } from "../../services/dashboardService";
 
 function StatCard({ stat }) {
@@ -106,7 +105,7 @@ function SubmissionCard({ item }) {
   const [shortlisted, setShortlisted] = useState(Boolean(item.shortlisted));
   const [submissionStatus, setSubmissionStatus] = useState(item.status);
 
-  const sendFeedback = () => {
+  const sendFeedback = async () => {
     const trimmedFeedback = feedback.trim();
 
     if (
@@ -121,6 +120,22 @@ function SubmissionCard({ item }) {
     setSubmissionStatus("reviewed");
     setFeedback("");
     setIsFeedbackOpen(false);
+
+    if (item.id) {
+      try {
+        await reviewSubmission(item.id, {
+          feedback: trimmedFeedback,
+          company_score: Number(companyScore),
+          status: "reviewed",
+          shortlisted,
+          cash_prize_awarded: cashPrizeAwarded
+            ? parseFloat(cashPrizeAwarded)
+            : 0,
+        });
+      } catch {
+        // silent fail - UI already reflects the review
+      }
+    }
   };
 
   return (
@@ -201,7 +216,16 @@ function SubmissionCard({ item }) {
 
         <div className="flex flex-col gap-3 lg:items-stretch">
           <div className="flex items-center justify-between gap-4 lg:block">
-            <ScoreRing score={item.score} tone={item.scoreTone} />
+            <ScoreRing
+              score={companyScore}
+              tone={
+                companyScore >= 80
+                  ? "emerald"
+                  : companyScore >= 60
+                    ? "violet"
+                    : "amber"
+              }
+            />
             <div className="min-w-[150px] lg:mt-4">
               <label className="mb-2 block text-[12px] font-semibold text-[#9AA7BA]">
                 Cash prize awarded
@@ -219,15 +243,19 @@ function SubmissionCard({ item }) {
 
           <button
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#1A2639] px-4 text-[13px] font-extrabold text-white transition hover:bg-[#24324A]"
-            onClick={() => {
-              setShortlisted((value) => !value);
-              if (!shortlisted)
-                addLocalNotification({
-                  title: "Challenge shortlist",
-                  message: `You were shortlisted for ${item.name}'s challenge submission.`,
-                  notification_type: "shortlisted",
-                  related_object_id: item.id,
-                });
+            onClick={async () => {
+              const newVal = !shortlisted;
+              setShortlisted(newVal);
+              if (newVal && item.id) {
+                try {
+                  await reviewSubmission(item.id, {
+                    shortlisted: true,
+                    status: "reviewed",
+                  });
+                } catch {
+                  // UI revert not critical here
+                }
+              }
             }}
             type="button"
           >
@@ -244,7 +272,7 @@ function SubmissionCard({ item }) {
           </button>
           <Link
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#0E1728] px-4 text-[13px] font-bold text-[#9AA7BA] transition hover:bg-[#182237] hover:text-white"
-            to={`/submissions/${item.id}`}
+            to={`/solution/${item.id}`}
           >
             <Eye size={16} />
             View Full Solution
@@ -465,7 +493,36 @@ export default function CompanySubmissionsReviewPage() {
                   color: "text-white",
                 },
               ]
-            : companySubmissionsStats
+            : [
+                {
+                  label: "Total Submissions",
+                  value: "—",
+                  icon: Mail,
+                  background: "bg-[#8B5CF6]",
+                  color: "text-white",
+                },
+                {
+                  label: "Reviewed Submissions",
+                  value: "—",
+                  icon: Mail,
+                  background: "bg-[#22C55E]",
+                  color: "text-white",
+                },
+                {
+                  label: "Shortlisted",
+                  value: "—",
+                  icon: Mail,
+                  background: "bg-[#A78BFA]",
+                  color: "text-white",
+                },
+                {
+                  label: "Active Challenges",
+                  value: "—",
+                  icon: Mail,
+                  background: "bg-[#F59E0B]",
+                  color: "text-white",
+                },
+              ]
           ).map((stat) => (
             <StatCard key={stat.label} stat={stat} />
           ))}

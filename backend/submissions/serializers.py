@@ -6,6 +6,7 @@ from django.utils import timezone
 
 class SubmissionSerializer(serializers.ModelSerializer):
     challenge_title = serializers.CharField(source="challenge.title", read_only=True)
+    challenge_company_name = serializers.CharField(source="challenge.company.company_name", read_only=True, default=None)
     intern_name = serializers.SerializerMethodField()
     team_name = serializers.CharField(source="team.leader.get_full_name", read_only=True, allow_null=True)
 

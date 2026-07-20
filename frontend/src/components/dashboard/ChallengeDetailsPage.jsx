@@ -26,19 +26,17 @@ function HeroCard({ challenge }) {
           </div>
           <div>
             <p className="text-[13px] text-[#9AA7BA]">
-              Posted by {challenge.company.legalName}
+              Posted by{" "}
+              {(challenge.companyObj || challenge.company)?.legalName ||
+                challenge.company}
             </p>
             <h2 className="mt-1 text-[24px] font-extrabold leading-tight text-white md:text-[28px]">
               {challenge.title}
             </h2>
             <div className="mt-5 flex flex-wrap gap-2">
-              {[...challenge.tags, challenge.level].map((tag, index) => (
+              {challenge.tags.map((tag) => (
                 <span
-                  className={`rounded-xl px-3 py-1.5 text-[12px] font-semibold ${
-                    index === challenge.tags.length
-                      ? "bg-violet-500/15 text-[#A879FF]"
-                      : "bg-[#0F172A] text-[#AAB4C3]"
-                  }`}
+                  className="rounded-xl bg-[#0F172A] px-3 py-1.5 text-[12px] font-semibold text-[#AAB4C3]"
                   key={tag}
                 >
                   {tag}
@@ -75,7 +73,6 @@ function ApplyCard({ challenge }) {
       ChevronRight,
     ],
     ["Deadline", challenge.deadline || "Flexible", ClipboardList],
-    ["Format", challenge.level || "Open", FileText],
   ];
 
   return (
@@ -172,7 +169,7 @@ export default function ChallengeDetailsPage() {
   return (
     <DashboardLayout
       navItems={studentDashboardNavItems}
-      activeIndex={2}
+      activeIndex={1}
       bottomPanel={null}
       topbar={<Topbar />}
       workspace="student"
@@ -279,7 +276,7 @@ export default function ChallengeDetailsPage() {
 
           <div className="space-y-7 lg:sticky lg:top-24 lg:self-start">
             <ApplyCard challenge={challenge} />
-            <CompanyCard company={challenge.company} />
+            <CompanyCard company={challenge.companyObj || challenge.company} />
           </div>
         </div>
       </motion.main>

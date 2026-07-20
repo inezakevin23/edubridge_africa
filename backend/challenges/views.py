@@ -52,10 +52,15 @@ class ChallengeListView(ListAPIView):
     ]
 
     def get_queryset(self):
+        from django.db.models import Count
+
         queryset = Challenge.objects.filter(status="published")
         industry = self.request.query_params.get("industry")
         if industry:
             queryset = queryset.filter(industry_id=industry)
+        queryset = queryset.annotate(
+            submissions_count=Count("submissions", distinct=True)
+        )
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -63,9 +68,16 @@ class ChallengeListView(ListAPIView):
 
 
 class ChallengeDetailView(RetrieveAPIView):
-    queryset = Challenge.objects.filter(status="published")
     serializer_class = ChallengeDetailSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated and hasattr(user, 'company_profile'):
+            return Challenge.objects.filter(
+                Q(status="published") | Q(company__user=user)
+            )
+        return Challenge.objects.filter(status="published")
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -145,7 +157,11 @@ class MyChallengesView(ListAPIView):
     pagination_class = StandardPagination
 
     def get_queryset(self):
-        return Challenge.objects.filter(company__user=self.request.user)
+        from django.db.models import Count
+
+        return Challenge.objects.filter(company__user=self.request.user).annotate(
+            submissions_count=Count("submissions", distinct=True)
+        )
 
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)

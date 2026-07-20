@@ -11,13 +11,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
-import {
-  companyDashboardTalent,
-  companyDashboardMetrics,
-  companyDashboardNavItems,
-} from "../../data/companyDashboard";
-import { fetchChallenges } from "../../services/challengeService";
+import { companyDashboardNavItems } from "../../data/companyDashboard";
+import { fetchMyChallenges } from "../../services/challengeService";
 import { fetchCompanyDashboardStats } from "../../services/dashboardService";
+import { fetchSubmissions } from "../../services/submissionService";
 
 function MetricCard({ metric }) {
   const Icon = metric.icon;
@@ -70,7 +67,12 @@ function ActiveChallengesTable({ challenges }) {
             {challenges.map((challenge) => (
               <tr key={challenge.id || challenge.title}>
                 <td className="px-7 py-5 font-bold text-white">
-                  {challenge.title}
+                  <Link
+                    to={`/create-challenge/${challenge.id}`}
+                    className="transition hover:text-[#8B5CF6]"
+                  >
+                    {challenge.title}
+                  </Link>
                 </td>
                 <td className="px-5 py-5">
                   <span className="rounded-lg bg-white/[0.045] px-3 py-1.5 text-[#9AA7BA]">
@@ -82,8 +84,14 @@ function ActiveChallengesTable({ challenges }) {
                 </td>
                 <td className="px-5 py-5 text-[#9AA7BA]">{challenge.time}</td>
                 <td className="px-5 py-5">
-                  <span className="rounded-full bg-emerald-500/10 px-3 py-1.5 text-[13px] font-extrabold text-[#22C55E]">
-                    Active
+                  <span
+                    className={`rounded-full px-3 py-1.5 text-[13px] font-extrabold ${
+                      challenge.status === "draft"
+                        ? "bg-amber-500/10 text-[#F59E0B]"
+                        : "bg-emerald-500/10 text-[#22C55E]"
+                    }`}
+                  >
+                    {challenge.status === "draft" ? "Draft" : "Active"}
                   </span>
                 </td>
               </tr>
@@ -95,7 +103,7 @@ function ActiveChallengesTable({ challenges }) {
   );
 }
 
-function ShortlistedSubmissions() {
+function ShortlistedSubmissions({ submissions }) {
   return (
     <section className="rounded-[22px] border border-violet-400/15 bg-[radial-gradient(circle_at_90%_0%,rgba(139,92,246,0.42)_0%,transparent_38%),linear-gradient(145deg,#171B3A_0%,#111827_100%)] p-7 shadow-[0_22px_62px_rgba(0,0,0,0.22)]">
       <h2 className="mb-7 flex items-center gap-3 text-[22px] font-extrabold text-white">
@@ -104,10 +112,15 @@ function ShortlistedSubmissions() {
       </h2>
 
       <div className="space-y-5">
-        {companyDashboardTalent.map((person) => (
+        {submissions.length === 0 && (
+          <p className="text-[14px] text-[#9AA7BA]">
+            No shortlisted submissions yet.
+          </p>
+        )}
+        {submissions.map((person) => (
           <article
             className="rounded-[22px] border border-white/[0.05] bg-[#0D1626] p-5"
-            key={person.name}
+            key={person.id || person.name}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -115,17 +128,13 @@ function ShortlistedSubmissions() {
                   {person.name}
                 </h3>
                 <p className="mt-1 text-[14px] font-semibold text-[#9B6CFF]">
-                  {person.role}
+                  {person.submitter_role || "Participant"}
                 </p>
               </div>
-              <span className="rounded-xl bg-white/[0.07] px-3 py-1.5 text-[13px] font-bold text-white">
-                {person.level}
-              </span>
             </div>
 
-            <p className="mt-5 flex items-center gap-2 text-[14px] text-[#9AA7BA]">
-              <Trophy className="text-[#F59E0B]" size={17} />
-              {person.badges} Skill Badges
+            <p className="mt-3 text-[13px] leading-6 text-[#9AA7BA]">
+              {person.summary || "Shortlisted for their submission."}
             </p>
 
             <div className="mt-5 flex items-center gap-3">
@@ -153,21 +162,94 @@ function ShortlistedSubmissions() {
 export default function CompanyDashboard() {
   const [challenges, setChallenges] = useState([]);
   const [stats, setStats] = useState(null);
+  const [shortlisted, setShortlisted] = useState([]);
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([fetchChallenges(), fetchCompanyDashboardStats()]).then(
-      ([challengeData, statsData]) => {
-        if (mounted) {
-          setChallenges(challengeData);
-          setStats(statsData);
-        }
-      },
-    );
+    Promise.all([
+      fetchMyChallenges(),
+      fetchCompanyDashboardStats(),
+      fetchSubmissions({ shortlisted: true }),
+    ]).then(([challengeData, statsData, subsData]) => {
+      if (!mounted) return;
+      setChallenges(challengeData);
+      setStats(statsData?.data || statsData || null);
+      const list = Array.isArray(subsData) ? subsData : subsData?.results || [];
+      setShortlisted(
+        list.map((s, idx) => ({
+          id: s.id,
+          name: s.intern_name || s.intern?.username || `Submission #${idx + 1}`,
+          submitter_role: s.intern?.role || "Participant",
+          summary: s.summary || s.feedback || "",
+        })),
+      );
+    });
     return () => {
       mounted = false;
     };
   }, []);
+
+  const metrics = stats
+    ? [
+        {
+          label: "Active challenges",
+          value: stats.active_challenges ?? 0,
+          trend: "+0",
+          icon: Building2,
+          color: "text-[#8B5CF6]",
+        },
+        {
+          label: "Total submissions",
+          value: stats.total_submissions ?? 0,
+          trend: "+0",
+          icon: Trophy,
+          color: "text-[#F59E0B]",
+        },
+        {
+          label: "Reviewed",
+          value: stats.reviewed_submissions ?? 0,
+          trend: "+0",
+          icon: TrendingUp,
+          color: "text-[#22C55E]",
+        },
+        {
+          label: "Shortlisted",
+          value: stats.shortlisted_submissions ?? 0,
+          trend: "+0",
+          icon: Sparkles,
+          color: "text-[#A78BFA]",
+        },
+      ]
+    : [
+        {
+          label: "Active challenges",
+          value: "—",
+          trend: "+0",
+          icon: Building2,
+          color: "text-[#8B5CF6]",
+        },
+        {
+          label: "Total submissions",
+          value: "—",
+          trend: "+0",
+          icon: Trophy,
+          color: "text-[#F59E0B]",
+        },
+        {
+          label: "Reviewed",
+          value: "—",
+          trend: "+0",
+          icon: TrendingUp,
+          color: "text-[#22C55E]",
+        },
+        {
+          label: "Shortlisted",
+          value: "—",
+          trend: "+0",
+          icon: Sparkles,
+          color: "text-[#A78BFA]",
+        },
+      ];
 
   return (
     <DashboardLayout
@@ -212,39 +294,7 @@ export default function CompanyDashboard() {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(stats
-            ? [
-                {
-                  label: "Active challenges",
-                  value: stats.active_challenges ?? 0,
-                  trend: "+0",
-                  icon: Building2,
-                  color: "text-[#8B5CF6]",
-                },
-                {
-                  label: "Total submissions",
-                  value: stats.total_submissions ?? 0,
-                  trend: "+0",
-                  icon: Trophy,
-                  color: "text-[#F59E0B]",
-                },
-                {
-                  label: "Reviewed",
-                  value: stats.reviewed_submissions ?? 0,
-                  trend: "+0",
-                  icon: TrendingUp,
-                  color: "text-[#22C55E]",
-                },
-                {
-                  label: "Shortlisted",
-                  value: stats.shortlisted_submissions ?? 0,
-                  trend: "+0",
-                  icon: Sparkles,
-                  color: "text-[#A78BFA]",
-                },
-              ]
-            : companyDashboardMetrics
-          ).map((metric) => (
+          {metrics.map((metric) => (
             <MetricCard key={metric.label} metric={metric} />
           ))}
         </div>
@@ -254,7 +304,7 @@ export default function CompanyDashboard() {
             <ActiveChallengesTable challenges={challenges} />
           </div>
           <div className="space-y-8">
-            <ShortlistedSubmissions />
+            <ShortlistedSubmissions submissions={shortlisted} />
           </div>
         </div>
       </motion.main>

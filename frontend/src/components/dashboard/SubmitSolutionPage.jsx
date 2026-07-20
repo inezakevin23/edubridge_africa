@@ -203,14 +203,23 @@ export default function SubmitSolutionPage() {
   };
   const { slug } = useParams();
   const [challenge, setChallenge] = useState(null);
+  const [challengeLoading, setChallengeLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
-    fetchChallengeBySlug(slug).then((data) => {
-      if (mounted) {
-        setChallenge(data);
-      }
-    });
+    fetchChallengeBySlug(slug)
+      .then((data) => {
+        if (mounted) {
+          setChallenge(data);
+          setChallengeLoading(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setChallenge(null);
+          setChallengeLoading(false);
+        }
+      });
     return () => {
       mounted = false;
     };
@@ -237,8 +246,12 @@ export default function SubmitSolutionPage() {
 
   const readiness = completedChecklist.filter(Boolean).length;
 
-  if (slug && !challenge) {
+  if (slug && !challengeLoading && !challenge) {
     return <Navigate to="/challenges" replace />;
+  }
+
+  if (challengeLoading) {
+    return <p className="p-8 text-white">Loading challenge...</p>;
   }
 
   const updateField = (field, value) => {
@@ -317,7 +330,7 @@ export default function SubmitSolutionPage() {
   return (
     <DashboardLayout
       navItems={studentDashboardNavItems}
-      activeIndex={2}
+      activeIndex={1}
       bottomPanel={null}
       topbar={<Topbar />}
       workspace="student"

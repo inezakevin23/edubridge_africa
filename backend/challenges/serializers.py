@@ -32,6 +32,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
         source="industry.name",
         read_only=True,
     )
+    submissions_count = serializers.IntegerField(read_only=True, default=0)
 
     class Meta:
         model = Challenge
@@ -43,6 +44,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
             "cash_prize",
             "submission_deadline",
             "status",
+            "submissions_count",
         )
 
 
@@ -58,6 +60,7 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
 
 class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
     requirements = ChallengeRequirementSerializer(many=True, write_only=True, required=False)
+    category = serializers.CharField(write_only=True, required=False, help_text="Industry name (e.g. 'Technology', 'Finance')")
 
     class Meta:
         model = Challenge
@@ -68,8 +71,14 @@ class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        from profiles.models import Industry
         requirements = validated_data.pop("requirements", [])
         company = validated_data.pop("company")
+        category = validated_data.pop("category", None)
+
+        if category and "industry" not in validated_data:
+            industry_obj, _ = Industry.objects.get_or_create(name=category)
+            validated_data["industry"] = industry_obj
 
         challenge = Challenge.objects.create(
             company=company,
@@ -81,7 +90,13 @@ class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
         return challenge
 
     def update(self, instance, validated_data):
+        from profiles.models import Industry
         requirements = validated_data.pop("requirements", None)
+        category = validated_data.pop("category", None)
+
+        if category and "industry" not in validated_data:
+            industry_obj, _ = Industry.objects.get_or_create(name=category)
+            validated_data["industry"] = industry_obj
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

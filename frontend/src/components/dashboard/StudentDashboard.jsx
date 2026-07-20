@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, Clock3, Banknote, Globe } from "lucide-react";
+import {
+  ArrowRight,
+  Clock3,
+  Banknote,
+  Globe,
+  BriefcaseBusiness,
+  Trophy,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
-import useAuth from "../../context/useAuth";
 import { fetchChallenges } from "../../services/challengeService";
 import { fetchInternDashboardStats } from "../../services/dashboardService";
 import {
@@ -12,48 +19,6 @@ import {
 } from "../../data/studentDashboard";
 
 // Note: studentDashboardStats and studentDashboardChallenges are replaced by live backend data
-
-function SidebarBottomPanel() {
-  const { user } = useAuth();
-  const name = user?.first_name
-    ? `${user.first_name} ${user.last_name || ""}`.trim()
-    : user?.username || "";
-  const avatar = user?.profile_picture || "https://i.pravatar.cc/100?img=12";
-
-  const [stats, setStats] = useState(null);
-  const [challenges, setChallenges] = useState([]);
-
-  useEffect(() => {
-    let mounted = true;
-    Promise.all([fetchInternDashboardStats(), fetchChallenges()])
-      .then(([statsResp, challengesResp]) => {
-        if (!mounted) return;
-        setStats(statsResp?.data || statsResp || null);
-        setChallenges(challengesResp || []);
-      })
-      .catch(() => {
-        if (mounted) {
-          setStats(null);
-          setChallenges([]);
-        }
-      });
-    return () => (mounted = false);
-  }, []);
-
-  return (
-    <div className="mt-auto flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0D1626] p-3">
-      <img
-        alt={name || "User"}
-        className="h-12 w-12 rounded-full border border-white/10 object-cover"
-        src={avatar}
-      />
-      <div>
-        <h2 className="text-[15px] font-bold text-white">{name}</h2>
-        <p className="mt-1 text-[13px] text-[#9AA7BA]">Level 12 Explorer</p>
-      </div>
-    </div>
-  );
-}
 
 function MetricCard({ metric }) {
   const Icon = metric.icon;
@@ -87,13 +52,9 @@ function ChallengeCard({ challenge }) {
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        {challenge.tags.map((tag, index) => (
+        {challenge.tags.map((tag) => (
           <span
-            className={`rounded-xl border px-3 py-1.5 text-[12px] font-semibold ${
-              index === 2
-                ? "border-violet-500/30 bg-violet-500/15 text-[#A879FF]"
-                : "border-white/[0.05] bg-[#0F172A] text-[#AAB4C3]"
-            }`}
+            className="rounded-xl border border-white/[0.05] bg-[#0F172A] px-3 py-1.5 text-[12px] font-semibold text-[#AAB4C3]"
             key={tag}
           >
             {tag}
@@ -118,11 +79,86 @@ function ChallengeCard({ challenge }) {
 }
 
 export default function StudentDashboard() {
+  const [stats, setStats] = useState(null);
+  const [challenges, setChallenges] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([fetchInternDashboardStats(), fetchChallenges()])
+      .then(([statsResp, challengesResp]) => {
+        if (!mounted) return;
+        const s = statsResp?.data || statsResp;
+        setStats(s);
+        setChallenges(Array.isArray(challengesResp) ? challengesResp : []);
+      })
+      .catch(() => {
+        if (mounted) {
+          setStats(null);
+          setChallenges([]);
+        }
+      });
+    return () => (mounted = false);
+  }, []);
+
+  const metrics = stats
+    ? [
+        {
+          label: "My Submissions",
+          value: stats.my_submissions ?? 0,
+          icon: Globe,
+          color: "text-[#60A5FA]",
+        },
+        {
+          label: "Score Points",
+          value: stats.total_score_points ?? 0,
+          icon: Banknote,
+          color: "text-[#F59E0B]",
+        },
+        {
+          label: "Active Challenges",
+          value: stats.active_challenges ?? 0,
+          icon: BriefcaseBusiness,
+          color: "text-[#9B6CFF]",
+        },
+        {
+          label: "Shortlisted",
+          value: stats.shortlisted_submissions ?? 0,
+          icon: Trophy,
+          color: "text-[#22C55E]",
+        },
+      ]
+    : [
+        {
+          label: "My Submissions",
+          value: "—",
+          icon: Globe,
+          color: "text-[#60A5FA]",
+        },
+        {
+          label: "Score Points",
+          value: "—",
+          icon: Banknote,
+          color: "text-[#F59E0B]",
+        },
+        {
+          label: "Active Challenges",
+          value: "—",
+          icon: BriefcaseBusiness,
+          color: "text-[#9B6CFF]",
+        },
+        {
+          label: "Shortlisted",
+          value: "—",
+          icon: Trophy,
+          color: "text-[#22C55E]",
+        },
+      ];
+
   return (
     <DashboardLayout
       navItems={studentDashboardNavItems}
       activeIndex={0}
-      bottomPanel={<SidebarBottomPanel />}
+      bottomPanel={null}
       topbar={<Topbar />}
       workspace="student"
     >
@@ -140,60 +176,7 @@ export default function StudentDashboard() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(stats
-            ? [
-                {
-                  label: "My Submissions",
-                  value: stats.my_submissions ?? 0,
-                  icon: Globe,
-                  color: "text-[#60A5FA]",
-                },
-                {
-                  label: "Score Points",
-                  value: stats.total_score_points ?? 0,
-                  icon: Banknote,
-                  color: "text-[#F59E0B]",
-                },
-                {
-                  label: "Challenges Open",
-                  value: stats.open_challenges ?? 0,
-                  icon: Clock3,
-                  color: "text-[#60A5FA]",
-                },
-                {
-                  label: "Shortlisted",
-                  value: stats.shortlisted ?? 0,
-                  icon: ArrowRight,
-                  color: "text-[#22C55E]",
-                },
-              ]
-            : [
-                {
-                  label: "My Submissions",
-                  value: "—",
-                  icon: Globe,
-                  color: "text-[#60A5FA]",
-                },
-                {
-                  label: "Score Points",
-                  value: "—",
-                  icon: Banknote,
-                  color: "text-[#F59E0B]",
-                },
-                {
-                  label: "Challenges Open",
-                  value: "—",
-                  icon: Clock3,
-                  color: "text-[#60A5FA]",
-                },
-                {
-                  label: "Shortlisted",
-                  value: "—",
-                  icon: ArrowRight,
-                  color: "text-[#22C55E]",
-                },
-              ]
-          ).map((metric) => (
+          {metrics.map((metric) => (
             <MetricCard key={metric.label} metric={metric} />
           ))}
         </div>
@@ -218,13 +201,13 @@ export default function StudentDashboard() {
           <h2 className="text-[24px] font-extrabold text-white">
             Latest Challenges
           </h2>
-          <a
+          <Link
             className="flex items-center gap-2 text-[15px] font-bold text-[#8B5CF6] transition hover:text-[#A879FF]"
-            href="#"
+            to="/challenges"
           >
             View all
             <ArrowRight size={18} />
-          </a>
+          </Link>
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2 min-[1300px]:grid-cols-3">

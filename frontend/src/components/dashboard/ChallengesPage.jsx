@@ -208,8 +208,8 @@ export default function ChallengesPage() {
         .slice()
         .sort(
           (a, b) =>
-            new Date(a.deadline || "9999-12-31") -
-            new Date(b.deadline || "9999-12-31"),
+            new Date(a.deadline_raw || "9999-12-31") -
+            new Date(b.deadline_raw || "9999-12-31"),
         );
 
     return list;
@@ -233,7 +233,7 @@ export default function ChallengesPage() {
   return (
     <DashboardLayout
       navItems={studentDashboardNavItems}
-      activeIndex={2}
+      activeIndex={1}
       bottomPanel={null}
       topbar={<Topbar />}
       workspace="student"

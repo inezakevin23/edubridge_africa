@@ -24,8 +24,6 @@ import { studentDashboardNavItems } from "../../data/studentDashboard";
 import { companyDashboardNavItems } from "../../data/companyDashboard";
 import useAuth from "../../context/useAuth";
 import {
-  createCompanyProfile,
-  createInternProfile,
   updateCompanyProfile,
   updateInternProfile,
   fetchCompanyProfile,
@@ -379,13 +377,12 @@ export default function ProfilePage({ type }) {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editing, setEditing] = useState(false);
   const [notice, setNotice] = useState("");
-  const name = useMemo(
-    () =>
-      isCompany
-        ? profile.company_name
-        : `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
-    [isCompany, profile],
-  );
+  const name = useMemo(() => {
+    if (!profile) return "";
+    return isCompany
+      ? profile.company_name
+      : `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+  }, [isCompany, profile]);
 
   useEffect(() => {
     let mounted = true;
@@ -403,7 +400,7 @@ export default function ProfilePage({ type }) {
         } else {
           setProfile({});
         }
-      } catch (err) {
+      } catch {
         setProfile({});
       } finally {
         setLoadingProfile(false);
@@ -467,8 +464,8 @@ export default function ProfilePage({ type }) {
           };
 
       const response = isCompany
-        ? await createCompanyProfile(payload)
-        : await createInternProfile(payload);
+        ? await updateCompanyProfile(payload)
+        : await updateInternProfile(payload);
 
       const nextProfile = response?.data || response;
       if (nextProfile) {
@@ -483,14 +480,16 @@ export default function ProfilePage({ type }) {
     }
   };
 
-  const avatar = !isCompany ? profile.profile_picture : null;
+  const avatar = !isCompany && profile ? profile.profile_picture : null;
   const initials = name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  const email = profile.email || user?.email;
+    ? name
+        .split(" ")
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "?";
+  const email = profile?.email || user?.email;
 
   return (
     <DashboardLayout
@@ -505,93 +504,103 @@ export default function ProfilePage({ type }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        <div className="flex flex-col justify-between gap-5 border-b border-white/[0.07] pb-7 sm:flex-row sm:items-start">
-          <div className="flex min-w-0 gap-4 sm:gap-6">
-            {avatar ? (
-              <img
-                alt={name}
-                className="h-20 w-20 shrink-0 rounded-[18px] border border-violet-400/25 object-cover sm:h-24 sm:w-24"
-                src={avatar}
-              />
-            ) : (
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[18px] bg-[#F59E0B]/15 text-[27px] font-extrabold text-[#FBBF24] sm:h-24 sm:w-24">
-                {initials}
-              </div>
-            )}
-            <div className="min-w-0 pt-1">
-              <div className="mb-3">
-                <StatusBadge status={profile.verification_status} />
-              </div>
-              <h1 className="truncate text-[28px] font-extrabold text-white sm:text-[34px]">
-                {name}
-              </h1>
-              <p className="mt-2 text-[15px] text-[#AAB6C8]">
-                {isCompany
-                  ? profile.industry?.name
-                  : `${titleCase(profile.current_status)}${profile.field_of_study ? ` · ${profile.field_of_study}` : ""}`}
-              </p>
-            </div>
-          </div>
-          {editing ? (
-            <div className="flex gap-3">
-              <button
-                aria-label="Cancel profile editing"
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.07] text-white transition hover:bg-white/[0.12]"
-                onClick={() => setEditing(false)}
-                type="button"
-              >
-                <X size={19} />
-              </button>
-              <button
-                className="flex h-11 items-center gap-2 rounded-xl bg-[#8B5CF6] px-4 text-[14px] font-bold text-white transition hover:bg-[#9568FF]"
-                onClick={saveProfile}
-                type="button"
-              >
-                <Save size={17} /> Save changes
-              </button>
-            </div>
-          ) : (
-            <button
-              className="flex h-11 items-center gap-2 rounded-xl bg-white/[0.07] px-4 text-[14px] font-bold text-white transition hover:bg-white/[0.12]"
-              onClick={() => {
-                setEditing(true);
-                setNotice("");
-              }}
-              type="button"
-            >
-              <Edit3 size={17} /> Edit profile
-            </button>
-          )}
-        </div>
-        {notice ? (
-          <p className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-[14px] font-semibold text-[#86EFAC]">
-            {notice}
+        {!profile || loadingProfile ? (
+          <p className="text-[15px] font-semibold text-[#9AA7BA]">
+            Loading profile...
           </p>
-        ) : null}
-        <div className="mt-6 grid gap-4 rounded-[18px] border border-white/[0.07] bg-[#0D1626] p-5 sm:grid-cols-3">
-          <Detail icon={Mail} label="Email" value={email} />
-          <Detail icon={Phone} label="Phone" value={profile.phone_number} />
-          <Detail
-            icon={MapPin}
-            label="Location"
-            value={[profile.city, profile.country].filter(Boolean).join(", ")}
-          />
-        </div>
-        <div className="mt-6">
-          {isCompany ? (
-            <CompanyProfile
-              profile={profile}
-              editing={editing}
-              onChange={changeProfile}
-            />
-          ) : (
-            <InternProfile
-              profile={profile}
-              editing={editing}
-              onChange={changeProfile}
-            />
-          )}
-        </div>
+        ) : (
+          <>
+            <div className="flex flex-col justify-between gap-5 border-b border-white/[0.07] pb-7 sm:flex-row sm:items-start">
+              <div className="flex min-w-0 gap-4 sm:gap-6">
+                {avatar ? (
+                  <img
+                    alt={name}
+                    className="h-20 w-20 shrink-0 rounded-[18px] border border-violet-400/25 object-cover sm:h-24 sm:w-24"
+                    src={avatar}
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[18px] bg-[#F59E0B]/15 text-[27px] font-extrabold text-[#FBBF24] sm:h-24 sm:w-24">
+                    {initials}
+                  </div>
+                )}
+                <div className="min-w-0 pt-1">
+                  <div className="mb-3">
+                    <StatusBadge status={profile.verification_status} />
+                  </div>
+                  <h1 className="truncate text-[28px] font-extrabold text-white sm:text-[34px]">
+                    {name}
+                  </h1>
+                  <p className="mt-2 text-[15px] text-[#AAB6C8]">
+                    {isCompany
+                      ? profile.industry?.name
+                      : `${titleCase(profile.current_status)}${profile.field_of_study ? ` · ${profile.field_of_study}` : ""}`}
+                  </p>
+                </div>
+              </div>
+              {editing ? (
+                <div className="flex gap-3">
+                  <button
+                    aria-label="Cancel profile editing"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.07] text-white transition hover:bg-white/[0.12]"
+                    onClick={() => setEditing(false)}
+                    type="button"
+                  >
+                    <X size={19} />
+                  </button>
+                  <button
+                    className="flex h-11 items-center gap-2 rounded-xl bg-[#8B5CF6] px-4 text-[14px] font-bold text-white transition hover:bg-[#9568FF]"
+                    onClick={saveProfile}
+                    type="button"
+                  >
+                    <Save size={17} /> Save changes
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="flex h-11 items-center gap-2 rounded-xl bg-white/[0.07] px-4 text-[14px] font-bold text-white transition hover:bg-white/[0.12]"
+                  onClick={() => {
+                    setEditing(true);
+                    setNotice("");
+                  }}
+                  type="button"
+                >
+                  <Edit3 size={17} /> Edit profile
+                </button>
+              )}
+            </div>
+            {notice ? (
+              <p className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-[14px] font-semibold text-[#86EFAC]">
+                {notice}
+              </p>
+            ) : null}
+            <div className="mt-6 grid gap-4 rounded-[18px] border border-white/[0.07] bg-[#0D1626] p-5 sm:grid-cols-3">
+              <Detail icon={Mail} label="Email" value={email} />
+              <Detail icon={Phone} label="Phone" value={profile.phone_number} />
+              <Detail
+                icon={MapPin}
+                label="Location"
+                value={[profile.city, profile.country]
+                  .filter(Boolean)
+                  .join(", ")}
+              />
+            </div>
+            <div className="mt-6">
+              {isCompany ? (
+                <CompanyProfile
+                  profile={profile}
+                  editing={editing}
+                  onChange={changeProfile}
+                />
+              ) : (
+                <InternProfile
+                  profile={profile}
+                  editing={editing}
+                  onChange={changeProfile}
+                />
+              )}
+            </div>
+          </>
+        )}
       </motion.main>
     </DashboardLayout>
   );

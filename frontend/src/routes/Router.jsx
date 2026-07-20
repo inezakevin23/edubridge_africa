@@ -27,11 +27,28 @@ export default function Router() {
         <Route path="/register" element={<StudentRegistration />} />
         <Route path="/student-registration" element={<StudentRegistration />} />
         <Route path="/challenges" element={<Challenges />} />
+        <Route
+          path="/challenges/:slug/submit"
+          element={
+            <ProtectedRoute allowedRoles={["intern"]}>
+              <SubmitSolutionPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/challenges/:slug" element={<ChallengeDetailsPage />} />
 
         {/* Protected routes */}
         <Route
           path="/create-challenge"
+          element={
+            <ProtectedRoute allowedRoles={["company"]}>
+              <CreateChallengePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/create-challenge/:id"
           element={
             <ProtectedRoute allowedRoles={["company"]}>
               <CreateChallengePage />
@@ -67,6 +84,7 @@ export default function Router() {
         />
 
         {/* Intern/Student Workspace Boundaries */}
+
         <Route
           path="/submit-solution"
           element={
@@ -118,6 +136,15 @@ export default function Router() {
           path="/feedback/:id"
           element={
             <ProtectedRoute>
+              <StudentFeedbackPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student-feedback"
+          element={
+            <ProtectedRoute allowedRoles={["intern"]}>
               <StudentFeedbackPage />
             </ProtectedRoute>
           }

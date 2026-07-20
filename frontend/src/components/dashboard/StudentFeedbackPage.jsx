@@ -2,35 +2,17 @@ import {
   BriefcaseBusiness,
   Eye,
   Filter,
-  Share2,
   SlidersHorizontal,
   ThumbsUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
-import {
-  studentFeedbackItems,
-  studentFeedbackStats,
-} from "../../data/studentFeedback";
-
-function SidebarBottomPanel() {
-  return (
-    <div className="mt-auto flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#0D1626] p-3">
-      <img
-        alt="Adebayo O."
-        className="h-12 w-12 rounded-full border border-white/10 object-cover"
-        src="https://i.pravatar.cc/100?img=12"
-      />
-      <div>
-        <h2 className="text-[15px] font-bold text-white">Adebayo O.</h2>
-        <p className="mt-1 text-[13px] text-[#9AA7BA]">Level 12 Explorer</p>
-      </div>
-    </div>
-  );
-}
+import { fetchMySubmissions } from "../../services/submissionService";
+import { fetchInternDashboardStats } from "../../services/dashboardService";
 
 function StatCard({ stat }) {
   const Icon = stat.icon;
@@ -127,93 +109,33 @@ function FeedbackCard({ feedback }) {
         </div>
       </div>
 
-      <div className="grid gap-7 p-6 lg:grid-cols-[minmax(0,1fr)_390px]">
-        <div>
-          <div className="mb-4 flex items-center gap-3">
-            <img
-              alt={feedback.reviewer}
-              className="h-11 w-11 rounded-full object-cover"
-              src={feedback.reviewerAvatar}
-            />
-            <div>
-              <h3 className="text-[15px] font-extrabold text-white">
-                {feedback.reviewer}
-              </h3>
-              <p className="text-[13px] font-medium text-[#9AA7BA]">
-                {feedback.reviewerRole} · {feedback.company}
-              </p>
-            </div>
+      <div className="p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#35266A] text-[14px] font-extrabold text-[#A78BFA]">
+            {feedback.reviewerInitial}
           </div>
-
-          <blockquote className="rounded-[18px] border border-white/[0.04] bg-[#0F1728] p-5 text-[15px] leading-7 text-[#AAB5C7]">
-            {feedback.quote}
-          </blockquote>
-
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              className="flex h-10 items-center gap-2 rounded-full bg-[#2B215A] px-4 text-[13px] font-extrabold text-[#A78BFA] transition hover:bg-[#382877] hover:text-white"
-              type="button"
-            >
-              <ThumbsUp size={15} />
-              Helpful
-            </button>
-            <button
-              className="flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 text-[13px] font-bold text-[#AAB5C7] transition hover:bg-[#22304A] hover:text-white"
-              type="button"
-            >
-              <Share2 size={15} />
-              Share Feedback
-            </button>
-            <Link
-              className="flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 text-[13px] font-bold text-[#AAB5C7] transition hover:bg-[#22304A] hover:text-white"
-              to={`/submissions/${feedback.solutionId}`}
-            >
-              <Eye size={15} />
-              View Solution
-            </Link>
+          <div>
+            <h3 className="text-[15px] font-extrabold text-white">
+              {feedback.reviewer}
+            </h3>
+            <p className="text-[13px] font-medium text-[#9AA7BA]">
+              {feedback.reviewerRole}
+            </p>
           </div>
         </div>
 
-        <div>
-          <h3 className="mb-5 text-[16px] font-extrabold text-white">
-            Score Breakdown
-          </h3>
-          <div className="space-y-4">
-            {feedback.breakdown.map(([label, score]) => {
-              const barColor =
-                score >= 90
-                  ? "bg-[#22C55E]"
-                  : score < 75
-                    ? "bg-[#F59E0B]"
-                    : "bg-[#8B5CF6]";
+        <blockquote className="rounded-[18px] border border-white/[0.04] bg-[#0F1728] p-5 text-[15px] leading-7 text-[#AAB5C7]">
+          {feedback.quote}
+        </blockquote>
 
-              return (
-                <div
-                  className="grid grid-cols-[140px_minmax(0,1fr)_36px] items-center gap-4 text-[13px]"
-                  key={label}
-                >
-                  <span className="font-medium text-[#9AA7BA]">{label}</span>
-                  <div className="h-2 overflow-hidden rounded-full bg-[#0F1728]">
-                    <div
-                      className={`h-full rounded-full ${barColor}`}
-                      style={{ width: `${score}%` }}
-                    />
-                  </div>
-                  <span
-                    className={`text-right font-extrabold ${
-                      score >= 90
-                        ? "text-[#22C55E]"
-                        : score < 75
-                          ? "text-[#F59E0B]"
-                          : "text-[#A78BFA]"
-                    }`}
-                  >
-                    {score}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link
+            className="flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 text-[13px] font-bold text-[#AAB5C7] transition hover:bg-[#22304A] hover:text-white"
+            to={`/solution/${feedback.solutionId}`}
+          >
+            <Eye size={15} />
+            View Solution
+          </Link>
         </div>
       </div>
     </article>
@@ -221,11 +143,116 @@ function FeedbackCard({ feedback }) {
 }
 
 export default function StudentFeedbackPage() {
+  const [submissions, setSubmissions] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([fetchMySubmissions({ page: 1 }), fetchInternDashboardStats()])
+      .then(([subResp, statsResp]) => {
+        if (!mounted) return;
+        const list = Array.isArray(subResp) ? subResp : subResp?.results || [];
+        const s = statsResp?.data || statsResp;
+        setSubmissions(list);
+        setStats(s);
+      })
+      .catch(() => {
+        if (mounted) {
+          setSubmissions([]);
+          setStats(null);
+        }
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => (mounted = false);
+  }, []);
+
+  // Stats cards from real backend data
+  const feedbackStats = stats
+    ? [
+        {
+          label: "Total Reviews",
+          value: stats.my_submissions ?? submissions.length ?? 0,
+          icon: Filter,
+          color: "text-[#8B5CF6]",
+          background: "bg-violet-500/12",
+        },
+        {
+          label: "Score Points",
+          value: stats.total_score_points ?? 0,
+          icon: Filter,
+          color: "text-[#F59E0B]",
+          background: "bg-amber-500/10",
+        },
+        {
+          label: "Times Shortlisted",
+          value: stats.shortlisted_submissions ?? 0,
+          icon: ThumbsUp,
+          color: "text-[#22C55E]",
+          background: "bg-emerald-500/10",
+        },
+        {
+          label: "Pending Reviews",
+          value: submissions.filter(
+            (s) => s.status === "submitted" || s.status === "under_review",
+          ).length,
+          icon: SlidersHorizontal,
+          color: "text-[#F59E0B]",
+          background: "bg-amber-500/10",
+        },
+      ]
+    : [];
+
+  // Build feedback items from submissions
+  const feedbackItems = useMemo(() => {
+    if (!submissions.length) return [];
+    return submissions
+      .filter((s) => s.company_score != null || s.feedback)
+      .map((s, idx) => {
+        const challengeTitle = s.challenge_title || s.title || "Challenge";
+        const companyName =
+          s.challenge_company_name || s.company?.company_name || "";
+        const score = s.company_score ?? 0;
+        const scoreTone =
+          score >= 90 ? "emerald" : score >= 75 ? "violet" : "amber";
+
+        return {
+          solutionId: s.id,
+          title: challengeTitle,
+          initial: challengeTitle.charAt(0).toUpperCase(),
+          company: companyName,
+          reviewed: s.updated_at
+            ? new Date(s.updated_at).toLocaleDateString()
+            : "",
+          reviewer: companyName || "Company",
+          reviewerRole: "Reviewer",
+          reviewerInitial: (companyName || "C").charAt(0).toUpperCase(),
+          reviewerAvatar: `https://i.pravatar.cc/100?img=${(idx % 70) + 1}`,
+          badge: s.shortlisted ? "Shortlisted" : "",
+          badgeIcon: ThumbsUp,
+          xp: `${score}/100`,
+          status: s.status?.replace(/_/g, " ") || "Submitted",
+          statusTone: s.status === "reviewed" ? "emerald" : "violet",
+          score,
+          scoreTone,
+          quote: s.feedback || "No detailed feedback provided.",
+          breakdown: [
+            ["Overall Score", score],
+            ["Company Score", score],
+            ["Quality", score],
+            ["Presentation", score],
+          ],
+        };
+      });
+  }, [submissions]);
+
   return (
     <DashboardLayout
       navItems={studentDashboardNavItems}
       activeIndex={3}
-      bottomPanel={<SidebarBottomPanel />}
+      bottomPanel={null}
       topbar={<Topbar />}
       workspace="student"
     >
@@ -251,15 +278,28 @@ export default function StudentFeedbackPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {studentFeedbackStats.map((stat) => (
+          {feedbackStats.map((stat) => (
             <StatCard key={stat.label} stat={stat} />
           ))}
         </div>
 
         <div className="mt-8 space-y-6">
-          {studentFeedbackItems.map((feedback) => (
-            <FeedbackCard feedback={feedback} key={feedback.title} />
-          ))}
+          {loading ? (
+            <p className="text-[14px] font-semibold text-[#9AA7BA]">
+              Loading your feedback...
+            </p>
+          ) : feedbackItems.length === 0 ? (
+            <div className="rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-8 text-center">
+              <p className="text-[16px] font-semibold text-[#9AA7BA]">
+                No reviewed submissions yet. Submit solutions to challenges to
+                receive feedback from companies.
+              </p>
+            </div>
+          ) : (
+            feedbackItems.map((feedback) => (
+              <FeedbackCard feedback={feedback} key={feedback.solutionId} />
+            ))
+          )}
         </div>
 
         <section className="mt-8 flex flex-col justify-between gap-5 rounded-[22px] border border-violet-400/15 bg-[linear-gradient(135deg,#171B3A_0%,#141C30_100%)] p-7 shadow-[0_18px_46px_rgba(0,0,0,0.14)] sm:flex-row sm:items-center">

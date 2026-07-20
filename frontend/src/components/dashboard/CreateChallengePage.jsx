@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Award,
   Calendar,
@@ -17,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import {
   createChallengeSteps,
@@ -25,6 +25,11 @@ import {
   createChallengeFormatOptions,
   createChallengeNavItems,
 } from "../../data/createChallenge";
+import {
+  createChallenge,
+  fetchChallengeRawById,
+  updateChallenge,
+} from "../../services/challengeService";
 import CompanyTopbar from "../layout/CompanyTopbar";
 
 // Keep existing variable names used throughout the component
@@ -102,10 +107,52 @@ function SectionCard({ children, icon: Icon, title, accent = "violet" }) {
 }
 
 export default function CreateChallengePage() {
+  const { id } = useParams();
+  const isEditing = Boolean(id);
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [newSkill, setNewSkill] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState("");
+  const [publishSuccess, setPublishSuccess] = useState("");
+
+  useEffect(() => {
+    if (!id) return;
+    fetchChallengeRawById(id)
+      .then((data) => {
+        if (!data) return;
+        const industryName = data.industry?.name || data.industry || "";
+        setForm({
+          title: data.title || "",
+          description: data.description || "",
+          category: industryName,
+          industry: industryName,
+          skills: data.skills
+            ? data.skills
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : ["Data Analysis", "Strategy", "Logistics"],
+          difficulty: data.difficulty || "",
+          duration: data.duration || "",
+          requirements: data.requirements?.map((r) =>
+            typeof r === "string" ? r : r.description || "",
+          ) || ["", "", ""],
+          formats: data.submission_formats || [],
+          formatDetails: {},
+          cash_prize: data.cash_prize || "",
+          deadline: data.submission_deadline
+            ? data.submission_deadline.split("T")[0]
+            : "",
+          maxTeamSize: data.max_team_size || "",
+          participantStatus: "",
+          accessType: "open",
+          prize: data.cash_prize || "",
+        });
+      })
+      .catch(() => {});
+  }, [id]);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -206,14 +253,17 @@ export default function CreateChallengePage() {
                 Challenges
               </Link>
               <ChevronDown className="-rotate-90" size={14} />
-              <span className="text-white">Create New Challenge</span>
+              <span className="text-white">
+                {isEditing ? "Edit Challenge" : "Create New Challenge"}
+              </span>
             </p>
             <h1 className="text-[32px] font-extrabold leading-tight text-white sm:text-[38px]">
-              Create a Challenge
+              {isEditing ? "Edit Challenge" : "Create a Challenge"}
             </h1>
             <p className="mt-2 text-[16px] font-medium text-[#9AA7BA]">
-              Fill in the details below to post a real-world challenge for
-              students to solve.
+              {isEditing
+                ? "Update your challenge details and publish when ready."
+                : "Fill in the details below to post a real-world challenge for students to solve."}
             </p>
           </div>
           <button
@@ -602,7 +652,9 @@ export default function CreateChallengePage() {
                     ["Deadline", form.deadline || "Not set"],
                     [
                       "XP Reward",
-                      form.cash_prize ? `R ${form.cash_prize}` : "No cash prize",
+                      form.cash_prize
+                        ? `R ${form.cash_prize}`
+                        : "No cash prize",
                     ],
                     [
                       "Requirements",
@@ -642,6 +694,16 @@ export default function CreateChallengePage() {
             </SectionCard>
           ) : null}
 
+          {publishError ? (
+            <p className="text-center text-[13px] font-semibold text-rose-300">
+              {publishError}
+            </p>
+          ) : null}
+          {publishSuccess ? (
+            <p className="text-center text-[13px] font-semibold text-emerald-300">
+              {publishSuccess}
+            </p>
+          ) : null}
           <div className="flex flex-col-reverse gap-3 rounded-[22px] border border-white/[0.07] bg-[#131C2E] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               {currentStep > 1 ? (
@@ -683,18 +745,59 @@ export default function CreateChallengePage() {
                   Preview Challenge
                 </button>
                 <button
-                  className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#F59E0B] px-5 text-[14px] font-extrabold text-white shadow-[0_14px_30px_rgba(245,158,11,0.24)] transition hover:bg-[#F97316]"
-                  type="submit"
-                  onClick={() => {
-                    // Reset form UI after publish while staying on the same page.
-                    setForm(initialForm);
-                    setCurrentStep(1);
-                    setIsPreviewOpen(false);
-                    setNewSkill("");
+                  className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#F59E0B] px-5 text-[14px] font-extrabold text-white shadow-[0_14px_30px_rgba(245,158,11,0.24)] transition hover:bg-[#F97316] disabled:opacity-50"
+                  type="button"
+                  disabled={publishing}
+                  onClick={async () => {
+                    setPublishError("");
+                    setPublishSuccess("");
+                    if (!form.title || !form.category || !form.deadline) {
+                      setPublishError(
+                        "Please fill in Title, Category, and Deadline before publishing.",
+                      );
+                      return;
+                    }
+                    try {
+                      setPublishing(true);
+                      const payload = {
+                        title: form.title,
+                        description: form.description,
+                        category: form.category,
+                        skills: form.skills.join(","),
+                        submission_deadline: form.deadline,
+                        max_team_size: form.maxTeamSize
+                          ? parseInt(form.maxTeamSize, 10)
+                          : 1,
+                        submission_formats: form.formats,
+                        cash_prize: form.prize ? parseFloat(form.prize) : null,
+                        status: "published",
+                      };
+                      if (isEditing && id) {
+                        await updateChallenge(id, payload);
+                        setPublishSuccess("Challenge updated and published!");
+                      } else {
+                        await createChallenge(payload);
+                        setPublishSuccess("Challenge published successfully!");
+                      }
+                      setForm(initialForm);
+                      setCurrentStep(1);
+                      setIsPreviewOpen(false);
+                      setNewSkill("");
+                    } catch (err) {
+                      setPublishError(
+                        err.message || "Failed to publish challenge.",
+                      );
+                    } finally {
+                      setPublishing(false);
+                    }
                   }}
                 >
                   <Send size={17} />
-                  Publish Challenge
+                  {publishing
+                    ? "Saving..."
+                    : isEditing
+                      ? "Update & Publish"
+                      : "Publish Challenge"}
                 </button>
               </div>
             )}

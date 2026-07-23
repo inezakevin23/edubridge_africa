@@ -32,7 +32,10 @@ import {
   studentRegistrationStatusOptions,
   studentRegistrationSkills,
 } from "../../data/studentRegistration";
-import { registerStudent } from "../../services/authService";
+import {
+  registerStudent,
+  createInternProfile,
+} from "../../services/authService";
 
 const stepLabels = studentRegistrationStepLabels;
 const statusOptions = studentRegistrationStatusOptions;
@@ -341,6 +344,27 @@ export default function StudentRegistrationForm() {
       }
       if (tokens?.refresh) {
         localStorage.setItem("edubridge_refresh_token", tokens.refresh);
+      }
+
+      // Create the intern profile with file uploads
+      try {
+        await createInternProfile({
+          country: form.country,
+          city: form.city,
+          date_of_birth: form.dateOfBirth,
+          gender: form.gender?.toLowerCase(),
+          current_status: form.currentStatus?.toLowerCase().replace(" ", "_"),
+          institution: form.institution,
+          field_of_study: form.fieldOfStudy,
+          graduation_year: form.graduationYear,
+          years_of_experience: form.yearsOfExperience,
+          skills: selectedSkills.join(", "),
+          portfolio_url: form.portfolio,
+          profile_picture: profilePic,
+          national_or_student_id_document: idFile,
+        });
+      } catch (profileError) {
+        console.warn("Profile creation note:", profileError.message);
       }
 
       localStorage.setItem("edubridgeStudentName", form.fullName);
@@ -820,98 +844,6 @@ export default function StudentRegistrationForm() {
             </Section>
           ) : null}
 
-          {currentStep === 3 ? (
-            <Section
-              step="3"
-              title="Account Information"
-              icon={<KeyRound size={18} />}
-            >
-              <div className="grid gap-5 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <Field
-                    label="Email"
-                    icon={<Mail size={17} />}
-                    name="email"
-                    onChange={updateForm}
-                    placeholder="you@example.com"
-                    required
-                    type="email"
-                    value={form.email}
-                  />
-                </div>
-                <Field
-                  label="Password"
-                  icon={<Lock size={17} />}
-                  name="password"
-                  onChange={updateForm}
-                  placeholder="Create a strong password"
-                  required
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  rightIcon={
-                    <button
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                      className="transition hover:text-white"
-                      onClick={() => setShowPassword((value) => !value)}
-                      type="button"
-                    >
-                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                    </button>
-                  }
-                />
-                <Field
-                  label="Confirm Password"
-                  icon={<Lock size={17} />}
-                  name="confirmPassword"
-                  onChange={updateForm}
-                  placeholder="Repeat password"
-                  required
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={form.confirmPassword}
-                  rightIcon={
-                    <button
-                      aria-label={
-                        showConfirmPassword ? "Hide password" : "Show password"
-                      }
-                      className="transition hover:text-white"
-                      onClick={() => setShowConfirmPassword((value) => !value)}
-                      type="button"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff size={17} />
-                      ) : (
-                        <Eye size={17} />
-                      )}
-                    </button>
-                  }
-                />
-              </div>
-              <div className="mt-4 grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((bar) => (
-                  <span
-                    className={`h-[5px] rounded-full ${
-                      bar <= passwordStrength.activeBars
-                        ? bar === 1
-                          ? "bg-[#F43F5E]"
-                          : bar < 4
-                            ? "bg-[#F59E0B]"
-                            : "bg-[#22C55E]"
-                        : "bg-[#1A2438]"
-                    }`}
-                    key={bar}
-                  />
-                ))}
-              </div>
-              <p
-                className={`mt-3 text-[12px] font-semibold ${passwordStrength.color}`}
-              >
-                {passwordStrength.label}
-              </p>
-            </Section>
-          ) : null}
-
           {currentStep === 4 ? (
             <Section
               step="4"
@@ -979,7 +911,7 @@ export default function StudentRegistrationForm() {
 
           <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              {currentStep > 3 ? (
+              {currentStep > 1 ? (
                 <button
                   className="flex h-12 w-full items-center justify-center rounded-[24px] bg-[#182237]/95 px-7 text-[14px] font-bold text-white transition hover:bg-white/[0.09] sm:w-auto"
                   onClick={() =>
@@ -992,7 +924,7 @@ export default function StudentRegistrationForm() {
               ) : null}
             </div>
 
-            {currentStep < 3 ? (
+            {currentStep < 4 ? (
               <button
                 className="flex h-12 items-center justify-center gap-3 rounded-[24px] bg-[#8B5CF6] px-8 text-[14px] font-bold text-white shadow-[0_18px_36px_rgba(76,29,149,0.36)] transition hover:bg-[#9568ff]"
                 onClick={goToNextStep}

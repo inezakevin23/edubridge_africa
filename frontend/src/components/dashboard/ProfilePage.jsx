@@ -29,6 +29,7 @@ import {
   fetchCompanyProfile,
   fetchInternProfile,
 } from "../../services/profileService";
+import { API_BASE_URL } from "../../services/apiClient";
 
 // Profiles are loaded from the backend. No client-side mock fallbacks.
 
@@ -458,9 +459,9 @@ export default function ProfilePage({ type }) {
             skills: profile.skills,
             portfolio_url: profile.portfolio_url,
             bio: profile.bio,
-            profile_picture: profile.profile_picture,
-            national_or_student_id_document:
-              profile.national_or_student_id_document,
+            // profile_picture and national_or_student_id_document are file
+            // fields; sending their URL strings back causes 400 errors.
+            // Users can upload new files through a dedicated upload flow.
           };
 
       const response = isCompany
@@ -480,7 +481,12 @@ export default function ProfilePage({ type }) {
     }
   };
 
-  const avatar = !isCompany && profile ? profile.profile_picture : null;
+  const avatar =
+    !isCompany && profile?.profile_picture
+      ? profile.profile_picture.startsWith("http")
+        ? profile.profile_picture
+        : `${API_BASE_URL}${profile.profile_picture}`
+      : null;
   const initials = name
     ? name
         .split(" ")

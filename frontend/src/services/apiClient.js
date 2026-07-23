@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = "http://localhost:8000";
 
 const storage = typeof window !== "undefined" ? window.localStorage : null;
 
@@ -38,6 +38,11 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  // When sending FormData, let axios auto-set Content-Type with boundary
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
   }
 
   return config;

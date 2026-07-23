@@ -30,10 +30,9 @@ import {
   companyRegistrationStepLabels,
 } from "../../data/companyRegistration";
 import { africanCountries } from "../../data/studentRegistration";
-import { registerCompany } from "../../services/authService";
+import { registerCompany, createCompanyProfile } from "../../services/authService";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
 
 function RequiredMark() {
   return <span className="text-[#F43F5E]">*</span>;
@@ -323,7 +322,6 @@ export default function CompanyRegistrationForm() {
         form.city &&
         form.username &&
         form.phone &&
-        phoneRegex.test(form.phone) &&
         form.description;
 
       setFormMessage(
@@ -352,8 +350,7 @@ export default function CompanyRegistrationForm() {
         form.representativeName &&
         form.representativeTitle &&
         form.representativeUsername &&
-        form.representativePhone &&
-        phoneRegex.test(form.representativePhone);
+        form.representativePhone;
 
       setFormMessage(
         hasRepresentativeDetails
@@ -382,19 +379,23 @@ export default function CompanyRegistrationForm() {
     }
 
     try {
-      const payload = {
-        ...form,
-        registration_certificate:
-          documents["Business Registration Certificate"],
-        tax_document: documents["Tax Registration Document (TIN)"],
-        operating_license: documents["Operating License"],
-        ngo_certificate: documents["NGO Registration Certificate"],
-        government_accreditation:
-          documents["Government Accreditation Document"],
-      };
+      // Clear any stale tokens before registration to prevent them
+      // from being attached to the register POST by the apiClient interceptor
+      localStorage.removeItem("edubridge_access_token");
+      localStorage.removeItem("edubridge_refresh_token");
+      localStorage.removeItem("edubridge_user");
 
-      const response = await registerCompany(payload);
-      const tokens = response?.tokens || response?.data?.tokens || null;
+      // Only send user account creation data to registerCompany
+      const response = await registerCompany({
+        email: form.email,
+        username: form.username,
+        phone: form.phone,
+        representativeName: form.representativeName,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      });
+      // normalizeApiResponse already unwraps payload.data, so response = { user, tokens }
+      const tokens = response?.tokens || null;
       if (tokens?.access) {
         localStorage.setItem("edubridge_access_token", tokens.access);
       }
@@ -402,13 +403,34 @@ export default function CompanyRegistrationForm() {
         localStorage.setItem("edubridge_refresh_token", tokens.refresh);
       }
 
+      // Save the company profile to the backend
+      try {
+        await createCompanyProfile({
+          company_name: form.organizationName,
+          business_type: form.businessType?.toLowerCase(),
+          industry: form.industry === "Other" ? form.otherIndustry : form.industry,
+          country: form.country,
+          city: form.city,
+          website: form.website,
+          description: form.description,
+          registration_certificate: documents["Business Registration Certificate"],
+          tax_document: documents["Tax Registration Document (TIN)"],
+          operating_license: documents["Operating License"],
+          ngo_certificate: documents["NGO Registration Certificate"],
+          government_accreditation: documents["Government Accreditation Document"],
+          representative_name: form.representativeName,
+          representative_title: form.representativeTitle,
+        });
+      } catch (profileError) {
+        console.warn("Company profile creation note:", profileError.message);
+      }
+
       await login(
         "company",
         form.email,
-        response?.user ||
-          response?.data?.user || { role: "company", email: form.email },
+        response?.user || { role: "company", email: form.email },
       );
-      navigate("/complete-profile/company");
+      navigate("/company-profile");
       setForm(initialForm);
       setDocuments({});
       setShowPassword(false);
@@ -416,7 +438,24 @@ export default function CompanyRegistrationForm() {
       setCurrentStep(1);
       setFileInputResetKey((key) => key + 1);
     } catch (error) {
-      setFormMessage(error.message || "Registration failed. Please try again.");
+      // Show field-specific errors from the backend if available
+      if (error.fieldErrors) {
+        const fieldMessages = Object.entries(error.fieldErrors)
+          .map(
+            ([field, msgs]) =>
+              `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`,
+          )
+          .join("; ");
+        setFormMessage(
+          fieldMessages ||
+            error.message ||
+            "Registration failed. Please try again.",
+        );
+      } else {
+        setFormMessage(
+          error.message || "Registration failed. Please try again.",
+        );
+      }
     }
   };
 

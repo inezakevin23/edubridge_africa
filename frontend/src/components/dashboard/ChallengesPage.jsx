@@ -11,7 +11,6 @@ import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import ChallengeCard from "../challenges/ChallengeCard";
-import { challengeCategories } from "../../data/challengesPage";
 
 import { studentDashboardNavItems } from "../../data/studentDashboard";
 import { fetchChallenges } from "../../services/challengeService";
@@ -157,30 +156,25 @@ export default function ChallengesPage() {
     };
   }, []);
 
+  // Derive category buttons dynamically from loaded challenges
+  const categories = useMemo(() => {
+    const counts = {};
+    challenges.forEach((c) => {
+      (c.tags || []).forEach((tag) => {
+        counts[tag] = (counts[tag] || 0) + 1;
+      });
+    });
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return [["All", challenges.length], ...entries];
+  }, [challenges]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    const categoryToTag = (cat) => {
-      // Map UI categories to tags stored in challenge data.
-      switch (cat) {
-        case "Business":
-          return "Strategy";
-        case "Technology":
-          return "Machine Learning";
-        case "Design":
-          return "UI/UX";
-        case "Social Impact":
-          return "Impact";
-        case "Finance":
-          return "Finance";
-        case "Healthcare":
-          return "Healthcare";
-        default:
-          return null;
-      }
-    };
-
-    const tagNeedle = categoryToTag(activeCategory);
+    // When activeCategory is "All", show everything.
+    // Otherwise, categories are derived from the raw tags in the data,
+    // so the category name IS the tag to match.
+    const tagNeedle = activeCategory === "All" ? null : activeCategory;
 
     let list = challenges.filter((c) => {
       const matchesCategory =
@@ -270,7 +264,7 @@ export default function ChallengesPage() {
 
         {/* Category filter bar */}
         <div className="mt-8 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {challengeCategories.map(([category, count], index) => {
+          {categories.map(([category, count], index) => {
             const isActive = category === activeCategory;
             return (
               <button

@@ -16,14 +16,6 @@ export const studentDashboardNavItems = [
   ["Profile", UserRound],
 ];
 
-export const studentDashboardFilters = [
-  "All Challenges",
-  "Technology",
-  "Design & UX",
-  "Business Strategy",
-  "Social Impact",
-];
-
 export const studentDashboardStats = [
   {
     label: "Active Challenges",

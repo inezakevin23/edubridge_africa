@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ArrowRight,
   Clock3,
@@ -13,12 +13,7 @@ import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import { fetchChallenges } from "../../services/challengeService";
 import { fetchInternDashboardStats } from "../../services/dashboardService";
-import {
-  studentDashboardNavItems,
-  studentDashboardFilters,
-} from "../../data/studentDashboard";
-
-// Note: studentDashboardStats and studentDashboardChallenges are replaced by live backend data
+import { studentDashboardNavItems } from "../../data/studentDashboard";
 
 function MetricCard({ metric }) {
   const Icon = metric.icon;
@@ -81,6 +76,7 @@ function ChallengeCard({ challenge }) {
 export default function StudentDashboard() {
   const [stats, setStats] = useState(null);
   const [challenges, setChallenges] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("All");
 
   useEffect(() => {
     let mounted = true;
@@ -99,6 +95,25 @@ export default function StudentDashboard() {
       });
     return () => (mounted = false);
   }, []);
+
+  // Derive filter options dynamically from challenge industries
+  const filterOptions = useMemo(() => {
+    const industries = new Set();
+    challenges.forEach((c) => {
+      if (c.tags) c.tags.forEach((t) => industries.add(t));
+    });
+    return ["All", ...Array.from(industries)];
+  }, [challenges]);
+
+  // Filter challenges based on active filter
+  const filteredChallenges = useMemo(() => {
+    if (activeFilter === "All") return challenges;
+    return challenges.filter((c) =>
+      (c.tags || []).some(
+        (t) => t.toLowerCase() === activeFilter.toLowerCase(),
+      ),
+    );
+  }, [challenges, activeFilter]);
 
   const metrics = stats
     ? [
@@ -182,15 +197,16 @@ export default function StudentDashboard() {
         </div>
 
         <div className="mt-9 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {studentDashboardFilters.map((filter, index) => (
+          {filterOptions.map((filter) => (
             <button
               className={`h-11 shrink-0 rounded-full px-5 text-[14px] font-semibold transition ${
-                index === 0
+                filter === activeFilter
                   ? "bg-[#8B5CF6] text-white shadow-[0_12px_26px_rgba(76,29,149,0.3)]"
                   : "bg-[#182237] text-[#A6B1C4] hover:bg-[#202B43] hover:text-white"
               }`}
               key={filter}
               type="button"
+              onClick={() => setActiveFilter(filter)}
             >
               {filter}
             </button>
@@ -211,7 +227,7 @@ export default function StudentDashboard() {
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2 min-[1300px]:grid-cols-3">
-          {challenges.map((challenge) => (
+          {filteredChallenges.map((challenge) => (
             <ChallengeCard
               challenge={challenge}
               key={challenge.id || challenge.title}

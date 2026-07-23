@@ -25,6 +25,8 @@ class InternProfileSerializer(serializers.ModelSerializer):
     last_name = serializers.ReadOnlyField(source="user.last_name")
     phone_number = serializers.ReadOnlyField(source="user.phone_number")
     total_score_points = serializers.SerializerMethodField()
+    profile_picture = serializers.ImageField(required=False)
+    national_or_student_id_document = serializers.FileField(required=False)
 
     class Meta:
         model = InternProfile

@@ -1,38 +1,18 @@
-import {
-  Building2,
-  Globe,
-  Mail,
-  Sparkles,
-  TrendingUp,
-  Trophy,
-} from "lucide-react";
+import { Building2, Mail, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
-import Topbar from "../layout/Topbar";
+import CompanyTopbar from "../layout/CompanyTopbar";
 import { companyDashboardNavItems } from "../../data/companyDashboard";
 import { fetchMyChallenges } from "../../services/challengeService";
 import { fetchCompanyDashboardStats } from "../../services/dashboardService";
 import { fetchSubmissions } from "../../services/submissionService";
 
 function MetricCard({ metric }) {
-  const Icon = metric.icon;
-
   return (
     <article className="relative min-h-[132px] overflow-hidden rounded-[18px] border border-white/[0.07] bg-[linear-gradient(145deg,#141D30_0%,#111827_100%)] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.17)]">
-      <div className="flex items-start justify-between">
-        <div
-          className={`flex h-9 w-9 items-center justify-center rounded-xl bg-[#0D1626] ${metric.color}`}
-        >
-          <Icon size={19} />
-        </div>
-        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-extrabold text-[#22C55E]">
-          <TrendingUp size={12} />
-          {metric.trend}
-        </span>
-      </div>
-      <h3 className="mt-5 text-[30px] font-extrabold leading-none text-white">
+      <h3 className="text-[30px] font-extrabold leading-none text-white">
         {metric.value}
       </h3>
       <p className="mt-2 text-[13px] text-[#9AA7BA]">{metric.label}</p>
@@ -194,60 +174,36 @@ export default function CompanyDashboard() {
         {
           label: "Active challenges",
           value: stats.active_challenges ?? 0,
-          trend: "+0",
-          icon: Building2,
-          color: "text-[#8B5CF6]",
         },
         {
           label: "Total submissions",
           value: stats.total_submissions ?? 0,
-          trend: "+0",
-          icon: Trophy,
-          color: "text-[#F59E0B]",
         },
         {
           label: "Reviewed",
           value: stats.reviewed_submissions ?? 0,
-          trend: "+0",
-          icon: TrendingUp,
-          color: "text-[#22C55E]",
         },
         {
           label: "Shortlisted",
           value: stats.shortlisted_submissions ?? 0,
-          trend: "+0",
-          icon: Sparkles,
-          color: "text-[#A78BFA]",
         },
       ]
     : [
         {
           label: "Active challenges",
           value: "—",
-          trend: "+0",
-          icon: Building2,
-          color: "text-[#8B5CF6]",
         },
         {
           label: "Total submissions",
           value: "—",
-          trend: "+0",
-          icon: Trophy,
-          color: "text-[#F59E0B]",
         },
         {
           label: "Reviewed",
           value: "—",
-          trend: "+0",
-          icon: TrendingUp,
-          color: "text-[#22C55E]",
         },
         {
           label: "Shortlisted",
           value: "—",
-          trend: "+0",
-          icon: Sparkles,
-          color: "text-[#A78BFA]",
         },
       ];
 
@@ -256,7 +212,7 @@ export default function CompanyDashboard() {
       navItems={companyDashboardNavItems}
       activeIndex={0}
       bottomPanel={null}
-      topbar={<Topbar />}
+      topbar={<CompanyTopbar />}
       workspace="company"
     >
       <motion.main
@@ -287,8 +243,7 @@ export default function CompanyDashboard() {
               className="flex h-12 items-center gap-2 rounded-2xl bg-[#8B5CF6] px-5 text-[15px] font-bold text-white shadow-[0_14px_30px_rgba(139,92,246,0.32)] transition hover:bg-[#9568ff]"
               to="/create-challenge"
             >
-              <Globe size={18} />
-              Post Open Challenge
+              Post Challenge
             </Link>
           </div>
         </div>

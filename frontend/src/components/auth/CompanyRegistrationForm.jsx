@@ -30,7 +30,10 @@ import {
   companyRegistrationStepLabels,
 } from "../../data/companyRegistration";
 import { africanCountries } from "../../data/studentRegistration";
-import { registerCompany, createCompanyProfile } from "../../services/authService";
+import {
+  registerCompany,
+  createCompanyProfile,
+} from "../../services/authService";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -188,7 +191,9 @@ function DocumentUpload({ file, onChange, optional, required, title }) {
           </h3>
           <p className="mt-1 truncate text-[12px] text-[#8D99AE]">
             {file?.name ||
-              (optional ? "Optional document" : "PDF, JPG, or PNG required")}
+              (optional
+                ? "Optional — PDF max 5MB"
+                : "PDF document required — max 5MB")}
           </p>
         </div>
       </div>
@@ -197,7 +202,7 @@ function DocumentUpload({ file, onChange, optional, required, title }) {
         Upload
       </span>
       <input
-        accept="application/pdf,image/png,image/jpeg,image/jpg"
+        accept="application/pdf"
         className="sr-only"
         onChange={onChange}
         required={required}
@@ -404,26 +409,27 @@ export default function CompanyRegistrationForm() {
       }
 
       // Save the company profile to the backend
-      try {
-        await createCompanyProfile({
-          company_name: form.organizationName,
-          business_type: form.businessType?.toLowerCase(),
-          industry: form.industry === "Other" ? form.otherIndustry : form.industry,
-          country: form.country,
-          city: form.city,
-          website: form.website,
-          description: form.description,
-          registration_certificate: documents["Business Registration Certificate"],
-          tax_document: documents["Tax Registration Document (TIN)"],
-          operating_license: documents["Operating License"],
-          ngo_certificate: documents["NGO Registration Certificate"],
-          government_accreditation: documents["Government Accreditation Document"],
-          representative_name: form.representativeName,
-          representative_title: form.representativeTitle,
-        });
-      } catch (profileError) {
-        console.warn("Company profile creation note:", profileError.message);
-      }
+      // If this fails, the error will propagate to the outer catch,
+      // keeping the user on the registration page with a visible error message.
+      await createCompanyProfile({
+        company_name: form.organizationName,
+        business_type: form.businessType?.toLowerCase(),
+        new_industry:
+          form.industry === "Other" ? form.otherIndustry : form.industry,
+        country: form.country,
+        city: form.city,
+        website: form.website,
+        description: form.description,
+        registration_certificate:
+          documents["Business Registration Certificate"],
+        tax_document: documents["Tax Registration Document (TIN)"],
+        operating_license: documents["Operating License"],
+        ngo_certificate: documents["NGO Registration Certificate"],
+        government_accreditation:
+          documents["Government Accreditation Document"],
+        representative_job_title: form.representativeTitle,
+        representative_corporate_email: form.email,
+      });
 
       await login(
         "company",
@@ -525,6 +531,104 @@ export default function CompanyRegistrationForm() {
         </div>
 
         <form className="py-9" onSubmit={handleSubmit}>
+          {currentStep === 1 ? (
+            <Section
+              step="1"
+              title="Account Information"
+              icon={<KeyRound size={18} />}
+            >
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <Field
+                    label="Email"
+                    icon={<Mail size={17} />}
+                    name="email"
+                    onChange={updateForm}
+                    placeholder="company@example.com"
+                    required
+                    type="email"
+                    value={form.email}
+                  />
+                </div>
+                <Field
+                  label="Password (min 8 characters)"
+                  icon={<Lock size={17} />}
+                  name="password"
+                  onChange={updateForm}
+                  placeholder="Create a strong password"
+                  required
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  rightIcon={
+                    <button
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                      className="transition hover:text-white cursor-pointer"
+                      onClick={() => setShowPassword((value) => !value)}
+                      type="button"
+                    >
+                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  }
+                />
+                <Field
+                  label="Confirm Password"
+                  icon={<Lock size={17} />}
+                  name="confirmPassword"
+                  onChange={updateForm}
+                  optional
+                  placeholder="Repeat password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={form.confirmPassword}
+                  rightIcon={
+                    <button
+                      aria-label={
+                        showConfirmPassword ? "Hide password" : "Show password"
+                      }
+                      className="transition hover:text-white"
+                      onClick={() => setShowConfirmPassword((value) => !value)}
+                      type="button"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={17} />
+                      ) : (
+                        <Eye size={17} />
+                      )}
+                    </button>
+                  }
+                />
+              </div>
+
+              <div className="mt-4 grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((bar) => (
+                  <span
+                    className={`h-[5px] rounded-full ${
+                      bar <= passwordStrength.activeBars
+                        ? bar === 1
+                          ? "bg-[#F43F5E]"
+                          : bar < 4
+                            ? "bg-[#F59E0B]"
+                            : "bg-[#22C55E]"
+                        : "bg-[#1A2438]"
+                    }`}
+                    key={bar}
+                  />
+                ))}
+              </div>
+              <p
+                className={`mt-3 text-[12px] font-semibold ${passwordStrength.color}`}
+              >
+                {passwordStrength.label}
+              </p>
+
+              <p className="mt-4 text-center text-[12px] text-[#8D99AE]">
+                Account activation takes up to 48 hours after document
+                verification.
+              </p>
+            </Section>
+          ) : null}
+
           {currentStep === 2 ? (
             <Section
               step="2"
@@ -759,127 +863,6 @@ export default function CompanyRegistrationForm() {
             </Section>
           ) : null}
 
-          {currentStep === 1 ? (
-            <Section
-              step="1"
-              title="Account Information"
-              icon={<KeyRound size={18} />}
-            >
-              <div className="grid gap-5 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <Field
-                    label="Email"
-                    icon={<Mail size={17} />}
-                    name="email"
-                    onChange={updateForm}
-                    placeholder="company@example.com"
-                    required
-                    type="email"
-                    value={form.email}
-                  />
-                </div>
-                <Field
-                  label="Password"
-                  icon={<Lock size={17} />}
-                  name="password"
-                  onChange={updateForm}
-                  placeholder="Create a strong password"
-                  required
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  rightIcon={
-                    <button
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                      className="transition hover:text-white cursor-pointer"
-                      onClick={() => setShowPassword((value) => !value)}
-                      type="button"
-                    >
-                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                    </button>
-                  }
-                />
-                <Field
-                  label="Confirm Password"
-                  icon={<Lock size={17} />}
-                  name="confirmPassword"
-                  onChange={updateForm}
-                  optional
-                  placeholder="Repeat password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={form.confirmPassword}
-                  rightIcon={
-                    <button
-                      aria-label={
-                        showConfirmPassword ? "Hide password" : "Show password"
-                      }
-                      className="transition hover:text-white"
-                      onClick={() => setShowConfirmPassword((value) => !value)}
-                      type="button"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff size={17} />
-                      ) : (
-                        <Eye size={17} />
-                      )}
-                    </button>
-                  }
-                />
-              </div>
-
-              <div className="mt-4 grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((bar) => (
-                  <span
-                    className={`h-[5px] rounded-full ${
-                      bar <= passwordStrength.activeBars
-                        ? bar === 1
-                          ? "bg-[#F43F5E]"
-                          : bar < 4
-                            ? "bg-[#F59E0B]"
-                            : "bg-[#22C55E]"
-                        : "bg-[#1A2438]"
-                    }`}
-                    key={bar}
-                  />
-                ))}
-              </div>
-              <p
-                className={`mt-3 text-[12px] font-semibold ${passwordStrength.color}`}
-              >
-                {passwordStrength.label}
-              </p>
-
-              <div className="mt-5 flex items-center justify-between gap-4 rounded-[18px] border border-white/[0.04] bg-[#182237]/95 p-5">
-                <div className="flex min-w-0 items-center gap-4">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-500/10 text-[#8B5CF6]">
-                    <Mail size={21} />
-                  </span>
-                  <div className="min-w-0">
-                    <h3 className="text-[14px] font-bold text-white">
-                      Email Verification
-                    </h3>
-                    <p className="mt-1 truncate text-[12px] text-[#8D99AE]">
-                      A 6-digit OTP will be sent to{" "}
-                      {form.email || "your official email"} to verify your
-                      corporate email.
-                    </p>
-                  </div>
-                </div>
-                <span className="rounded-full bg-white/[0.06] px-3 py-1 text-[12px] font-medium text-[#9AA7BA]">
-                  Pending
-                </span>
-              </div>
-
-              <div className="mt-6 space-y-4"></div>
-
-              <p className="mt-4 text-center text-[12px] text-[#8D99AE]">
-                Account activation takes up to 48 hours after document
-                verification.
-              </p>
-            </Section>
-          ) : null}
-
           {formMessage ? (
             <p className="rounded-[18px] border border-amber-400/15 bg-amber-500/[0.06] p-4 text-[13px] font-semibold text-[#F8D69A]">
               {formMessage}
@@ -888,7 +871,7 @@ export default function CompanyRegistrationForm() {
 
           <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              {currentStep > 4 ? (
+              {currentStep > 1 ? (
                 <button
                   className="flex h-12 w-full items-center justify-center rounded-[24px] bg-[#182237]/95 px-7 text-[14px] font-bold text-white transition hover:bg-white/[0.09] sm:w-auto"
                   onClick={() =>

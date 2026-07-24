@@ -49,7 +49,22 @@ export default function DashboardSidebar({
     ? navItems.findIndex(([label]) => label === activeLabel)
     : activeIndex;
   const role = workspace === "company" ? "company" : "student";
+  // For company workspace, try to get the company/organization name from localStorage
+  // (set during registration/company profile creation)
+  let companyName = null;
+  if (workspace === "company") {
+    try {
+      const stored = localStorage.getItem("edubridgeCompanyProfile");
+      if (stored) {
+        const profile = JSON.parse(stored);
+        companyName = profile.company_name || null;
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }
   const displayName =
+    companyName ||
     user?.first_name ||
     user?.username ||
     user?.email?.split("@")[0] ||

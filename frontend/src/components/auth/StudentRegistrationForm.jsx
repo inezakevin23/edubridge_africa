@@ -550,7 +550,7 @@ export default function StudentRegistrationForm() {
                   />
                 </div>
                 <Field
-                  label="Password"
+                  label="Password (min 8 characters)"
                   icon={<Lock size={17} />}
                   name="password"
                   onChange={updateForm}
@@ -854,7 +854,7 @@ export default function StudentRegistrationForm() {
                 <FileUpload
                   accept="application/pdf"
                   fileName={idFile?.name}
-                  helper="PDF only - max 5MB"
+                  helper="PDF only — max 5MB"
                   key={`id-${fileInputResetKey}`}
                   label="National ID or Student ID"
                   onChange={(event) =>
@@ -866,7 +866,7 @@ export default function StudentRegistrationForm() {
                 <FileUpload
                   accept="image/png,image/jpeg,image/jpg"
                   fileName={profilePic?.name}
-                  helper="PNG or JPG - max 5MB"
+                  helper="PNG or JPG — max 2MB"
                   key={`profile-${fileInputResetKey}`}
                   label="Profile Picture"
                   onChange={handleProfileUpload}
@@ -874,26 +874,6 @@ export default function StudentRegistrationForm() {
                   required
                   title="Upload your profile photo"
                 />
-              </div>
-
-              <div className="mt-5 flex items-center justify-between gap-4 rounded-[18px] border border-white/[0.04] bg-[#182237]/95 p-5">
-                <div className="flex min-w-0 items-center gap-4">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-500/10 text-[#8B5CF6]">
-                    <Mail size={21} />
-                  </span>
-                  <div className="min-w-0">
-                    <h3 className="text-[14px] font-bold text-white">
-                      Email Verification
-                    </h3>
-                    <p className="mt-1 truncate text-[12px] text-[#8D99AE]">
-                      A 6-digit OTP will be sent to {form.email || "your email"}{" "}
-                      once you submit.
-                    </p>
-                  </div>
-                </div>
-                <span className="rounded-full bg-white/[0.06] px-3 py-1 text-[12px] font-medium text-[#9AA7BA]">
-                  Pending
-                </span>
               </div>
 
               <p className="mt-4 text-center text-[12px] text-[#8D99AE]">

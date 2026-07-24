@@ -145,7 +145,6 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
 
 
 class CompanyProfileCreateSerializer(serializers.ModelSerializer):
-    representative = CompanyRepresentativeSerializer()
     industry = serializers.PrimaryKeyRelatedField(
         queryset=Industry.objects.all(),
         required=False,
@@ -153,6 +152,18 @@ class CompanyProfileCreateSerializer(serializers.ModelSerializer):
     )
 
     new_industry = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+    )
+
+    representative_job_title = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+    )
+
+    representative_corporate_email = serializers.EmailField(
         required=False,
         allow_blank=True,
         write_only=True,
@@ -190,7 +201,8 @@ class CompanyProfileCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        representative_data = validated_data.pop("representative")
+        representative_job_title = validated_data.pop("representative_job_title", "")
+        representative_corporate_email = validated_data.pop("representative_corporate_email", "")
         industry = validated_data.pop("industry", None)
         new_industry = validated_data.pop("new_industry", "")
 
@@ -205,9 +217,11 @@ class CompanyProfileCreateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-        CompanyRepresentative.objects.create(
-            company=company,
-            **representative_data,
-        )
+        if representative_job_title and representative_corporate_email:
+            CompanyRepresentative.objects.create(
+                company=company,
+                job_title=representative_job_title,
+                corporate_email=representative_corporate_email,
+            )
 
         return company

@@ -378,6 +378,8 @@ export default function ProfilePage({ type }) {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editing, setEditing] = useState(false);
   const [notice, setNotice] = useState("");
+  const [profilePicFile, setProfilePicFile] = useState(null);
+  const [profilePicPreview, setProfilePicPreview] = useState(null);
   const name = useMemo(() => {
     if (!profile) return "";
     return isCompany
@@ -429,9 +431,20 @@ export default function ProfilePage({ type }) {
     setProfile((current) => ({ ...current, [field]: value }));
   };
 
+  const handleProfilePicChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setProfilePicFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfilePicPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const saveProfile = async () => {
     try {
-      const payload = isCompany
+      const basePayload = isCompany
         ? {
             company_name: profile.company_name,
             business_type: profile.business_type,
@@ -459,10 +472,13 @@ export default function ProfilePage({ type }) {
             skills: profile.skills,
             portfolio_url: profile.portfolio_url,
             bio: profile.bio,
-            // profile_picture and national_or_student_id_document are file
-            // fields; sending their URL strings back causes 400 errors.
-            // Users can upload new files through a dedicated upload flow.
           };
+
+      // Only attach profile_picture if a new file was selected (intern only)
+      const payload =
+        !isCompany && profilePicFile
+          ? { ...basePayload, profile_picture: profilePicFile }
+          : basePayload;
 
       const response = isCompany
         ? await updateCompanyProfile(payload)
@@ -474,6 +490,8 @@ export default function ProfilePage({ type }) {
         if (!isCompany) localStorage.setItem("edubridgeStudentName", name);
         setProfile(nextProfile);
       }
+      setProfilePicFile(null);
+      setProfilePicPreview(null);
       setEditing(false);
       setNotice("Profile saved successfully.");
     } catch (error) {
@@ -481,12 +499,13 @@ export default function ProfilePage({ type }) {
     }
   };
 
-  const avatar =
-    !isCompany && profile?.profile_picture
+  const avatarSrc =
+    profilePicPreview ||
+    (!isCompany && profile?.profile_picture
       ? profile.profile_picture.startsWith("http")
         ? profile.profile_picture
         : `${API_BASE_URL}${profile.profile_picture}`
-      : null;
+      : null);
   const initials = name
     ? name
         .split(" ")
@@ -518,11 +537,36 @@ export default function ProfilePage({ type }) {
           <>
             <div className="flex flex-col justify-between gap-5 border-b border-white/[0.07] pb-7 sm:flex-row sm:items-start">
               <div className="flex min-w-0 gap-4 sm:gap-6">
-                {avatar ? (
+                {editing && !isCompany ? (
+                  <label className="group relative flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-[18px] border border-violet-400/25 bg-[#0D1626] sm:h-24 sm:w-24">
+                    {avatarSrc ? (
+                      <img
+                        alt={name}
+                        className="h-full w-full rounded-[18px] object-cover"
+                        src={avatarSrc}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-[18px] bg-[#F59E0B]/15 text-[27px] font-extrabold text-[#FBBF24]">
+                        {initials}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center rounded-[18px] bg-black/50 opacity-0 transition group-hover:opacity-100">
+                      <span className="text-[12px] font-bold text-white">
+                        Change
+                      </span>
+                    </div>
+                    <input
+                      accept="image/png,image/jpeg,image/jpg"
+                      className="sr-only"
+                      onChange={handleProfilePicChange}
+                      type="file"
+                    />
+                  </label>
+                ) : avatarSrc ? (
                   <img
                     alt={name}
                     className="h-20 w-20 shrink-0 rounded-[18px] border border-violet-400/25 object-cover sm:h-24 sm:w-24"
-                    src={avatar}
+                    src={avatarSrc}
                   />
                 ) : (
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[18px] bg-[#F59E0B]/15 text-[27px] font-extrabold text-[#FBBF24] sm:h-24 sm:w-24">

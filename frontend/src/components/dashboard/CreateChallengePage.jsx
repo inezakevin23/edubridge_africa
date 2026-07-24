@@ -764,7 +764,9 @@ export default function CreateChallengePage() {
                         description: form.description,
                         category: form.category,
                         skills: form.skills.join(","),
-                        submission_deadline: form.deadline,
+                        submission_deadline: form.deadline
+                          ? `${form.deadline}T23:59:59Z`
+                          : undefined,
                         max_team_size: form.maxTeamSize
                           ? parseInt(form.maxTeamSize, 10)
                           : 1,
@@ -784,9 +786,24 @@ export default function CreateChallengePage() {
                       setIsPreviewOpen(false);
                       setNewSkill("");
                     } catch (err) {
-                      setPublishError(
-                        err.message || "Failed to publish challenge.",
-                      );
+                      // Show field-level errors from the backend when available
+                      if (err.fieldErrors) {
+                        const fieldMessages = Object.entries(err.fieldErrors)
+                          .map(
+                            ([field, msgs]) =>
+                              `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`,
+                          )
+                          .join("; ");
+                        setPublishError(
+                          fieldMessages ||
+                            err.message ||
+                            "Failed to publish challenge.",
+                        );
+                      } else {
+                        setPublishError(
+                          err.message || "Failed to publish challenge.",
+                        );
+                      }
                     } finally {
                       setPublishing(false);
                     }

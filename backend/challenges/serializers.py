@@ -61,6 +61,7 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
 class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
     requirements = ChallengeRequirementSerializer(many=True, write_only=True, required=False)
     category = serializers.CharField(write_only=True, required=False, help_text="Industry name (e.g. 'Technology', 'Finance')")
+    submission_deadline = serializers.DateTimeField(required=False)
 
     class Meta:
         model = Challenge
@@ -69,6 +70,20 @@ class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+        extra_kwargs = {
+            "industry": {"required": False, "allow_null": True},
+            "description": {"required": False},
+            "skills": {"required": False},
+            "title": {"required": False},
+        }
+
+    def to_internal_value(self, data):
+        # Allow submission_deadline to accept date-only strings by appending time
+        deadline = data.get("submission_deadline")
+        if deadline and isinstance(deadline, str) and "T" not in deadline:
+            data = data.copy() if hasattr(data, "copy") else {**data}
+            data["submission_deadline"] = f"{deadline}T23:59:59Z"
+        return super().to_internal_value(data)
 
     def create(self, validated_data):
         from profiles.models import Industry

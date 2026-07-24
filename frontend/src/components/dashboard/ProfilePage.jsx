@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../layout/DashboardLayout";
+import CompanyTopbar from "../layout/CompanyTopbar";
 import Topbar from "../layout/Topbar";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
 import { companyDashboardNavItems } from "../../data/companyDashboard";
@@ -86,8 +87,9 @@ function Input({ label, name, value, onChange, type = "text" }) {
   );
 }
 
-function StatusBadge({ status }) {
-  const isVerified = status === "verified";
+function StatusBadge({ status, isVerifiedByAdmin = false }) {
+  const isVerified =
+    isVerifiedByAdmin || status?.trim().toLowerCase() === "verified";
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold ${isVerified ? "bg-emerald-500/12 text-[#4ADE80]" : "bg-amber-500/12 text-[#FBBF24]"}`}
@@ -308,6 +310,18 @@ function CompanyProfile({ profile, editing, onChange }) {
                 onChange={onChange}
                 type="url"
               />
+              <Input
+                label="City"
+                name="city"
+                value={profile.city}
+                onChange={onChange}
+              />
+              <Input
+                label="Country"
+                name="country"
+                value={profile.country}
+                onChange={onChange}
+              />
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2">
@@ -340,13 +354,14 @@ function CompanyProfile({ profile, editing, onChange }) {
                 value={representative.job_title}
                 onChange={onChange}
               />
-              <Input
-                label="Corporate email"
-                name="representative.corporate_email"
-                value={representative.corporate_email}
-                onChange={onChange}
-                type="email"
-              />
+              <div>
+                <label className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.08em] text-[#98A5B8]">
+                  Corporate email
+                </label>
+                <p className="flex h-11 items-center rounded-xl border border-white/[0.08] bg-[#0D1626] px-3 text-[14px] text-[#7F8EA5]">
+                  {representative.corporate_email || "Not provided"}
+                </p>
+              </div>
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2">
@@ -520,7 +535,7 @@ export default function ProfilePage({ type }) {
     <DashboardLayout
       navItems={isCompany ? companyDashboardNavItems : studentDashboardNavItems}
       activeIndex={3}
-      topbar={<Topbar />}
+      topbar={isCompany ? <CompanyTopbar /> : <Topbar />}
       workspace={isCompany ? "company" : "student"}
     >
       <motion.main
@@ -575,10 +590,22 @@ export default function ProfilePage({ type }) {
                 )}
                 <div className="min-w-0 pt-1">
                   <div className="mb-3">
-                    <StatusBadge status={profile.verification_status} />
+                    <StatusBadge
+                      isVerifiedByAdmin={isCompany && profile.is_verified}
+                      status={profile.verification_status}
+                    />
                   </div>
-                  <h1 className="truncate text-[28px] font-extrabold text-white sm:text-[34px]">
-                    {name}
+                  <h1 className="flex items-center gap-2 truncate text-[28px] font-extrabold text-white sm:text-[34px]">
+                    <span className="truncate">{name}</span>
+                    {isCompany &&
+                    (profile.is_verified ||
+                      profile.verification_status?.trim().toLowerCase() === "verified") ? (
+                      <BadgeCheck
+                        aria-label="Verified company"
+                        className="shrink-0 text-[#4ADE80]"
+                        size={25}
+                      />
+                    ) : null}
                   </h1>
                   <p className="mt-2 text-[15px] text-[#AAB6C8]">
                     {isCompany

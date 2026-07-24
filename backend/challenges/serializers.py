@@ -33,6 +33,13 @@ class ChallengeListSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     submissions_count = serializers.IntegerField(read_only=True, default=0)
+    company_is_verified = serializers.SerializerMethodField()
+
+    def get_company_is_verified(self, obj):
+        return (
+            obj.company.user.is_verified
+            or obj.company.verification_status == "verified"
+        )
 
     class Meta:
         model = Challenge
@@ -45,6 +52,7 @@ class ChallengeListSerializer(serializers.ModelSerializer):
             "submission_deadline",
             "status",
             "submissions_count",
+            "company_is_verified",
         )
 
 
@@ -84,6 +92,26 @@ class ChallengeCreateUpdateSerializer(serializers.ModelSerializer):
             data = data.copy() if hasattr(data, "copy") else {**data}
             data["submission_deadline"] = f"{deadline}T23:59:59Z"
         return super().to_internal_value(data)
+
+    def validate_submission_formats(self, value):
+        supported_formats = {
+            "Written Report",
+            "Design File",
+            "Code Repository",
+            "Slide Deck",
+            "Video Walkthrough",
+            "Spreadsheet",
+        }
+
+        if not value:
+            raise serializers.ValidationError(
+                "Select at least one accepted submission format."
+            )
+        if not isinstance(value, list) or any(
+            item not in supported_formats for item in value
+        ):
+            raise serializers.ValidationError("One or more submission formats are invalid.")
+        return value
 
     def create(self, validated_data):
         from profiles.models import Industry
@@ -142,6 +170,7 @@ class TeamMemberSerializer(serializers.ModelSerializer):
             "user_id",
             "username",
             "full_name",
+            "role",
             "joined_at",
         )
         read_only_fields = (
@@ -159,6 +188,8 @@ class TeamMemberSerializer(serializers.ModelSerializer):
 class ChallengeTeamSerializer(serializers.ModelSerializer):
     leader_name = serializers.SerializerMethodField()
     members = TeamMemberSerializer(many=True, read_only=True)
+    has_submission = serializers.SerializerMethodField()
+    challenge = serializers.UUIDField()
 
     class Meta:
         model = ChallengeTeam
@@ -168,10 +199,12 @@ class ChallengeTeamSerializer(serializers.ModelSerializer):
             "leader",
             "leader_name",
             "members",
+            "has_submission",
             "created_at",
         )
         read_only_fields = (
             "id",
+            "challenge",
             "leader",
             "leader_name",
             "members",
@@ -180,6 +213,9 @@ class ChallengeTeamSerializer(serializers.ModelSerializer):
 
     def get_leader_name(self, obj):
         return obj.leader.get_full_name()
+
+    def get_has_submission(self, obj):
+        return obj.submissions.exists()
 
 
 class ChallengeInviteSerializer(serializers.ModelSerializer):
@@ -241,6 +277,10 @@ class ChallengeInviteSerializer(serializers.ModelSerializer):
         if TeamMember.objects.filter(team=team, user=receiver).exists():
             raise serializers.ValidationError(
                 {"receiver": "This user is already a member of the team."}
+            )
+        if team.members.count() >= team.challenge.max_team_size:
+            raise serializers.ValidationError(
+                {"team": "This team has reached the challenge's maximum team size."}
             )
         return attrs
 

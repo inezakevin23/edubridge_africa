@@ -45,12 +45,16 @@ function normalizeChallenge(payload) {
           description:
             payload.company.description ||
             `${payload.company.company_name || companyName} - A challenge partner.`,
+          is_verified:
+            payload.company.is_verified ||
+            payload.company.verification_status === "verified",
         }
       : {
           name: companyName,
           legalName: companyName,
           industry: industry,
           description: `${companyName} - A challenge partner.`,
+          is_verified: Boolean(payload.company_is_verified),
         };
 
   return {
@@ -80,11 +84,13 @@ function normalizeChallenge(payload) {
     description: payload.description || "",
     requirements:
       payload.requirements?.map((item) => item.description || item) || [],
+    submission_formats: payload.submission_formats || [],
+    max_team_size: payload.max_team_size || 1,
     brief: [payload.description || ""],
     collaboration: {
-      maxMembers: payload.max_team_size || 4,
+      maxMembers: payload.max_team_size || 1,
       currentMembers: [],
-      note: `Team collaboration is enabled for this challenge (max ${payload.max_team_size || 4} members).`,
+      note: `Team collaboration is enabled for this challenge (max ${payload.max_team_size || 1} members).`,
     },
     companyMeta: payload.company || null,
     deadline,

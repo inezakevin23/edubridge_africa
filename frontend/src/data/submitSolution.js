@@ -6,10 +6,6 @@ import {
   PenTool,
   Grid2X2,
   BriefcaseBusiness,
-  UserRound,
-  Medal,
-  TrendingUp,
-  MessageSquare,
 } from "lucide-react";
 
 export const submitSolutionNavItems = [

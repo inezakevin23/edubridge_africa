@@ -1,4 +1,4 @@
-import { ArrowRight, Banknote, Clock3 } from "lucide-react";
+import { ArrowRight, BadgeCheck, Banknote, Clock3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ChallengeCard({ challenge, compact = false }) {
@@ -19,8 +19,15 @@ export default function ChallengeCard({ challenge, compact = false }) {
             <h3 className="line-clamp-2 text-[16px] font-extrabold leading-snug text-white">
               {challenge.title}
             </h3>
-            <p className="mt-1 truncate text-[13px] text-[#9AA7BA]">
+            <p className="mt-1 flex items-center gap-1 truncate text-[13px] text-[#9AA7BA]">
               {challenge.company}
+              {challenge.companyObj?.is_verified ? (
+                <BadgeCheck
+                  aria-label="Verified company"
+                  className="shrink-0 text-[#4ADE80]"
+                  size={15}
+                />
+              ) : null}
             </p>
           </div>
         </div>

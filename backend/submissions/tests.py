@@ -68,6 +68,7 @@ class SubmissionModuleTests(APITestCase):
             cash_prize=1000.00,
             skills="Python, Pandas, ML",
             status="published",
+            submission_formats=["Code Repository"],
         )
 
         # 6. Seed a Closed Challenge Task (Deadline set 2 hours in the past)
@@ -98,13 +99,28 @@ class SubmissionModuleTests(APITestCase):
             "challenge": self.open_challenge.id,
             "title": "Ensemble Forest Model Proposal",
             "summary": "Achieved a 94.2% accuracy threshold using random forest variations.",
-            "report_file": self.valid_doc,
-            "report_link": "https://github.com",
+            "github_repository": "https://github.com/edubridge/example",
         }
         response = self.client.post(self.submit_url, payload, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data["success"])
         self.assertEqual(response.data["data"]["status"], "submitted")
+
+    def test_submission_rejects_formats_not_selected_by_the_company(self):
+        self.client.force_authenticate(user=self.intern_user)
+        response = self.client.post(
+            self.submit_url,
+            {
+                "challenge": self.open_challenge.id,
+                "title": "Unsupported report format",
+                "summary": "This submission uses a report even though only repositories are accepted.",
+                "report_file": self.valid_doc,
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("detail", response.data["errors"])
 
     def test_deadline_firewall_blocks_late_submissions(self):
         """Verifies your timezone-aware validate() hook completely bars past-due entries."""
@@ -194,4 +210,3 @@ class SubmissionModuleTests(APITestCase):
         self.assertEqual(response.data["data"]["shortlisted"], 1)
         self.assertEqual(response.data["data"]["under_review"], 1)
         self.assertEqual(response.data["data"]["average_score"], 85.00)
-    

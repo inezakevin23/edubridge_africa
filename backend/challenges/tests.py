@@ -1,5 +1,7 @@
 import uuid
+from datetime import timedelta
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -121,6 +123,17 @@ class ChallengeModuleTests(APITestCase):
         self.assertTrue(response.data["success"])
         self.assertEqual(len(response.data["data"]["results"]), 1)
 
+    def test_expired_challenge_is_closed_and_hidden_from_browse_results(self):
+        self.challenge.submission_deadline = timezone.now() - timedelta(minutes=1)
+        self.challenge.save(update_fields=["submission_deadline"])
+
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["data"]["results"]), 0)
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.status, "closed")
+
     def test_company_can_create_challenge(self):
         """Verifies authentic companies can seed fully formed tasks."""
         self.client.force_authenticate(user=self.company_user)
@@ -131,6 +144,7 @@ class ChallengeModuleTests(APITestCase):
             "submission_deadline": "2026-11-30T12:00:00Z",
             "skills": "Django, Docker, Redis",
             "status": "published",
+            "submission_formats": ["Code Repository"],
             "requirements": [
                 {"description": "Must provide a complete docker-compose file.", "order": 1},
                 {"description": "All endpoints must utilize custom api_responses.", "order": 2}
@@ -214,6 +228,25 @@ class ChallengeModuleTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data["success"])
         self.assertEqual(response.data["data"]["status"], "pending")
+
+    def test_cannot_invite_beyond_the_challenge_team_limit(self):
+        self.challenge.max_team_size = 1
+        self.challenge.save(update_fields=["max_team_size"])
+        team = ChallengeTeam.objects.create(
+            challenge=self.challenge,
+            leader=self.intern_leader_user,
+        )
+        TeamMember.objects.create(team=team, user=self.intern_leader_user)
+
+        self.client.force_authenticate(user=self.intern_leader_user)
+        response = self.client.post(
+            self.invite_url,
+            {"team": team.id, "receiver": self.intern_invitee_user.id},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("team", response.data["errors"])
 
     def test_invitee_can_accept_invitation(self):
         """Tests the database state changes and transaction blocks on acceptance."""

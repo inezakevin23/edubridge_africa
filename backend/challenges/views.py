@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import transaction
 from django.db.models import Q
 from django.http import Http404
@@ -17,7 +19,13 @@ from common.pagination import StandardPagination
 from common.responses import api_response
 from notifications.models import Notification
 
-from .models import Challenge, ChallengeInvite, ChallengeTeam, TeamMember
+from .models import (
+    Challenge,
+    ChallengeInvite,
+    ChallengeTeam,
+    TeamMember,
+    close_expired_challenges,
+)
 from .permissions import IsChallengeOwner, IsCompany
 from .serializers import (
     ChallengeCreateUpdateSerializer,
@@ -54,6 +62,7 @@ class ChallengeListView(ListAPIView):
     def get_queryset(self):
         from django.db.models import Count
 
+        close_expired_challenges()
         queryset = Challenge.objects.filter(status="published")
         industry = self.request.query_params.get("industry")
         if industry:
@@ -72,6 +81,7 @@ class ChallengeDetailView(RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
+        close_expired_challenges()
         user = self.request.user
         if user.is_authenticated and hasattr(user, 'company_profile'):
             return Challenge.objects.filter(
@@ -159,6 +169,7 @@ class MyChallengesView(ListAPIView):
     def get_queryset(self):
         from django.db.models import Count
 
+        close_expired_challenges()
         return Challenge.objects.filter(company__user=self.request.user).annotate(
             submissions_count=Count("submissions", distinct=True)
         )
@@ -187,28 +198,59 @@ class CreateChallengeTeamView(CreateAPIView):
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
-        if ChallengeTeam.objects.filter(challenge_id=challenge_id, leader=request.user).exists():
+        # Validate that the challenge exists
+        try:
+            uuid.UUID(str(challenge_id))
+        except (ValueError, TypeError):
             return api_response(
                 success=False,
-                message="You already have a team for this challenge.",
+                message="Invalid challenge ID format.",
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
-        team = ChallengeTeam.objects.create(
-            challenge_id=challenge_id, leader=request.user
-        )
-        
-        # Automatically add leader as team member
-        TeamMember.objects.create(team=team, user=request.user)
+        if not Challenge.objects.filter(id=challenge_id).exists():
+            return api_response(
+                success=False,
+                message="Challenge not found.",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
 
-        serializer = ChallengeTeamSerializer(team, context={"request": request})
+        existing_team = ChallengeTeam.objects.filter(
+            challenge_id=challenge_id,
+            members__user=request.user,
+        ).prefetch_related("members__user").first()
+        if existing_team:
+            serializer = ChallengeTeamSerializer(existing_team, context={"request": request})
+            return api_response(
+                success=True,
+                message="You already have a team for this challenge.",
+                data=serializer.data,
+                status_code=status.HTTP_200_OK,
+            )
 
-        return api_response(
-            success=True,
-            message="Team created successfully.",
-            data=serializer.data,
-            status_code=status.HTTP_201_CREATED,
-        )
+        try:
+            with transaction.atomic():
+                team = ChallengeTeam.objects.create(
+                    challenge_id=challenge_id, leader=request.user
+                )
+                
+                # Automatically add leader as team member
+                TeamMember.objects.create(team=team, user=request.user, role="Team Leader")
+
+            serializer = ChallengeTeamSerializer(team, context={"request": request})
+
+            return api_response(
+                success=True,
+                message="Team created successfully.",
+                data=serializer.data,
+                status_code=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return api_response(
+                success=False,
+                message=f"Failed to create team: {str(e)}",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class MyTeamsView(ListAPIView):
@@ -219,14 +261,74 @@ class MyTeamsView(ListAPIView):
     def get_queryset(self):
         return (
             ChallengeTeam.objects
-            .filter(members__user=self.request.user)
+            .filter(
+                Q(members__user=self.request.user) | Q(leader=self.request.user)
+            )
             .prefetch_related("members__user")
             .distinct()
             .order_by("-created_at")
         )
 
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return api_response(
+            success=True,
+            message="Teams retrieved successfully.",
+            data=serializer.data,
+        )
+
+
+class UpdateTeamMemberRoleView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, team_pk, member_pk):
+        try:
+            team = ChallengeTeam.objects.get(id=team_pk, leader=request.user)
+            member = TeamMember.objects.get(id=member_pk, team=team)
+        except (ChallengeTeam.DoesNotExist, TeamMember.DoesNotExist):
+            raise Http404("Team member not found.")
+
+        role = str(request.data.get("role", "")).strip()
+        if not role or len(role) > 100:
+            return api_response(
+                success=False,
+                message="Provide a team role of up to 100 characters.",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        member.role = role
+        member.save(update_fields=["role"])
+        return api_response(
+            success=True,
+            message="Team member role updated.",
+            data=ChallengeTeamSerializer(team).data,
+        )
+
+
+class RemoveTeamMemberView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, team_pk, member_pk):
+        try:
+            team = ChallengeTeam.objects.get(id=team_pk, leader=request.user)
+            member = TeamMember.objects.get(id=member_pk, team=team)
+        except (ChallengeTeam.DoesNotExist, TeamMember.DoesNotExist):
+            raise Http404("Team member not found.")
+
+        # Cannot remove the team leader
+        if member.user == team.leader:
+            return api_response(
+                success=False,
+                message="Cannot remove the team leader.",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        member.delete()
+        return api_response(
+            success=True,
+            message="Team member removed successfully.",
+            data=ChallengeTeamSerializer(team).data,
+        )
 
 
 class CreateChallengeInviteView(CreateAPIView):
@@ -234,7 +336,15 @@ class CreateChallengeInviteView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        receiver = data.get("receiver")
+        if receiver:
+            try:
+                user = User.objects.get(Q(email__iexact=receiver) | Q(username__iexact=receiver))
+                data["receiver"] = str(user.id)
+            except User.DoesNotExist:
+                pass
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         invite = serializer.save()
         
@@ -270,7 +380,7 @@ class AcceptChallengeInviteView(GenericAPIView):
         try:
             invite = (
                 ChallengeInvite.objects
-                .select_related("team", "sender")
+                .select_related("team", "team__challenge", "sender")
                 .get(id=pk, receiver=request.user)
             )
         except ChallengeInvite.DoesNotExist:
@@ -284,6 +394,18 @@ class AcceptChallengeInviteView(GenericAPIView):
             )
 
         with transaction.atomic():
+            already_member = TeamMember.objects.filter(
+                team=invite.team, user=request.user
+            ).exists()
+            if (
+                not already_member
+                and invite.team.members.count() >= invite.team.challenge.max_team_size
+            ):
+                return api_response(
+                    success=False,
+                    message="This team has reached the challenge's maximum team size.",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
             TeamMember.objects.get_or_create(team=invite.team, user=request.user)
             invite.status = "accepted"
             invite.save(update_fields=["status"])

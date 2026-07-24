@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from common.models import BaseModel 
 from profiles.models import CompanyProfile, Industry
@@ -50,6 +51,14 @@ class Challenge(BaseModel):
         return self.title
 
 
+def close_expired_challenges():
+    """Persist overdue published challenges as closed before they are displayed."""
+    return Challenge.objects.filter(
+        status="published",
+        submission_deadline__lte=timezone.now(),
+    ).update(status="closed")
+
+
 class ChallengeRequirement(models.Model):
     challenge = models.ForeignKey(
         Challenge,
@@ -89,6 +98,7 @@ class TeamMember(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
+    role = models.CharField(max_length=100, default="Member")
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -63,6 +63,23 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """
+    Serializer for requesting a password reset email.
+    """
+
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                "No account found with this email address."
+            )
+        return value
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer used for returning user information.

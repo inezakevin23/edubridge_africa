@@ -32,32 +32,6 @@ export default function LoginLeft() {
           together.
         </p>
       </div>
-
-      <div className="relative z-10 mt-[66px] grid max-w-[470px] grid-cols-3 gap-9">
-        <div>
-          <h3 className="text-[31px] font-extrabold leading-none text-[#F59E0B]">
-            10K+
-          </h3>
-
-          <p className="mt-3 text-[15px] text-[#A6B1C4]">Students</p>
-        </div>
-
-        <div>
-          <h3 className="text-[31px] font-extrabold leading-none text-[#F59E0B]">
-            500+
-          </h3>
-
-          <p className="mt-3 text-[15px] text-[#A6B1C4]">Companies</p>
-        </div>
-
-        <div>
-          <h3 className="text-[31px] font-extrabold leading-none text-[#F59E0B]">
-            2M+
-          </h3>
-
-          <p className="mt-3 text-[15px] text-[#A6B1C4]">In Opportunities</p>
-        </div>
-      </div>
     </motion.section>
   );
 }

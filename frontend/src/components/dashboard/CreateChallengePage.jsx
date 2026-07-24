@@ -5,19 +5,17 @@ import {
   ChevronDown,
   ClipboardList,
   Eye,
-  Link as LinkIcon,
   Megaphone,
   Plus,
   Save,
   Send,
   Trash2,
-  Upload,
   UsersRound,
   WalletCards,
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import {
   createChallengeSteps,
@@ -108,6 +106,7 @@ function SectionCard({ children, icon: Icon, title, accent = "violet" }) {
 
 export default function CreateChallengePage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const isEditing = Boolean(id);
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState(initialForm);
@@ -140,7 +139,6 @@ export default function CreateChallengePage() {
             typeof r === "string" ? r : r.description || "",
           ) || ["", "", ""],
           formats: data.submission_formats || [],
-          formatDetails: {},
           cash_prize: data.cash_prize || "",
           deadline: data.submission_deadline
             ? data.submission_deadline.split("T")[0]
@@ -207,19 +205,6 @@ export default function CreateChallengePage() {
     }));
   };
 
-  const updateFormatDetail = (format, field, value) => {
-    setForm((current) => ({
-      ...current,
-      formatDetails: {
-        ...current.formatDetails,
-        [format]: {
-          ...current.formatDetails[format],
-          [field]: value,
-        },
-      },
-    }));
-  };
-
   const completedRequirements = form.requirements.filter(Boolean).length;
   const incompleteFields = [
     !form.category ? "Category" : null,
@@ -228,6 +213,74 @@ export default function CreateChallengePage() {
   const selectedFormats = formatOptions.filter((option) =>
     form.formats.includes(option.label),
   );
+
+  const saveChallenge = async (status) => {
+    const action = status === "draft" ? "save this draft" : "publish";
+    setPublishError("");
+    setPublishSuccess("");
+
+    if (!form.title || !form.category || !form.deadline) {
+      setPublishError(
+        `Please fill in Title, Category, and Deadline before you ${action}.`,
+      );
+      return;
+    }
+
+    try {
+      setPublishing(true);
+      const payload = {
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        skills: form.skills.join(","),
+        submission_deadline: `${form.deadline}T23:59:59Z`,
+        max_team_size: form.maxTeamSize
+          ? parseInt(form.maxTeamSize, 10)
+          : 1,
+        submission_formats: form.formats,
+        requirements: form.requirements
+          .filter(Boolean)
+          .map((description, index) => ({ description, order: index + 1 })),
+        cash_prize: form.prize ? parseFloat(form.prize) : null,
+        status,
+      };
+      const savedChallenge = isEditing && id
+        ? await updateChallenge(id, payload)
+        : await createChallenge(payload);
+
+      if (status === "draft") {
+        setPublishSuccess("Challenge saved as a draft.");
+        if (!isEditing && savedChallenge?.id) {
+          navigate(`/create-challenge/${savedChallenge.id}`, { replace: true });
+        }
+        return;
+      }
+
+      setPublishSuccess(
+        isEditing
+          ? "Challenge updated and published!"
+          : "Challenge published successfully!",
+      );
+      setForm(initialForm);
+      setCurrentStep(1);
+      setIsPreviewOpen(false);
+      setNewSkill("");
+    } catch (err) {
+      if (err.fieldErrors) {
+        const fieldMessages = Object.entries(err.fieldErrors)
+          .map(
+            ([field, messages]) =>
+              `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`,
+          )
+          .join("; ");
+        setPublishError(fieldMessages || err.message || "Unable to save challenge.");
+      } else {
+        setPublishError(err.message || "Unable to save challenge.");
+      }
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   return (
     <DashboardLayout
@@ -362,7 +415,9 @@ export default function CreateChallengePage() {
                       }
                       value={form.category}
                     >
-                      <option value="">e.g. Business Strategy</option>
+                      <option value="" disabled>
+                        e.g. Business Strategy
+                      </option>
                       <option>Business Strategy</option>
                       <option>Data Analytics</option>
                       <option>Product Design</option>
@@ -495,82 +550,6 @@ export default function CreateChallengePage() {
                       );
                     })}
                   </div>
-                  {selectedFormats.length ? (
-                    <div className="mt-5 space-y-3">
-                      {selectedFormats.map((option) => {
-                        const Icon = option.icon;
-                        const details = form.formatDetails[option.label] || {};
-
-                        return (
-                          <div
-                            className="rounded-[20px] border border-white/[0.05] bg-[#0E1728] p-4"
-                            key={option.label}
-                          >
-                            <div className="mb-3 flex items-center gap-3 text-white">
-                              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/12 text-[#A78BFA]">
-                                <Icon size={18} />
-                              </span>
-                              <div>
-                                <h4 className="text-[14px] font-extrabold">
-                                  {option.label}
-                                </h4>
-                                <p className="text-[12px] font-semibold text-[#7F8EA5]">
-                                  {option.sublabel}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div
-                              className={`grid gap-3 ${
-                                option.mode === "fileOrLink"
-                                  ? "md:grid-cols-2"
-                                  : ""
-                              }`}
-                            >
-                              {option.mode === "fileOrLink" ? (
-                                <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-full bg-[#1A2639] px-4 text-[13px] font-bold text-[#9AA7BA] ring-1 ring-white/[0.03] transition hover:text-white">
-                                  <Upload size={17} />
-                                  <span className="min-w-0 flex-1 truncate">
-                                    {details.fileName || "Upload sample file"}
-                                  </span>
-                                  <input
-                                    accept={option.accept}
-                                    className="sr-only"
-                                    onChange={(event) =>
-                                      updateFormatDetail(
-                                        option.label,
-                                        "fileName",
-                                        event.target.files?.[0]?.name || "",
-                                      )
-                                    }
-                                    type="file"
-                                  />
-                                </label>
-                              ) : null}
-
-                              <TextInput
-                                icon={LinkIcon}
-                                onChange={(event) =>
-                                  updateFormatDetail(
-                                    option.label,
-                                    "link",
-                                    event.target.value,
-                                  )
-                                }
-                                placeholder={
-                                  option.label === "Video Walkthrough"
-                                    ? "Paste video link"
-                                    : "Paste submission link"
-                                }
-                                type="url"
-                                value={details.link || ""}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : null}
                 </div>
               </div>
             </SectionCard>
@@ -730,7 +709,9 @@ export default function CreateChallengePage() {
             ) : (
               <div className="grid gap-3 sm:grid-cols-3">
                 <button
-                  className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#1A2639] px-5 text-[14px] font-extrabold text-white transition hover:bg-[#24324A]"
+                  className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#1A2639] px-5 text-[14px] font-extrabold text-white transition hover:bg-[#24324A] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={publishing}
+                  onClick={() => saveChallenge("draft")}
                   type="button"
                 >
                   <Save size={17} />
@@ -748,66 +729,7 @@ export default function CreateChallengePage() {
                   className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#F59E0B] px-5 text-[14px] font-extrabold text-white shadow-[0_14px_30px_rgba(245,158,11,0.24)] transition hover:bg-[#F97316] disabled:opacity-50"
                   type="button"
                   disabled={publishing}
-                  onClick={async () => {
-                    setPublishError("");
-                    setPublishSuccess("");
-                    if (!form.title || !form.category || !form.deadline) {
-                      setPublishError(
-                        "Please fill in Title, Category, and Deadline before publishing.",
-                      );
-                      return;
-                    }
-                    try {
-                      setPublishing(true);
-                      const payload = {
-                        title: form.title,
-                        description: form.description,
-                        category: form.category,
-                        skills: form.skills.join(","),
-                        submission_deadline: form.deadline
-                          ? `${form.deadline}T23:59:59Z`
-                          : undefined,
-                        max_team_size: form.maxTeamSize
-                          ? parseInt(form.maxTeamSize, 10)
-                          : 1,
-                        submission_formats: form.formats,
-                        cash_prize: form.prize ? parseFloat(form.prize) : null,
-                        status: "published",
-                      };
-                      if (isEditing && id) {
-                        await updateChallenge(id, payload);
-                        setPublishSuccess("Challenge updated and published!");
-                      } else {
-                        await createChallenge(payload);
-                        setPublishSuccess("Challenge published successfully!");
-                      }
-                      setForm(initialForm);
-                      setCurrentStep(1);
-                      setIsPreviewOpen(false);
-                      setNewSkill("");
-                    } catch (err) {
-                      // Show field-level errors from the backend when available
-                      if (err.fieldErrors) {
-                        const fieldMessages = Object.entries(err.fieldErrors)
-                          .map(
-                            ([field, msgs]) =>
-                              `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`,
-                          )
-                          .join("; ");
-                        setPublishError(
-                          fieldMessages ||
-                            err.message ||
-                            "Failed to publish challenge.",
-                        );
-                      } else {
-                        setPublishError(
-                          err.message || "Failed to publish challenge.",
-                        );
-                      }
-                    } finally {
-                      setPublishing(false);
-                    }
-                  }}
+                  onClick={() => saveChallenge("published")}
                 >
                   <Send size={17} />
                   {publishing
@@ -922,10 +844,7 @@ export default function CreateChallengePage() {
                     Accepted Submission Formats
                   </h3>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {selectedFormats.map((format) => {
-                      const details = form.formatDetails[format.label] || {};
-
-                      return (
+                    {selectedFormats.map((format) => (
                         <div
                           className="rounded-2xl bg-[#1A2639] p-4"
                           key={format.label}
@@ -934,15 +853,10 @@ export default function CreateChallengePage() {
                             {format.label}
                           </p>
                           <p className="mt-1 text-[12px] font-semibold text-[#9AA7BA]">
-                            {details.fileName || details.link
-                              ? [details.fileName, details.link]
-                                  .filter(Boolean)
-                                  .join(" | ")
-                              : format.sublabel}
+                            {format.sublabel}
                           </p>
                         </div>
-                      );
-                    })}
+                      ))}
                   </div>
                 </div>
               </div>

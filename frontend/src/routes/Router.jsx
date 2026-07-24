@@ -11,6 +11,7 @@ import CompanyRegistration from "../pages/CompanyRegistration";
 import Challenges from "../pages/Challenges";
 import Landing from "../pages/Landing";
 import Login from "../pages/Login";
+
 import StudentDashboardPage from "../pages/StudentDashboardPage";
 import StudentRegistration from "../pages/StudentRegistration";
 import ProtectedRoute from "./ProtectedRoute";

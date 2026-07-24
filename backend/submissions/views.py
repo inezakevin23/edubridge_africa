@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.db.models import Avg, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -26,7 +27,14 @@ class CreateSubmissionView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        submission = serializer.save()
+        try:
+            submission = serializer.save()
+        except IntegrityError:
+            return api_response(
+                success=False,
+                message="You have already submitted a solution for this challenge. You can update your existing submission instead.",
+                status_code=status.HTTP_409_CONFLICT,
+            )
         response_serializer = SubmissionSerializer(submission, context={"request": request})
         
         return api_response(

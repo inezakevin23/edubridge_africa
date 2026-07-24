@@ -1,7 +1,6 @@
 import {
   ArrowLeft,
   CheckCircle2,
-  Code2,
   ExternalLink,
   FileText,
   UserRound,
@@ -16,12 +15,6 @@ import { studentDashboardNavItems } from "../../data/studentDashboard";
 import { companyDashboardNavItems } from "../../data/companyDashboard";
 import { fetchSubmissionById } from "../../services/submissionService";
 import { useEffect, useMemo, useState } from "react";
-
-const deliverables = [
-  ["Solution report", "PDF", FileText],
-  ["Presentation deck", "PPTX", FileText],
-  ["Implementation repository", "GitHub", Code2],
-];
 
 export default function SolutionDetailPage() {
   const { id } = useParams();
@@ -99,7 +92,7 @@ export default function SolutionDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [id, isCompany, navigate]);
 
   const title =
     submission?.title || submission?.challenge?.title || "Submission";

@@ -6,21 +6,29 @@ import {
   Link as LinkIcon,
   Send,
   Users,
-  X,
   Zap,
   Pencil,
   Paperclip,
   Plus,
-  Save,
   FileText,
+  XCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, Navigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
+import { createChallengeFormatOptions } from "../../data/createChallenge";
 import { fetchChallengeBySlug } from "../../services/challengeService";
 import { createSubmission } from "../../services/authService";
+import useAuth from "../../context/useAuth";
+import {
+  createChallengeTeam,
+  fetchMyTeams,
+  inviteTeamMember,
+  removeTeamMember,
+  updateTeamMemberRole,
+} from "../../services/teamService";
 
 function Panel({ accent = "violet", children, icon: Icon, title }) {
   const iconClass =
@@ -85,6 +93,7 @@ function ProgressBar({ color = "bg-[#8B5CF6]", value }) {
 }
 
 export default function SubmitSolutionPage() {
+  const { user } = useAuth();
   const [form, setForm] = useState({
     title: "",
     summary: "",
@@ -94,84 +103,11 @@ export default function SubmitSolutionPage() {
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
 
-  // Use the same accepted submission format config used in CreateChallengePage.
-  // Challenge mock data currently does not include selected formats, so we treat
-  // the full config as allowed formats for the student solution form.
-  // (This keeps UI parity and enables multi-format submissions.)
-  const acceptedFormatOptions = [
-    {
-      label: "Written Report",
-      sublabel: "PDF / DOCX upload or link",
-      mode: "fileOrLink",
-      accept: ".pdf,.doc,.docx",
-      icon: Paperclip,
-    },
-    {
-      label: "Design File",
-      sublabel: "Figma link or file upload",
-      mode: "fileOrLink",
-      accept: ".fig,.sketch,.pdf,.png,.jpg,.jpeg",
-      icon: Paperclip,
-    },
-    {
-      label: "Code Repository",
-      sublabel: "GitHub link",
-      mode: "linkOnly",
-      accept: "",
-      icon: LinkIcon,
-    },
-    {
-      label: "Slide Deck",
-      sublabel: "PPT / PDF upload or link",
-      mode: "fileOrLink",
-      accept: ".ppt,.pptx,.pdf",
-      icon: Paperclip,
-    },
-    {
-      label: "Video Walkthrough",
-      sublabel: "Video link",
-      mode: "linkOnly",
-      accept: "",
-      icon: LinkIcon,
-    },
-    {
-      label: "Spreadsheet",
-      sublabel: "Excel / CSV upload or link",
-      mode: "fileOrLink",
-      accept: ".xls,.xlsx,.csv",
-      icon: Paperclip,
-    },
-  ];
-
-  // UI fields (in student solution) are now keyed by accepted format label.
-  const deliverables = acceptedFormatOptions.map((opt) => ({
-    key: opt.label,
-    title: opt.label,
-    copy: opt.sublabel,
-    linkOnly: opt.mode === "linkOnly",
-    primary: false,
-    icon: opt.icon,
-    accept: opt.accept,
-    placeholder:
-      opt.mode === "linkOnly" ? "Paste link" : "Paste link (optional)",
-  }));
-  const [teamMembers, setTeamMembers] = useState([
-    {
-      id: 1,
-      name: "Adebayo Oladipo",
-      role: "Lead Analyst",
-      badge: "You",
-      avatar: "https://i.pravatar.cc/100?img=32",
-    },
-    {
-      id: 2,
-      name: "Fatima Sule",
-      role: "Data Visualisation",
-      badge: "",
-      avatar: "https://i.pravatar.cc/100?img=47",
-    },
-  ]);
-  const [newMember, setNewMember] = useState({ name: "", role: "" });
+  const [team, setTeam] = useState(null);
+  const [teamLoading, setTeamLoading] = useState(true);
+  const [invitee, setInvitee] = useState("");
+  const [teamMessage, setTeamMessage] = useState("");
+  const [teamSaving, setTeamSaving] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const canUpdateBeforeDeadline = true;
 
@@ -182,24 +118,12 @@ export default function SubmitSolutionPage() {
       deliverables: {},
       reviewerNote: "",
     });
-    setTeamMembers([
-      {
-        id: 1,
-        name: "Adebayo Oladipo",
-        role: "Lead Analyst",
-        badge: "You",
-        avatar: "https://i.pravatar.cc/100?img=32",
-      },
-      {
-        id: 2,
-        name: "Fatima Sule",
-        role: "Data Visualisation",
-        badge: "",
-        avatar: "https://i.pravatar.cc/100?img=47",
-      },
-    ]);
     setIsSubmitted(false);
-    setNewMember({ name: "", role: "" });
+    setTeam(null);
+    setInvitee("");
+    setTeamMessage("");
+    setSubmitSuccess("");
+    setSubmitError("");
   };
   const { slug } = useParams();
   const [challenge, setChallenge] = useState(null);
@@ -225,6 +149,38 @@ export default function SubmitSolutionPage() {
     };
   }, [slug]);
 
+  useEffect(() => {
+    if (!challenge?.id) return;
+    const loadTeam = () => {
+      setTeamLoading(true);
+      return fetchMyTeams()
+        .then((teams) =>
+          setTeam(
+            teams.find((item) => item.challenge === challenge.id) || null,
+          ),
+        )
+        .catch(() => setTeam(null))
+        .finally(() => setTeamLoading(false));
+    };
+    loadTeam();
+    window.addEventListener("focus", loadTeam);
+    return () => window.removeEventListener("focus", loadTeam);
+  }, [challenge?.id]);
+
+  const acceptedFormatOptions = createChallengeFormatOptions.filter((option) =>
+    challenge?.submission_formats?.includes(option.label),
+  );
+  const deliverables = acceptedFormatOptions.map((option) => ({
+    key: option.label,
+    title: option.label,
+    copy: option.sublabel,
+    linkOnly: option.mode === "linkOnly",
+    icon: option.mode === "linkOnly" ? LinkIcon : Paperclip,
+    accept: option.accept,
+    placeholder:
+      option.mode === "linkOnly" ? "Paste link" : "Paste link (optional)",
+  }));
+
   const completedChecklist = useMemo(() => {
     const deliverablesFilled = deliverables
       .filter((d) => d.key)
@@ -239,7 +195,6 @@ export default function SubmitSolutionPage() {
       Boolean(form.summary.trim()),
       deliverablesFilled,
       deliverablesFilled,
-      Boolean(form.reviewerNote.trim()),
       Boolean(form.title && form.summary && deliverablesFilled),
     ];
   }, [form, deliverables]);
@@ -253,6 +208,10 @@ export default function SubmitSolutionPage() {
   if (challengeLoading) {
     return <p className="p-8 text-white">Loading challenge...</p>;
   }
+
+  const maxTeamSize = challenge.max_team_size || 1;
+  const teamMembers = team?.members || [];
+  const isTeamLeader = team?.leader === user?.id;
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -271,34 +230,77 @@ export default function SubmitSolutionPage() {
     }));
   };
 
-  const addTeamMember = () => {
-    const name = newMember.name.trim();
-    const role = newMember.role.trim();
-
-    if (!name) {
-      return;
+  const createTeam = async () => {
+    try {
+      setTeamSaving(true);
+      const result = await createChallengeTeam(challenge.id);
+      setTeam(result);
+      setTeamMessage("Team created. You are the first member.");
+    } catch (error) {
+      setTeamMessage(error.message || "Unable to create team.");
+    } finally {
+      setTeamSaving(false);
     }
-
-    setTeamMembers((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        name,
-        role: role || "Collaborator",
-        badge: "",
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=35266A&color=A78BFA`,
-      },
-    ]);
-    setNewMember({ name: "", role: "" });
   };
 
-  const removeTeamMember = (id) => {
-    setTeamMembers((current) =>
-      current.filter((member) => member.id !== id || member.badge === "You"),
-    );
+  const inviteMember = async () => {
+    if (!team || !invitee.trim()) return;
+    try {
+      setTeamSaving(true);
+      await inviteTeamMember(team.id, invitee.trim());
+      setInvitee("");
+      setTeamMessage("Invitation sent. The member appears after accepting it.");
+    } catch (error) {
+      setTeamMessage(error.message || "Unable to send invitation.");
+    } finally {
+      setTeamSaving(false);
+    }
+  };
+
+  const changeMemberRole = async (member, role) => {
+    try {
+      setTeamSaving(true);
+      setTeam(await updateTeamMemberRole(team.id, member.id, role));
+    } catch (error) {
+      setTeamMessage(error.message || "Unable to update the member role.");
+    } finally {
+      setTeamSaving(false);
+    }
+  };
+
+  const removeMember = async (member) => {
+    if (!team || member.user_id === team?.leader) return;
+    try {
+      setTeamSaving(true);
+      const updatedTeam = await removeTeamMember(team.id, member.id);
+      setTeam(updatedTeam?.data || updatedTeam || null);
+      setTeamMessage("Member removed from the team.");
+    } catch (error) {
+      setTeamMessage(error.message || "Unable to remove the member.");
+    } finally {
+      setTeamSaving(false);
+    }
   };
 
   const submitSolution = async () => {
+    if (!acceptedFormatOptions.length) {
+      setSubmitError(
+        "This challenge does not have an accepted submission format.",
+      );
+      return;
+    }
+
+    const hasAcceptedDeliverable = deliverables.some((item) => {
+      const details = form.deliverables[item.key];
+      return details?.file || details?.link;
+    });
+    if (!hasAcceptedDeliverable) {
+      setSubmitError(
+        "Add a deliverable in one of the company's accepted formats.",
+      );
+      return;
+    }
+
     try {
       const payload = {
         challenge: challenge?.id,
@@ -317,10 +319,21 @@ export default function SubmitSolutionPage() {
       };
 
       const response = await createSubmission(payload);
+      resetSolutionForm();
+      setIsSubmitted(true);
       setSubmitSuccess(response?.message || "Submission sent successfully.");
       setSubmitError("");
-      setIsSubmitted(true);
-      resetSolutionForm();
+
+      // Reload teams so the team section starts fresh
+      if (challenge?.id) {
+        fetchMyTeams()
+          .then((teams) =>
+            setTeam(
+              teams.find((item) => item.challenge === challenge.id) || null,
+            ),
+          )
+          .catch(() => setTeam(null));
+      }
     } catch (error) {
       setSubmitError(error.message || "Unable to submit solution now.");
       setSubmitSuccess("");
@@ -418,187 +431,200 @@ export default function SubmitSolutionPage() {
 
             <Panel accent="amber" icon={Paperclip} title="Upload Deliverables">
               <div className="space-y-4">
-                {deliverables.map((item) => {
-                  const Icon = item.icon;
-                  const details = form.deliverables[item.key] || {};
+                {deliverables.length ? (
+                  deliverables.map((item) => {
+                    const Icon = item.icon;
+                    const details = form.deliverables[item.key] || {};
 
-                  return (
-                    <div
-                      className={`rounded-[22px] border p-4 transition ${
-                        item.primary
-                          ? "border-[#8B5CF6]/55 bg-violet-500/10"
-                          : "border-white/[0.06] bg-[#0E1728]"
-                      }`}
-                      key={item.key}
-                    >
-                      <div className="mb-3 flex items-center gap-3">
-                        <span
-                          className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                            item.primary
-                              ? "bg-[#35266A] text-[#A78BFA]"
-                              : "bg-[#1A2639] text-[#9AA7BA]"
+                    return (
+                      <div
+                        className={`rounded-[22px] border p-4 transition ${
+                          item.primary
+                            ? "border-[#8B5CF6]/55 bg-violet-500/10"
+                            : "border-white/[0.06] bg-[#0E1728]"
+                        }`}
+                        key={item.key}
+                      >
+                        <div className="mb-3 flex items-center gap-3">
+                          <span
+                            className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
+                              item.primary
+                                ? "bg-[#35266A] text-[#A78BFA]"
+                                : "bg-[#1A2639] text-[#9AA7BA]"
+                            }`}
+                          >
+                            <Icon size={19} />
+                          </span>
+                          <div>
+                            <h3 className="text-[15px] font-extrabold text-white">
+                              {item.title}
+                            </h3>
+                            <p className="text-[12px] font-semibold text-[#7F8EA5]">
+                              {item.copy}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`grid gap-3 ${
+                            item.linkOnly ? "" : "md:grid-cols-2"
                           }`}
                         >
-                          <Icon size={19} />
-                        </span>
-                        <div>
-                          <h3 className="text-[15px] font-extrabold text-white">
-                            {item.title}
-                          </h3>
-                          <p className="text-[12px] font-semibold text-[#7F8EA5]">
-                            {item.copy}
-                          </p>
+                          {!item.linkOnly ? (
+                            <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-full bg-[#1A2639] px-4 text-[13px] font-bold text-[#9AA7BA] ring-1 ring-white/[0.03] transition hover:text-white">
+                              <Paperclip size={17} />
+                              <span className="min-w-0 flex-1 truncate">
+                                {details.fileName || "Upload file"}
+                              </span>
+                              <input
+                                accept={item.accept}
+                                className="sr-only"
+                                onChange={(event) => {
+                                  const file = event.target.files?.[0] || null;
+                                  updateDeliverable(
+                                    item.key,
+                                    "fileName",
+                                    file?.name || "",
+                                  );
+                                  updateDeliverable(item.key, "file", file);
+                                }}
+                                type="file"
+                              />
+                            </label>
+                          ) : null}
+
+                          <TextInput
+                            icon={LinkIcon}
+                            onChange={(event) =>
+                              updateDeliverable(
+                                item.key,
+                                "link",
+                                event.target.value,
+                              )
+                            }
+                            placeholder={item.placeholder}
+                            type="url"
+                            value={details.link || ""}
+                          />
                         </div>
                       </div>
-
-                      <div
-                        className={`grid gap-3 ${
-                          item.linkOnly ? "" : "md:grid-cols-2"
-                        }`}
-                      >
-                        {!item.linkOnly ? (
-                          <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-full bg-[#1A2639] px-4 text-[13px] font-bold text-[#9AA7BA] ring-1 ring-white/[0.03] transition hover:text-white">
-                            <Paperclip size={17} />
-                            <span className="min-w-0 flex-1 truncate">
-                              {details.fileName || "Upload file"}
-                            </span>
-                            <input
-                              accept={item.accept}
-                              className="sr-only"
-                              onChange={(event) => {
-                                const file = event.target.files?.[0] || null;
-                                updateDeliverable(
-                                  item.key,
-                                  "fileName",
-                                  file?.name || "",
-                                );
-                                updateDeliverable(item.key, "file", file);
-                              }}
-                              type="file"
-                            />
-                          </label>
-                        ) : null}
-
-                        <TextInput
-                          icon={LinkIcon}
-                          onChange={(event) =>
-                            updateDeliverable(
-                              item.key,
-                              "link",
-                              event.target.value,
-                            )
-                          }
-                          placeholder={item.placeholder}
-                          type="url"
-                          value={details.link || ""}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <p className="text-[14px] font-semibold text-[#FBBF24]">
+                    This challenge does not currently accept submissions.
+                  </p>
+                )}
               </div>
             </Panel>
 
-            <Panel
-              accent="emerald"
-              icon={Users}
-              title="Team & Additional Notes"
-            >
+            <Panel accent="emerald" icon={Users} title="Teams">
               <div>
                 <h3 className="mb-3 text-[14px] font-extrabold text-[#D6DEEA]">
-                  Team Members
+                  Team Members (max {maxTeamSize})
                 </h3>
+                {team ? (
+                  <p className="mb-3 text-[13px] font-semibold text-[#A78BFA]">
+                    Your team has {teamMembers.length} of {maxTeamSize} members.
+                  </p>
+                ) : null}
                 <div className="space-y-3">
                   {teamMembers.map((member) => (
                     <div
                       className="flex items-center gap-4 rounded-[20px] bg-[#0E1728] p-3"
                       key={member.id}
                     >
-                      <img
-                        alt={member.name}
-                        className="h-11 w-11 rounded-full object-cover"
-                        src={member.avatar}
-                      />
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#35266A] text-[13px] font-extrabold text-[#A78BFA]">
+                        {(member.full_name || member.username)
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[14px] font-extrabold text-white">
-                          {member.name}
-                          {member.badge ? (
+                          {member.full_name || member.username}
+                          {member.user_id === team?.leader ? (
                             <span className="ml-2 rounded-full bg-[#35266A] px-2 py-0.5 text-[11px] text-[#A78BFA]">
-                              {member.badge}
+                              Lead
                             </span>
                           ) : null}
                         </p>
                         <p className="text-[12px] font-semibold text-[#7F8EA5]">
-                          {member.role}
+                          @{member.username}
                         </p>
+                        {isTeamLeader ? (
+                          <input
+                            aria-label={`Role for ${member.full_name || member.username}`}
+                            className="mt-2 h-8 w-full rounded-lg border border-white/[0.08] bg-[#1A2639] px-2 text-[12px] font-semibold text-white outline-none focus:border-violet-400"
+                            defaultValue={member.role}
+                            disabled={teamSaving}
+                            onBlur={(event) => {
+                              const nextRole = event.target.value.trim();
+                              if (nextRole && nextRole !== member.role) {
+                                changeMemberRole(member, nextRole);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <p className="mt-1 text-[12px] font-semibold text-[#A78BFA]">
+                            {member.role}
+                          </p>
+                        )}
                       </div>
-                      {!member.badge ? (
+                      {isTeamLeader && member.user_id !== team?.leader ? (
                         <button
-                          aria-label={`Remove ${member.name}`}
-                          className="flex h-9 w-9 items-center justify-center rounded-full text-[#8E9AAF] transition hover:bg-white/[0.06] hover:text-white"
-                          onClick={() => removeTeamMember(member.id)}
+                          aria-label={`Remove ${member.full_name || member.username} from team`}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-rose-400/70 transition hover:bg-rose-500/15 hover:text-rose-300"
+                          disabled={teamSaving}
+                          onClick={() => removeMember(member)}
                           type="button"
                         >
-                          <X size={16} />
+                          <XCircle size={18} />
                         </button>
                       ) : null}
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)_auto]">
-                  <TextInput
-                    onChange={(event) =>
-                      setNewMember((current) => ({
-                        ...current,
-                        name: event.target.value,
-                      }))
-                    }
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        addTeamMember();
-                      }
-                    }}
-                    placeholder="Collaborator name or email"
-                    value={newMember.name}
-                  />
-                  <TextInput
-                    onChange={(event) =>
-                      setNewMember((current) => ({
-                        ...current,
-                        role: event.target.value,
-                      }))
-                    }
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        addTeamMember();
-                      }
-                    }}
-                    placeholder="Role"
-                    value={newMember.role}
-                  />
+                {teamLoading ? (
+                  <p className="mt-4 text-[13px] font-semibold text-[#9AA7BA]">
+                    Loading your team...
+                  </p>
+                ) : !team ? (
                   <button
-                    className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#35266A] px-5 text-[13px] font-extrabold text-[#A78BFA] transition hover:bg-[#44317F] hover:text-white"
-                    onClick={addTeamMember}
+                    className="mt-4 flex h-12 items-center justify-center gap-2 rounded-full bg-[#35266A] px-5 text-[13px] font-extrabold text-[#A78BFA] disabled:opacity-50"
+                    disabled={teamSaving}
+                    onClick={createTeam}
                     type="button"
                   >
-                    <Plus size={16} />
-                    Add
+                    <Plus size={16} /> Create team
                   </button>
-                </div>
+                ) : (
+                  <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+                    <TextInput
+                      onChange={(event) => setInvitee(event.target.value)}
+                      placeholder="Intern username or email"
+                      value={invitee}
+                    />
+                    <button
+                      className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#35266A] px-5 text-[13px] font-extrabold text-[#A78BFA] transition hover:bg-[#44317F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={teamSaving || teamMembers.length >= maxTeamSize}
+                      onClick={inviteMember}
+                      type="button"
+                    >
+                      <Plus size={16} />
+                      Invite
+                    </button>
+                  </div>
+                )}
+                {teamMessage ? (
+                  <p className="mt-3 text-[13px] font-semibold text-[#9AA7BA]">
+                    {teamMessage}
+                  </p>
+                ) : null}
               </div>
             </Panel>
 
             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-              <button
-                className="flex h-14 items-center justify-center gap-2 rounded-[22px] bg-[#1A2639] px-8 text-[15px] font-extrabold text-white transition hover:bg-[#24324A] sm:w-[230px]"
-                type="button"
-              >
-                <Save size={17} />
-                Save Draft
-              </button>
               <button
                 className="flex h-14 flex-1 items-center justify-center gap-2 rounded-[22px] bg-[#8B5CF6] px-8 text-[16px] font-extrabold text-white shadow-[0_18px_42px_rgba(139,92,246,0.38)] transition hover:bg-[#9568ff]"
                 disabled={isSubmitted && !canUpdateBeforeDeadline}
@@ -619,11 +645,6 @@ export default function SubmitSolutionPage() {
                 {submitSuccess}
               </p>
             ) : null}
-            <p className="pb-5 text-center text-[12px] font-semibold text-[#7F8EA5]">
-              {isSubmitted
-                ? "Submission saved. You can keep updating it until the challenge deadline."
-                : "Once submitted, you can update your solution until the challenge deadline."}
-            </p>
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -638,7 +659,6 @@ export default function SubmitSolutionPage() {
                   "Executive summary written",
                   "Written report uploaded",
                   "Presentation deck uploaded",
-                  "Reviewer note added",
                   "All required fields complete",
                 ].map((item, index) => {
                   const checked = completedChecklist[index];
@@ -663,9 +683,9 @@ export default function SubmitSolutionPage() {
               <div className="mt-6 border-t border-white/[0.06] pt-4">
                 <div className="flex items-center justify-between text-[12px] font-extrabold">
                   <span className="text-[#7F8EA5]">Readiness</span>
-                  <span className="text-white">{readiness}/6</span>
+                  <span className="text-white">{readiness}/5</span>
                 </div>
-                <ProgressBar value={(readiness / 6) * 100} />
+                <ProgressBar value={(readiness / 5) * 100} />
               </div>
             </section>
           </aside>

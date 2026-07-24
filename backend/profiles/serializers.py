@@ -113,6 +113,7 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
     email = serializers.ReadOnlyField(source="user.email")
     username = serializers.ReadOnlyField(source="user.username")
     phone_number = serializers.ReadOnlyField(source="user.phone_number")
+    is_verified = serializers.ReadOnlyField(source="user.is_verified")
 
     class Meta:
         model = CompanyProfile

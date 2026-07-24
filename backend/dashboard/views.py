@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.db.models import Sum
 from accounts.permissions import IsCompany, IsIntern 
-from challenges.models import Challenge
+from challenges.models import Challenge, close_expired_challenges
 from common.responses import api_response
 from notifications.models import Notification
 from submissions.models import Submission
@@ -18,6 +18,7 @@ class InternDashboardStatsView(APIView):
     permission_classes = [IsAuthenticated, IsIntern]
 
     def get(self, request):
+        close_expired_challenges()
         user = request.user
         active_challenges = Challenge.objects.filter(status="published").count()
         my_submissions = Submission.objects.filter(intern=user).count()
@@ -51,6 +52,7 @@ class CompanyDashboardStatsView(APIView):
     permission_classes = [IsAuthenticated, IsCompany]
 
     def get(self, request):
+        close_expired_challenges()
         user = request.user
         active_challenges = Challenge.objects.filter(
             company__user=user, 

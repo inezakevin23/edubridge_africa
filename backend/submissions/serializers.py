@@ -31,6 +31,15 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
 
 class CreateSubmissionSerializer(serializers.ModelSerializer):
+    submission_fields = {
+        "Written Report": ("report_file", "report_link"),
+        "Design File": ("other_file", "design_link"),
+        "Code Repository": ("github_repository",),
+        "Slide Deck": ("slides_file", "slides_link"),
+        "Video Walkthrough": ("video_link",),
+        "Spreadsheet": ("spreadsheet_file", "spreadsheet_link"),
+    }
+
     class Meta:
         model = Submission
         exclude = (
@@ -58,7 +67,46 @@ class CreateSubmissionSerializer(serializers.ModelSerializer):
                 {"detail": f"Submission rejected. The deadline for this challenge passed on {challenge.submission_deadline.strftime('%B %d, %Y at %I:%M %p')}"}
             )
 
+        accepted_formats = challenge.submission_formats or []
+        if accepted_formats:
+            accepted_fields = {
+                field
+                for format_name in accepted_formats
+                for field in self.submission_fields.get(format_name, ())
+            }
+            submitted_fields = {
+                field
+                for fields in self.submission_fields.values()
+                for field in fields
+                if attrs.get(field)
+            }
+            unsupported_fields = submitted_fields - accepted_fields
+            if unsupported_fields:
+                raise serializers.ValidationError(
+                    {
+                        "detail": "Your submission includes a format that this company does not accept."
+                    }
+                )
+            if not submitted_fields:
+                raise serializers.ValidationError(
+                    {
+                        "detail": "Add a deliverable in one of the accepted submission formats."
+                    }
+                )
+
         team_instance = ChallengeTeam.objects.filter(challenge=challenge, members__user=user).first()
+        if team_instance and team_instance.leader != user:
+            if not Submission.objects.filter(
+                challenge=challenge, team=team_instance
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        "detail": "Only the team leader can submit a solution while your team submission is pending."
+                    }
+                )
+            # Once the team submission exists, members may submit an independent solution.
+            team_instance = None
+
         attrs["team"] = team_instance
 
         if team_instance:

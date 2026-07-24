@@ -1,10 +1,8 @@
 import {
   ChevronRight,
+  BadgeCheck,
   ClipboardList,
   FileText,
-  Plus,
-  UserPlus,
-  Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -25,10 +23,13 @@ function HeroCard({ challenge }) {
             {challenge.initials}
           </div>
           <div>
-            <p className="text-[13px] text-[#9AA7BA]">
+            <p className="flex items-center gap-1 text-[13px] text-[#9AA7BA]">
               Posted by{" "}
               {(challenge.companyObj || challenge.company)?.legalName ||
                 challenge.company}
+              {challenge.companyObj?.is_verified ? (
+                <BadgeCheck className="text-[#4ADE80]" size={15} />
+              ) : null}
             </p>
             <h2 className="mt-1 text-[24px] font-extrabold leading-tight text-white md:text-[28px]">
               {challenge.title}
@@ -127,7 +128,12 @@ function CompanyCard({ company }) {
           {company.name.charAt(0)}
         </div>
         <div>
-          <h3 className="font-extrabold text-white">{company.name}</h3>
+          <h3 className="flex items-center gap-1 font-extrabold text-white">
+            {company.name}
+            {company.is_verified ? (
+              <BadgeCheck className="text-[#4ADE80]" size={16} />
+            ) : null}
+          </h3>
           <p className="text-[12px] text-[#9AA7BA]">{company.industry}</p>
         </div>
       </div>
@@ -139,8 +145,6 @@ function CompanyCard({ company }) {
 }
 
 export default function ChallengeDetailsPage() {
-  const [invitee, setInvitee] = useState("");
-  const [inviteMessage, setInviteMessage] = useState("");
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
   const { slug } = useParams();
@@ -220,58 +224,6 @@ export default function ChallengeDetailsPage() {
               </div>
             </Panel>
 
-            <Panel icon={Users} title="Team Collaboration">
-              <p className="text-[13px] leading-6 text-[#9AA7BA]">
-                This challenge supports teams of up to{" "}
-                {challenge.collaboration.maxMembers} members. Invite
-                collaborators by email or username.
-              </p>
-              <div className="mt-5 flex flex-wrap items-center gap-4">
-                <div className="flex -space-x-3">
-                  {challenge.collaboration.currentMembers.map((member) => (
-                    <img
-                      alt={member.name}
-                      className="h-10 w-10 rounded-full border-2 border-[#131C2E] object-cover"
-                      key={member.name}
-                      src={member.avatar}
-                    />
-                  ))}
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#131C2E] bg-[#182237] text-[#8B5CF6]">
-                    <Plus size={18} />
-                  </div>
-                </div>
-                <p className="text-[13px] font-semibold text-[#AAB4C3]">
-                  {challenge.collaboration.note}
-                </p>
-              </div>
-              <div className="mt-6 flex gap-3">
-                <input
-                  className="h-11 min-w-0 flex-1 rounded-full bg-[#0D1626] px-4 text-[13px] text-white placeholder:text-[#8E9AAF] outline-none"
-                  placeholder="Invite by username or email..."
-                  onChange={(event) => setInvitee(event.target.value)}
-                  value={invitee}
-                />
-                <button
-                  className="flex h-11 items-center gap-2 rounded-2xl bg-[#1C273A] px-4 text-[13px] font-bold text-white"
-                  onClick={() => {
-                    const value = invitee.trim();
-                    if (value) {
-                      setInviteMessage(`Invitation sent to ${value}.`);
-                      setInvitee("");
-                    }
-                  }}
-                  type="button"
-                >
-                  <UserPlus size={16} />
-                  Invite
-                </button>
-              </div>
-              {inviteMessage ? (
-                <p className="mt-3 text-[13px] font-semibold text-emerald-400">
-                  {inviteMessage}
-                </p>
-              ) : null}
-            </Panel>
           </div>
 
           <div className="space-y-7 lg:sticky lg:top-24 lg:self-start">

@@ -12,6 +12,8 @@ from .views import (
     MyChallengesView,
     MyTeamsView,
     ReceivedInvitesView,
+    RemoveTeamMemberView,
+    UpdateTeamMemberRoleView,
 )
 
 urlpatterns = [
@@ -54,6 +56,16 @@ urlpatterns = [
         "teams/my/",
         MyTeamsView.as_view(),
         name="my-teams",
+    ),
+    path(
+        "teams/<uuid:team_pk>/members/<int:member_pk>/role/",
+        UpdateTeamMemberRoleView.as_view(),
+        name="update-team-member-role",
+    ),
+    path(
+        "teams/<uuid:team_pk>/members/<int:member_pk>/remove/",
+        RemoveTeamMemberView.as_view(),
+        name="remove-team-member",
     ),
     path(
         "invites/",

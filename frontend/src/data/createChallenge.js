@@ -35,7 +35,6 @@ export const createChallengeInitialForm = {
   duration: "",
   requirements: ["", "", ""],
   formats: ["Written Report", "Design File", "Code Repository"],
-  formatDetails: {},
   cash_prize: "",
   deadline: "",
   maxTeamSize: "",
@@ -47,14 +46,14 @@ export const createChallengeInitialForm = {
 export const createChallengeFormatOptions = [
   {
     label: "Written Report",
-    sublabel: "PDF / DOCX upload or link",
+    sublabel: "PDF / DOCX",
     icon: FileText,
     mode: "fileOrLink",
     accept: ".pdf,.doc,.docx",
   },
   {
     label: "Design File",
-    sublabel: "Figma link or file upload",
+    sublabel: "Figma file or link",
     icon: FileArchive,
     mode: "fileOrLink",
     accept: ".fig,.sketch,.pdf,.png,.jpg,.jpeg",
@@ -67,7 +66,7 @@ export const createChallengeFormatOptions = [
   },
   {
     label: "Slide Deck",
-    sublabel: "PPT / PDF upload or link",
+    sublabel: "PPT / PDF",
     icon: LayoutDashboard,
     mode: "fileOrLink",
     accept: ".ppt,.pptx,.pdf",
@@ -80,7 +79,7 @@ export const createChallengeFormatOptions = [
   },
   {
     label: "Spreadsheet",
-    sublabel: "Excel / CSV upload or link",
+    sublabel: "Excel / CSV",
     icon: WalletCards,
     mode: "fileOrLink",
     accept: ".xls,.xlsx,.csv",

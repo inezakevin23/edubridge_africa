@@ -1,11 +1,14 @@
-import { Bell, CheckCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Bell, Check, CheckCheck } from "lucide-react";
+import { useState } from "react";
 import { fetchNotifications } from "../../services/notificationService";
+import { acceptChallengeInvite } from "../../services/teamService";
 
 export default function NotificationMenu({ tone = "amber" }) {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [acceptingId, setAcceptingId] = useState(null);
+  const [inviteActions, setInviteActions] = useState({});
 
   const load = async () => {
     try {
@@ -13,21 +16,38 @@ export default function NotificationMenu({ tone = "amber" }) {
       const resp = await fetchNotifications();
       const list = Array.isArray(resp) ? resp : resp?.results || [];
       setNotifications(list);
-    } catch (err) {
+    } catch {
       setNotifications([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (open) load();
-  }, [open]);
-
   const unread = notifications.filter((item) => !item.is_read).length;
   const markAllRead = () => {
     const next = notifications.map((item) => ({ ...item, is_read: true }));
     setNotifications(next);
+  };
+
+  const acceptInvite = async (notification) => {
+    try {
+      setAcceptingId(notification.id);
+      await acceptChallengeInvite(notification.related_object_id);
+      setInviteActions((current) => ({ ...current, [notification.id]: "accepted" }));
+      setNotifications((current) =>
+        current.map((item) =>
+          item.id === notification.id ? { ...item, is_read: true } : item,
+        ),
+      );
+    } catch (error) {
+      const isTeamFull = /maximum team size|team has reached/i.test(error.message);
+      setInviteActions((current) => ({
+        ...current,
+        [notification.id]: isTeamFull ? "full" : "error",
+      }));
+    } finally {
+      setAcceptingId(null);
+    }
   };
 
   return (
@@ -36,7 +56,12 @@ export default function NotificationMenu({ tone = "amber" }) {
         aria-expanded={open}
         aria-label="Notifications"
         className="relative flex h-11 w-11 items-center justify-center rounded-full text-[#B5C0D2] transition hover:bg-white/[0.06] hover:text-white"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() =>
+          setOpen((value) => {
+            if (!value) load();
+            return !value;
+          })
+        }
         type="button"
       >
         <Bell size={21} />
@@ -75,6 +100,29 @@ export default function NotificationMenu({ tone = "amber" }) {
                   <p className="mt-1 text-[12px] leading-5 text-[#AAB5C7]">
                     {item.message}
                   </p>
+                  {item.notification_type === "challenge_invitation" &&
+                  item.related_object_id ? (
+                    <button
+                      className="mt-3 flex h-8 items-center gap-1 rounded-lg bg-[#35266A] px-3 text-[12px] font-bold text-[#D7C5FF] transition hover:bg-[#44317F] disabled:opacity-50"
+                      disabled={
+                        acceptingId === item.id ||
+                        ["accepted", "full"].includes(inviteActions[item.id])
+                      }
+                      onClick={() => acceptInvite(item)}
+                      type="button"
+                    >
+                      <Check size={14} />
+                      {acceptingId === item.id
+                        ? "Accepting..."
+                        : inviteActions[item.id] === "accepted"
+                          ? "Accepted"
+                          : inviteActions[item.id] === "full"
+                            ? "Team is full"
+                            : inviteActions[item.id] === "error"
+                              ? "Try again"
+                              : "Accept invite"}
+                    </button>
+                  ) : null}
                 </article>
               ))
             )}

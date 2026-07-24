@@ -68,10 +68,16 @@ function ActiveChallengesTable({ challenges }) {
                     className={`rounded-full px-3 py-1.5 text-[13px] font-extrabold ${
                       challenge.status === "draft"
                         ? "bg-amber-500/10 text-[#F59E0B]"
-                        : "bg-emerald-500/10 text-[#22C55E]"
+                        : challenge.status === "closed"
+                          ? "bg-white/[0.08] text-[#9AA7BA]"
+                          : "bg-emerald-500/10 text-[#22C55E]"
                     }`}
                   >
-                    {challenge.status === "draft" ? "Draft" : "Active"}
+                    {challenge.status === "draft"
+                      ? "Draft"
+                      : challenge.status === "closed"
+                        ? "Ended"
+                        : "Active"}
                   </span>
                 </td>
               </tr>

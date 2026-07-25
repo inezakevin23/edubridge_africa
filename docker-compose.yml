@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # DATABASE STORAGE ENGINE CONTAINER
   db:
@@ -24,7 +22,7 @@ services:
       - media_volume:/app/media
     environment:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DEBUG=True # Keep True for local testing, change to False on your live server
+      - DEBUG=True # Keep True for local testing, change to False on live server
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - ALLOWED_HOSTS=localhost,127.0.0.1,api.edubridge.ineza.tech
       - CORS_ALLOWED_ORIGINS=http://localhost:3000,https://ineza.tech

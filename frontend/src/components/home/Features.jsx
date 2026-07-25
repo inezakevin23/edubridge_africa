@@ -29,8 +29,9 @@ export default function Features() {
           </h2>
 
           <p className="text-gray-400 mt-6 max-w-3xl mx-auto">
-            We connect ambitious students with organizations seeking innovative
-            solutions, creating value for both education and business.
+            We connect ambitious students, graduates, freelancers, job seekers
+            and professionals with organizations seeking innovative solutions,
+            creating value for both education and business.
           </p>
         </div>
 

@@ -622,6 +622,16 @@ export default function CompanyRegistrationForm() {
                 {passwordStrength.label}
               </p>
 
+              <div className="mt-5 flex items-start gap-3 rounded-[18px] border border-amber-400/15 bg-amber-500/[0.06] p-4">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#F59E0B]" />
+                <p className="text-[12px] leading-relaxed text-[#AAB4C3]">
+                  Password must be at least{" "}
+                  <strong className="text-white">8 characters</strong> long and
+                  include <strong className="text-white">letters</strong> and{" "}
+                  <strong className="text-white">numbers</strong> for security.
+                </p>
+              </div>
+
               <p className="mt-4 text-center text-[12px] text-[#8D99AE]">
                 Account activation takes up to 48 hours after document
                 verification.

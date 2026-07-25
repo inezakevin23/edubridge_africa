@@ -36,9 +36,8 @@ export default function Hero() {
           {/* Description */}
 
           <p className="text-gray-400 text-lg max-w-3xl mt-10 leading-8">
-            Connect with top companies by solving real business problems. Build
-            a verifiable skill passport, earn reputation, and fast-track your
-            career across the continent.
+            Connect with top companies by solving real business problems. earn
+            reputation, and fast-track your career across the continent.
           </p>
 
           {/* Buttons */}

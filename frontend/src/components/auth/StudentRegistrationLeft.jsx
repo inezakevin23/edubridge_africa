@@ -21,23 +21,7 @@ export default function StudentRegistrationLeft() {
           Create your profile, solve real challenges, and get hired by Africa's
           top companies.
         </p>
-
-        <div className="mt-12 grid max-w-[410px] grid-cols-3 gap-8">
-          {[
-            ["10K+", "Students"],
-            ["500+", "Companies"],
-            ["2M+", "In Opportunities"],
-          ].map(([value, label]) => (
-            <div key={value}>
-              <h3 className="text-[25px] font-extrabold leading-none text-[#F59E0B]">
-                {value}
-              </h3>
-              <p className="mt-2 text-[13px] text-[#A6B1C4]">{label}</p>
-            </div>
-          ))}
-        </div>
       </div>
-
     </motion.aside>
   );
 }

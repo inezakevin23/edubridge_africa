@@ -11,6 +11,7 @@ import {
   EyeOff,
   GraduationCap,
   Image,
+  Info,
   KeyRound,
   Link as LinkIcon,
   Lock,
@@ -619,6 +620,16 @@ export default function StudentRegistrationForm() {
               >
                 {passwordStrength.label}
               </p>
+
+              <div className="mt-5 flex items-start gap-3 rounded-[18px] border border-violet-400/15 bg-violet-500/[0.06] p-4">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#8B5CF6]" />
+                <p className="text-[12px] leading-relaxed text-[#AAB4C3]">
+                  Password must be at least{" "}
+                  <strong className="text-white">8 characters</strong> long and
+                  include <strong className="text-white">letters</strong> and{" "}
+                  <strong className="text-white">numbers</strong> for security.
+                </p>
+              </div>
             </Section>
           ) : null}
 

@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  # DATABASE STORAGE ENGINE CONTAINER
+  db:
+    image: postgres:16-alpine
+    container_name: edubridge_postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - edubridge_network
+    restart: always
+
+  # DJANGO REST FRAMEWORK CONTROLLER API CONTAINER
+  backend:
+    build: ./backend
+    container_name: edubridge_django_api
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    environment:
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DEBUG=True # Keep True for local testing, change to False on your live server
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - ALLOWED_HOSTS=localhost,127.0.0.1,api.edubridge.ineza.tech
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,https://ineza.tech
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - edubridge_network
+    restart: always
+
+  # VITE REACT INTERFACE CLIENT PORTAL CONTAINER
+  frontend:
+    build: ./frontend
+    container_name: edubridge_react_client
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - edubridge_network
+    restart: always
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  edubridge_network:
+    driver: bridge

@@ -189,9 +189,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
+# authorized live backend domain inside CSRF trusted origins
 CSRF_TRUSTED_ORIGINS = [
     "https://api.edubridge.ineza.tech",
 ]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 

@@ -1,5 +1,5 @@
-import { Bell, Check, CheckCheck } from "lucide-react";
-import { useState } from "react";
+import { Bell, Check, CheckCheck, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
 import { fetchNotifications } from "../../services/notificationService";
 import { acceptChallengeInvite } from "../../services/teamService";
 
@@ -23,6 +23,10 @@ export default function NotificationMenu({ tone = "amber" }) {
     }
   };
 
+  useEffect(() => {
+    load();
+  }, []);
+
   const unread = notifications.filter((item) => !item.is_read).length;
   const markAllRead = () => {
     const next = notifications.map((item) => ({ ...item, is_read: true }));
@@ -33,14 +37,19 @@ export default function NotificationMenu({ tone = "amber" }) {
     try {
       setAcceptingId(notification.id);
       await acceptChallengeInvite(notification.related_object_id);
-      setInviteActions((current) => ({ ...current, [notification.id]: "accepted" }));
+      setInviteActions((current) => ({
+        ...current,
+        [notification.id]: "accepted",
+      }));
       setNotifications((current) =>
         current.map((item) =>
           item.id === notification.id ? { ...item, is_read: true } : item,
         ),
       );
     } catch (error) {
-      const isTeamFull = /maximum team size|team has reached/i.test(error.message);
+      const isTeamFull = /maximum team size|team has reached/i.test(
+        error.message,
+      );
       setInviteActions((current) => ({
         ...current,
         [notification.id]: isTeamFull ? "full" : "error",
@@ -122,6 +131,28 @@ export default function NotificationMenu({ tone = "amber" }) {
                               ? "Try again"
                               : "Accept invite"}
                     </button>
+                  ) : null}
+                  {item.notification_type === "job_offer" && item.job_link ? (
+                    <a
+                      className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600/20 px-3 text-[12px] font-bold text-emerald-400 transition hover:bg-emerald-600/30"
+                      href={
+                        item.job_link.startsWith("http://") ||
+                        item.job_link.startsWith("https://")
+                          ? item.job_link
+                          : `https://${item.job_link}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <ExternalLink size={14} />
+                      View Job Offer
+                    </a>
+                  ) : item.notification_type === "job_offer" &&
+                    !item.job_link ? (
+                    <span className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600/10 px-3 text-[12px] font-bold text-emerald-400/70">
+                      <Check size={14} />
+                      Job Offered
+                    </span>
                   ) : null}
                 </article>
               ))

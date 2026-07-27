@@ -53,9 +53,56 @@ class InternProfileSerializer(serializers.ModelSerializer):
         ).aggregate(total=Sum("company_score"))
         return stats["total"] if stats["total"] is not None else 0
 
+class PublicInternProfileSerializer(serializers.ModelSerializer):
+    """Read-only serializer for companies to view an intern's public profile."""
+    email = serializers.ReadOnlyField(source="user.email")
+    username = serializers.ReadOnlyField(source="user.username")
+    first_name = serializers.ReadOnlyField(source="user.first_name")
+    last_name = serializers.ReadOnlyField(source="user.last_name")
+    phone_number = serializers.ReadOnlyField(source="user.phone_number")
+    is_verified = serializers.ReadOnlyField(source="user.is_verified")
+    user_id = serializers.ReadOnlyField(source="user.id")
+    total_score_points = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InternProfile
+        fields = [
+            "id",
+            "user_id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "is_verified",
+            "country",
+            "city",
+            "gender",
+            "current_status",
+            "institution",
+            "field_of_study",
+            "graduation_year",
+            "years_of_experience",
+            "skills",
+            "portfolio_url",
+            "profile_picture",
+            "bio",
+            "total_score_points",
+        ]
+
+    def get_total_score_points(self, obj):
+        user = obj.user
+        if not user:
+            return 0
+        from submissions.models import Submission
+        stats = Submission.objects.filter(
+            intern=user, 
+            company_score__isnull=False
+        ).aggregate(total=Sum("company_score"))
+        return stats["total"] if stats["total"] is not None else 0
+
+
 class InternProfileCreateSerializer(serializers.ModelSerializer):
-    national_or_student_id_document = serializers.FileField(required=True)
-    profile_picture = serializers.ImageField(required=True)
 
     class Meta:
         model = InternProfile

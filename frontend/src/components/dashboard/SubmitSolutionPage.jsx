@@ -632,7 +632,7 @@ export default function SubmitSolutionPage() {
                 type="button"
               >
                 <Send size={19} />
-                {isSubmitted ? "Update Solution" : "Submit Solution"}
+                {isSubmitted ? "Submitted ✓" : "Submit Solution"}
               </button>
             </div>
             {submitError ? (

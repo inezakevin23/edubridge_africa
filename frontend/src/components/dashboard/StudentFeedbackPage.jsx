@@ -1,4 +1,4 @@
-import { Eye, Filter, SlidersHorizontal, ThumbsUp } from "lucide-react";
+import { Eye, ThumbsUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
@@ -7,6 +7,7 @@ import Topbar from "../layout/Topbar";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
 import { fetchMySubmissions } from "../../services/submissionService";
 import { fetchInternDashboardStats } from "../../services/dashboardService";
+import useAuth from "../../context/useAuth";
 
 function StatCard({ stat }) {
   return (
@@ -18,18 +19,6 @@ function StatCard({ stat }) {
         {stat.label}
       </p>
     </article>
-  );
-}
-
-function FilterButton({ children, icon: Icon }) {
-  return (
-    <button
-      className="flex h-12 items-center justify-center gap-2 rounded-full border border-white/[0.05] bg-[#182237] px-5 text-[14px] font-semibold text-[#AAB5C7] transition hover:bg-[#22304A] hover:text-white"
-      type="button"
-    >
-      <Icon size={16} />
-      {children}
-    </button>
   );
 }
 
@@ -129,6 +118,7 @@ export default function StudentFeedbackPage() {
   const [submissions, setSubmissions] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     let mounted = true;
@@ -188,6 +178,12 @@ export default function StudentFeedbackPage() {
         const score = s.company_score ?? 0;
         const scoreTone =
           score >= 90 ? "emerald" : score >= 75 ? "violet" : "amber";
+        // For team submissions, check per-member shortlisting via
+        // shortlisted_members. For solo submissions, use the submission-level
+        // shortlisted flag.
+        const isShortlisted = s.team
+          ? (s.shortlisted_members || []).includes(String(user?.id))
+          : s.shortlisted;
 
         return {
           solutionId: s.id,
@@ -200,7 +196,7 @@ export default function StudentFeedbackPage() {
           reviewer: companyName || "Company",
           reviewerRole: "Reviewer",
           reviewerInitial: (companyName || "C").charAt(0).toUpperCase(),
-          badge: s.shortlisted ? "Shortlisted" : "",
+          badge: isShortlisted ? "Shortlisted" : "",
           badgeIcon: ThumbsUp,
           xp: `${score}/100`,
           status: s.status?.replace(/_/g, " ") || "Submitted",
@@ -216,7 +212,7 @@ export default function StudentFeedbackPage() {
           ],
         };
       });
-  }, [submissions]);
+  }, [submissions, user]);
 
   return (
     <DashboardLayout
@@ -240,10 +236,6 @@ export default function StudentFeedbackPage() {
             <p className="mt-2 text-[16px] font-medium text-[#9AA7BA]">
               Reviews and scores from companies on your submitted solutions.
             </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <FilterButton icon={Filter}>All Challenges</FilterButton>
-            <FilterButton icon={SlidersHorizontal}>Most Recent</FilterButton>
           </div>
         </div>
 

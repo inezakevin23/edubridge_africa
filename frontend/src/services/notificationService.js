@@ -5,3 +5,10 @@ export async function fetchNotifications(params = {}) {
   if (params && Object.keys(params).length) config.params = params;
   return apiRequest("get", "/api/notifications/", null, config);
 }
+
+export async function sendJobOffer(recipientId, jobLink) {
+  return apiRequest("post", "/api/notifications/send-job-offer/", {
+    recipient_id: recipientId,
+    job_link: jobLink,
+  });
+}

@@ -378,8 +378,8 @@ export default function CompanySubmissionsReviewPage() {
             value={statusFilter}
           >
             <option value="all">All statuses</option>
-            <option value="under_review">Under review</option>
             <option value="reviewed">Reviewed</option>
+            <option value="submitted">Submitted</option>
           </select>
           <select
             aria-label="Sort submissions"

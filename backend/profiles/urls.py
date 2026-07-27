@@ -6,6 +6,7 @@ from .views import (
     IndustryListView,
     InternProfileCreateView,
     InternProfileView,
+    PublicInternProfileDetailView,
 )
 
 urlpatterns = [
@@ -23,6 +24,11 @@ urlpatterns = [
         "intern/me/",
         InternProfileView.as_view(),
         name="intern-profile",
+    ),
+    path(
+        "intern/<uuid:user_id>/",
+        PublicInternProfileDetailView.as_view(),
+        name="public-intern-profile",
     ),
     path(
         "company/",

@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import CreateChallengePage from "../components/dashboard/CreateChallengePage";
 import ChallengeDetailsPage from "../components/dashboard/ChallengeDetailsPage";
 import CompanySubmissionsReviewPage from "../components/dashboard/CompanySubmissionsReviewPage";
+import InternProfileView from "../components/dashboard/InternProfileView";
 import ProfilePage from "../components/dashboard/ProfilePage";
 import SolutionDetailPage from "../components/dashboard/SolutionDetailPage";
 import StudentFeedbackPage from "../components/dashboard/StudentFeedbackPage";
@@ -71,6 +72,15 @@ export default function Router() {
           element={
             <ProtectedRoute allowedRoles={["company"]}>
               <CompanyDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/intern-profile/:id"
+          element={
+            <ProtectedRoute allowedRoles={["company"]}>
+              <InternProfileView />
             </ProtectedRoute>
           }
         />

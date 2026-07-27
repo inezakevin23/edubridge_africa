@@ -1,39 +1,13 @@
-# TODO: Replace Mock Profile Pictures with Real Profile Pictures
+# Bug Fix: Team Shortlisting Shows Non-Shortlisted Members
 
-## Backend
+## Root Cause Analysis
 
-- [x] Update SubmissionSerializer to expose `submitter` object with profile_picture
-- [x] Add `submitter_profile_picture` field for direct avatar access
-- [x] Add `team_leader_picture` field for team submissions
-- [x] Add `get_absolute_url` helper to properly resolve file URLs with request context
-- [x] Make profile_picture URLs absolute (using request.build_absolute_uri)
+1. **Backend `CompanySubmissionsView`** ignores the `shortlisted` query parameter - returns ALL submissions
+2. **Frontend `CompanyDashboard.jsx`** doesn't filter by `item.shortlisted` before adding to shortlisted state
 
-## Frontend - CompanySubmissionsReviewPage.jsx
+## Steps
 
-- [x] Removed `toggleShortlistMember` import (simplified card)
-- [x] Removed `Bot`, `MessageSquare`, `Send`, `UserCheck`, `UserPlus`, `X` unused icons
-- [x] Removed `ScoreRing`, `Bot` score display, feedback UI from cards
-- [x] Simplified SubmissionCard to a clean summary card with "View Full Solution & Review" link
-- [x] **Removed mock pravatar fallback URL** - avatar now uses `item.avatar || null`
-- [x] Avatar display logic: for team submissions uses `team_leader_picture`, otherwise `submitter_profile_picture`
-- [x] Added `avatarError` state + `onError` handler for broken images
-- [x] Shows `<UserRound>` icon placeholder when no avatar or broken image
-
-## Frontend - SolutionDetailPage.jsx
-
-- [x] Uses real `member.profile_picture` for team member avatars
-- [x] Uses `submission.intern.profile_picture` for solo submitter avatar
-- [x] `handleImageError` state + `onError` handler for broken images
-- [x] Shows `<UserRound>` icon placeholder when no avatar available
-
-## Frontend - StudentFeedbackPage.jsx
-
-- [x] Removed mock `reviewerAvatar: https://i.pravatar.cc/...` field (was unused in template)
-
-## Notes
-
-- Backend `SubmissionSerializer` now returns:
-  - `submitter` object with `id`, `first_name`, `last_name`, `email`, `username`, `profile_picture`, `institution`
-  - `submitter_profile_picture` (direct URL)
-  - `team_leader_picture` (direct URL for team submissions)
-  - `team_members[].profile_picture` (already existed, now uses absolute URLs)
+- [x] 1. Find and analyze root cause
+- [x] 2. Backend: Add `shortlisted` query param filtering in `submissions/views.py` - `CompanySubmissionsView`
+- [x] 3. Frontend: Filter submissions by `shortlisted` property in `CompanyDashboard.jsx`
+- [x] 4. Fix complete - both backend and frontend now properly handle shortlisted filtering

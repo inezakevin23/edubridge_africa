@@ -40,3 +40,10 @@ export async function updateCompanyProfile(payload) {
 export async function fetchIndustries() {
   return apiRequest("get", "/api/profiles/industries/");
 }
+
+/**
+ * Fetch an intern's public profile by user ID (for company viewing).
+ */
+export async function fetchInternProfileById(userId) {
+  return apiRequest("get", `/api/profiles/intern/${userId}/`);
+}

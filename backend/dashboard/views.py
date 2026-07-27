@@ -28,7 +28,13 @@ class InternDashboardStatsView(APIView):
             Q(intern=user) | Q(team__members__user=user)
         ).distinct()
         my_submissions = user_submissions.count()
-        shortlisted_submissions = user_submissions.filter(shortlisted=True).count()
+        # Count submissions where the user is specifically shortlisted.
+        # For solo submissions (no team), use the submission-level shortlisted flag.
+        # For team submissions, check the per-member SubmissionShortlist entries
+        # so that only shortlisted members are counted (not the whole team).
+        shortlisted_submissions = user_submissions.filter(
+            Q(team__isnull=True, shortlisted=True) | Q(shortlist_entries__user=user)
+        ).distinct().count()
         unread_notifications = Notification.objects.filter(recipient=user, is_read=False).count()
         score_stats = user_submissions.filter(
             company_score__isnull=False

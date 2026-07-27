@@ -13,7 +13,30 @@ from .serializers import (
     IndustrySerializer,
     InternProfileCreateSerializer,
     InternProfileSerializer,
+    PublicInternProfileSerializer,
 )
+
+
+class PublicInternProfileDetailView(APIView):
+    """View for companies to see an intern's public profile by user ID."""
+    permission_classes = [IsAuthenticated, IsCompany]
+
+    def get_object(self, user_id):
+        try:
+            profile = InternProfile.objects.select_related("user").get(user__id=user_id)
+            return profile
+        except InternProfile.DoesNotExist:
+            raise Http404("Intern profile not found.")
+
+    def get(self, request, user_id):
+        profile = self.get_object(user_id)
+        serializer = PublicInternProfileSerializer(profile)
+        return api_response(
+            success=True,
+            message="Intern profile retrieved successfully.",
+            data=serializer.data,
+            status_code=status.HTTP_200_OK,
+        )
 
 
 class IndustryListView(APIView):

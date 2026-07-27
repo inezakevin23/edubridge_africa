@@ -1,4 +1,4 @@
-import { Building2, Mail, Sparkles } from "lucide-react";
+import { Building2, Send, Check, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import { companyDashboardNavItems } from "../../data/companyDashboard";
 import { fetchMyChallenges } from "../../services/challengeService";
 import { fetchCompanyDashboardStats } from "../../services/dashboardService";
 import { fetchSubmissions } from "../../services/submissionService";
+import { sendJobOffer } from "../../services/notificationService";
 
 function MetricCard({ metric }) {
   return (
@@ -89,13 +90,74 @@ function ActiveChallengesTable({ challenges }) {
   );
 }
 
+const OFFERED_JOBS_KEY = "edubridge_offered_jobs";
+
+function loadOfferedJobs() {
+  try {
+    const raw = localStorage.getItem(OFFERED_JOBS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveOfferedJobs(jobs) {
+  try {
+    localStorage.setItem(OFFERED_JOBS_KEY, JSON.stringify(jobs));
+  } catch {
+    // localStorage unavailable
+  }
+}
+
 function ShortlistedSubmissions({ submissions }) {
+  const [offerMessage, setOfferMessage] = useState(null);
+  const [offeredJobs, setOfferedJobs] = useState(() => loadOfferedJobs());
+  const [activeJobLink, setActiveJobLink] = useState(null);
+  const [jobLinkValue, setJobLinkValue] = useState("");
+  const [sendingOffer, setSendingOffer] = useState(null);
+
+  const handleOfferJob = async (person) => {
+    if (!activeJobLink || activeJobLink !== person.id) {
+      setActiveJobLink(person.id);
+      setJobLinkValue("");
+      return;
+    }
+    if (!jobLinkValue.trim()) {
+      setOfferMessage("Please enter a job link URL.");
+      setTimeout(() => setOfferMessage(null), 3000);
+      return;
+    }
+    setSendingOffer(person.id);
+    try {
+      await sendJobOffer(person.submitter_id, jobLinkValue.trim());
+      // Use submitter_id as the key since the View Profile page uses it as the URL param
+      const updated = { ...offeredJobs, [person.submitter_id]: true };
+      setOfferedJobs(updated);
+      saveOfferedJobs(updated);
+      setActiveJobLink(null);
+      setJobLinkValue("");
+      setOfferMessage(`Job offer sent to ${person.name}.`);
+      setTimeout(() => setOfferMessage(null), 4000);
+    } catch {
+      setOfferMessage("Failed to send job offer. Please try again.");
+      setTimeout(() => setOfferMessage(null), 4000);
+    } finally {
+      setSendingOffer(null);
+    }
+  };
+
   return (
     <section className="rounded-[22px] border border-violet-400/15 bg-[radial-gradient(circle_at_90%_0%,rgba(139,92,246,0.42)_0%,transparent_38%),linear-gradient(145deg,#171B3A_0%,#111827_100%)] p-7 shadow-[0_22px_62px_rgba(0,0,0,0.22)]">
       <h2 className="mb-7 flex items-center gap-3 text-[22px] font-extrabold text-white">
         <Sparkles className="text-[#9B6CFF]" size={25} />
         Shortlisted Submissions
       </h2>
+
+      {offerMessage && (
+        <p className="mb-5 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-[14px] font-semibold text-[#86EFAC]">
+          {offerMessage}
+        </p>
+      )}
 
       <div className="space-y-5">
         {submissions.length === 0 && (
@@ -123,20 +185,52 @@ function ShortlistedSubmissions({ submissions }) {
               {person.summary || "Shortlisted for their submission."}
             </p>
 
-            <div className="mt-5 flex items-center gap-3">
-              <button
-                className="h-11 flex-1 rounded-2xl bg-[#8B5CF6] text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(139,92,246,0.28)] transition hover:bg-[#9568ff]"
-                type="button"
-              >
-                View Profile
-              </button>
-              <button
-                aria-label={`Message ${person.name}`}
-                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.07] text-white transition hover:bg-white/[0.11]"
-                type="button"
-              >
-                <Mail size={18} />
-              </button>
+            <div className="mt-5 flex flex-col gap-3">
+              {activeJobLink === person.id &&
+                !offeredJobs[person.submitter_id] && (
+                  <input
+                    className="h-10 w-full rounded-xl border border-white/[0.08] bg-[#0D1626] px-3 text-[14px] text-white outline-none transition focus:border-violet-400/70"
+                    placeholder="Enter job link URL..."
+                    type="url"
+                    value={jobLinkValue}
+                    onChange={(e) => setJobLinkValue(e.target.value)}
+                  />
+                )}
+              <div className="flex items-center gap-3">
+                <Link
+                  className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#8B5CF6] text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(139,92,246,0.28)] transition hover:bg-[#9568ff]"
+                  to={`/intern-profile/${person.submitter_id}`}
+                >
+                  View Profile
+                </Link>
+                <button
+                  className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-[14px] font-bold text-white shadow-[0_12px_28px_rgba(16,185,129,0.28)] transition ${
+                    offeredJobs[person.submitter_id]
+                      ? "cursor-not-allowed bg-emerald-700 opacity-70"
+                      : "bg-emerald-600 hover:bg-emerald-500"
+                  }`}
+                  disabled={
+                    offeredJobs[person.submitter_id] ||
+                    sendingOffer === person.id
+                  }
+                  onClick={() => handleOfferJob(person)}
+                  type="button"
+                >
+                  {offeredJobs[person.submitter_id] ? (
+                    <>
+                      <Check size={16} />
+                      Offered
+                    </>
+                  ) : sendingOffer === person.id ? (
+                    "Sending..."
+                  ) : (
+                    <>
+                      <Send size={16} />
+                      Offer Job
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </article>
         ))}
@@ -161,13 +255,18 @@ export default function CompanyDashboard() {
       setChallenges(challengeData);
       setStats(statsData?.data || statsData || null);
       const list = Array.isArray(subsData) ? subsData : subsData?.results || [];
+      // Filter to only include submissions that are actually shortlisted
       setShortlisted(
-        list.map((s, idx) => ({
-          id: s.id,
-          name: s.intern_name || s.intern?.username || `Submission #${idx + 1}`,
-          submitter_role: s.intern?.role || "Participant",
-          summary: s.summary || s.feedback || "",
-        })),
+        list
+          .filter((s) => s.shortlisted === true)
+          .map((s, idx) => ({
+            id: s.id,
+            name:
+              s.intern_name || s.intern?.username || `Submission #${idx + 1}`,
+            submitter_id: s.submitter?.id || s.intern?.id || null,
+            submitter_role: s.intern?.role || "Participant",
+            summary: s.summary || s.feedback || "",
+          })),
       );
     });
     return () => {

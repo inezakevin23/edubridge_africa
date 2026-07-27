@@ -8,6 +8,7 @@ class Notification(BaseModel):
         SUBMISSION_REVIEWED = "submission_reviewed", "Submission Reviewed"
         CHALLENGE_SHORTLIST = "shortlisted", "Shortlisted" 
         NEW_SUBMISSION = "new_submission", "New Submission"
+        JOB_OFFER = "job_offer", "Job Offer"
 
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -26,6 +27,11 @@ class Notification(BaseModel):
         null=True, 
         blank=True,
         help_text="The unique UUID string identifier of the originating object (Invite, Submission, etc.)."
+    )
+
+    job_link = models.URLField(
+        blank=True,
+        help_text="URL for job offer notifications."
     )
 
     class Meta:

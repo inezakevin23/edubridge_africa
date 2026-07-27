@@ -127,6 +127,7 @@ class MySubmissionsView(generics.ListAPIView):
                 Q(intern=user) | Q(team__members__user=user)
             )
             .select_related("challenge")
+            .prefetch_related("shortlist_entries")
             .distinct()
             .order_by("-created_at")
         )
@@ -184,6 +185,13 @@ class CompanySubmissionsView(generics.ListAPIView):
         challenge_id = self.request.query_params.get("challenge")
         if challenge_id:
             queryset = queryset.filter(challenge_id=challenge_id)
+
+        shortlisted_param = self.request.query_params.get("shortlisted")
+        if shortlisted_param is not None:
+            if shortlisted_param.lower() in ("true", "1", "yes"):
+                queryset = queryset.filter(shortlisted=True)
+            elif shortlisted_param.lower() in ("false", "0", "no"):
+                queryset = queryset.filter(shortlisted=False)
 
         ordering = self.request.query_params.get("ordering", "newest")
         if ordering == "oldest":

@@ -3,7 +3,11 @@ import {
   CheckCircle2,
   ExternalLink,
   FileText,
+  MessageSquare,
+  Send,
   UserRound,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -13,7 +17,11 @@ import CompanyTopbar from "../layout/CompanyTopbar";
 import useAuth from "../../context/useAuth";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
 import { companyDashboardNavItems } from "../../data/companyDashboard";
-import { fetchSubmissionById } from "../../services/submissionService";
+import {
+  fetchSubmissionById,
+  reviewSubmission,
+  toggleShortlistMember,
+} from "../../services/submissionService";
 import { useEffect, useMemo, useState } from "react";
 
 export default function SolutionDetailPage() {
@@ -23,7 +31,48 @@ export default function SolutionDetailPage() {
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorNotice, setErrorNotice] = useState("");
+  const [shortlistedMembers, setShortlistedMembers] = useState([]);
+  const [shortlistLoading, setShortlistLoading] = useState(false);
+  const [brokenImages, setBrokenImages] = useState({});
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewFeedback, setReviewFeedback] = useState("");
+  const [reviewScore, setReviewScore] = useState(0);
+  const [reviewCashPrize, setReviewCashPrize] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
+
+  const handleImageError = (memberId) => {
+    setBrokenImages((prev) => ({ ...prev, [memberId]: true }));
+  };
+
+  const saveReview = async () => {
+    const trimmedFeedback = reviewFeedback.trim();
+    if (
+      !trimmedFeedback ||
+      Number(reviewScore) < 0 ||
+      Number(reviewScore) > 100
+    )
+      return;
+
+    setIsSaving(true);
+    try {
+      await reviewSubmission(id, {
+        feedback: trimmedFeedback,
+        company_score: Number(reviewScore),
+        status: "reviewed",
+        shortlisted: submission?.shortlisted || shortlistedMembers.length > 0,
+        cash_prize_awarded: reviewCashPrize ? parseFloat(reviewCashPrize) : 0,
+      });
+      setIsReviewOpen(false);
+      // Refresh submission data
+      const resp = await fetchSubmissionById(id);
+      const payload = resp?.data || resp;
+      if (payload) setSubmission(payload);
+    } catch {
+      // silent
+    }
+    setIsSaving(false);
+  };
 
   // Build list of file/link objects from the submission payload
   const submissionFiles = useMemo(() => {
@@ -67,6 +116,10 @@ export default function SolutionDetailPage() {
         const payload = resp?.data || resp;
         if (!mounted) return;
         setSubmission(payload || null);
+        // Set shortlisted members from the submission data
+        if (payload?.shortlisted_members) {
+          setShortlistedMembers(payload.shortlisted_members);
+        }
       } catch (err) {
         // Handle permission errors explicitly
         if (err && err.status === 403) {
@@ -106,7 +159,7 @@ export default function SolutionDetailPage() {
       : internObj?.username || "Unknown");
   const summary = submission?.summary || submission?.description || "";
   const score = submission?.score ?? submission?.company_score;
-  const feedback = submission?.feedback;
+  const existingFeedback = submission?.feedback;
   const backTo = isCompany ? "/company-submissions" : "/student-feedback";
 
   return (
@@ -158,13 +211,13 @@ export default function SolutionDetailPage() {
                 summary
               )}
             </p>
-            {feedback ? (
+            {existingFeedback ? (
               <div className="mt-7 rounded-xl border border-violet-400/20 bg-violet-500/10 p-5">
                 <h2 className="text-[15px] font-extrabold text-white">
                   Reviewer feedback
                 </h2>
                 <p className="mt-3 text-[14px] leading-6 text-[#D6C7FF]">
-                  {feedback}
+                  {existingFeedback}
                 </p>
               </div>
             ) : null}
@@ -202,17 +255,263 @@ export default function SolutionDetailPage() {
                 )}
               </div>
             </section>
-            <section className="rounded-[18px] border border-white/[0.07] bg-[#131C2E] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.14)]">
-              <h2 className="text-[17px] font-extrabold text-white">
-                {isCompany ? "Intern" : "Submission owner"}
-              </h2>
-              <div className="mt-4 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-500/15 text-[#C5A8FF]">
-                  <UserRound size={19} />
-                </span>
-                <p className="text-[14px] font-bold text-white">{author}</p>
-              </div>
-            </section>
+
+            {isCompany && (
+              <section className="rounded-[18px] border border-white/[0.07] bg-[#131C2E] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.14)]">
+                <h2 className="text-[17px] font-extrabold text-white mb-3">
+                  Review & Score
+                </h2>
+                {submission?.status === "reviewed" ? (
+                  <button
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-emerald-500/10 px-4 text-[13px] font-extrabold text-[#22C55E] cursor-not-allowed opacity-70"
+                    type="button"
+                    disabled
+                  >
+                    <CheckCircle2 size={16} />
+                    Completed Review
+                  </button>
+                ) : !isReviewOpen ? (
+                  <button
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#2B215A] px-4 text-[13px] font-extrabold text-[#A78BFA] transition hover:bg-[#382877] hover:text-white"
+                    onClick={() => setIsReviewOpen(true)}
+                    type="button"
+                  >
+                    <MessageSquare size={16} />
+                    Review Submission
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-2 block text-[13px] font-semibold text-[#9AA7BA]">
+                        Shortlist team members
+                      </label>
+                      <div className="space-y-2 mt-2">
+                        {submission?.team_members &&
+                        submission.team_members.length > 0 ? (
+                          submission.team_members.map((member) => {
+                            const isShortlisted = shortlistedMembers.includes(
+                              member.id,
+                            );
+                            const isAuthor =
+                              member.id === submission?.intern?.id ||
+                              member.email === submission?.intern?.email;
+                            return (
+                              <div
+                                key={member.id}
+                                className="flex items-center justify-between gap-2 rounded-lg bg-[#0D1626] p-2.5"
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  {member.profile_picture &&
+                                  !brokenImages[member.id] ? (
+                                    <img
+                                      src={member.profile_picture}
+                                      alt={member.first_name}
+                                      className="h-8 w-8 rounded-full object-cover ring-2 ring-white/[0.08]"
+                                      onError={() =>
+                                        handleImageError(member.id)
+                                      }
+                                    />
+                                  ) : (
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-[#C5A8FF]">
+                                      <UserRound size={15} />
+                                    </span>
+                                  )}
+                                  <div className="min-w-0">
+                                    <p className="truncate text-[13px] font-bold text-white">
+                                      {member.first_name} {member.last_name}
+                                      {isAuthor && (
+                                        <span className="ml-1 text-[10px] font-medium text-[#9AA7BA]">
+                                          (submitter)
+                                        </span>
+                                      )}
+                                    </p>
+                                    <p className="text-[10px] font-medium text-[#9AA7BA]">
+                                      {member.role}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition ${
+                                    isShortlisted
+                                      ? "bg-emerald-500/15 text-[#22C55E] hover:bg-emerald-500/25"
+                                      : "bg-[#1A2639] text-[#9AA7BA] hover:bg-[#24324A] hover:text-white"
+                                  }`}
+                                  onClick={async () => {
+                                    setShortlistLoading(true);
+                                    try {
+                                      const newShortlisted = !isShortlisted;
+                                      await toggleShortlistMember(
+                                        id,
+                                        member.id,
+                                        newShortlisted,
+                                      );
+                                      setShortlistedMembers((prev) =>
+                                        newShortlisted
+                                          ? [...prev, member.id]
+                                          : prev.filter(
+                                              (uid) => uid !== member.id,
+                                            ),
+                                      );
+                                    } catch {
+                                      // silent
+                                    } finally {
+                                      setShortlistLoading(false);
+                                    }
+                                  }}
+                                  type="button"
+                                  disabled={shortlistLoading}
+                                >
+                                  {isShortlisted ? (
+                                    <UserCheck size={13} />
+                                  ) : (
+                                    <UserPlus size={13} />
+                                  )}
+                                  {isShortlisted ? "Shortlisted" : "Shortlist"}
+                                </button>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="flex items-center justify-between gap-2 rounded-lg bg-[#0D1626] p-2.5">
+                            <div className="flex items-center gap-2.5">
+                              {submission?.intern?.profile_picture &&
+                              !brokenImages["intern-main"] ? (
+                                <img
+                                  src={submission.intern.profile_picture}
+                                  alt={author}
+                                  className="h-8 w-8 rounded-full object-cover ring-2 ring-white/[0.08]"
+                                  onError={() =>
+                                    handleImageError("intern-main")
+                                  }
+                                />
+                              ) : (
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500/15 text-[#C5A8FF]">
+                                  <UserRound size={15} />
+                                </span>
+                              )}
+                              <p className="text-[13px] font-bold text-white">
+                                {author}
+                              </p>
+                            </div>
+                            <button
+                              className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition ${
+                                submission?.shortlisted ||
+                                shortlistedMembers.length > 0
+                                  ? "bg-emerald-500/15 text-[#22C55E] hover:bg-emerald-500/25"
+                                  : "bg-[#1A2639] text-[#9AA7BA] hover:bg-[#24324A] hover:text-white"
+                              }`}
+                              onClick={async () => {
+                                const newShortlisted = !(
+                                  submission?.shortlisted ||
+                                  shortlistedMembers.length > 0
+                                );
+                                try {
+                                  await toggleShortlistMember(
+                                    id,
+                                    submission?.intern?.id,
+                                    newShortlisted,
+                                  );
+                                  if (newShortlisted) {
+                                    setShortlistedMembers((prev) =>
+                                      submission?.intern?.id
+                                        ? [...prev, submission.intern.id]
+                                        : prev,
+                                    );
+                                  } else {
+                                    setShortlistedMembers((prev) =>
+                                      submission?.intern?.id
+                                        ? prev.filter(
+                                            (uid) =>
+                                              uid !== submission.intern.id,
+                                          )
+                                        : prev,
+                                    );
+                                  }
+                                  setSubmission((prev) => ({
+                                    ...prev,
+                                    shortlisted: newShortlisted,
+                                  }));
+                                } catch {
+                                  // silent
+                                }
+                              }}
+                              type="button"
+                            >
+                              {submission?.shortlisted ||
+                              shortlistedMembers.length > 0 ? (
+                                <UserCheck size={13} />
+                              ) : (
+                                <UserPlus size={13} />
+                              )}
+                              {submission?.shortlisted ||
+                              shortlistedMembers.length > 0
+                                ? "Shortlisted"
+                                : "Shortlist"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-[13px] font-semibold text-[#9AA7BA]">
+                        Score (0-100)
+                      </label>
+                      <input
+                        className="h-10 w-full rounded-xl border border-white/[0.06] bg-[#0F1728] px-3 text-white outline-none focus:border-violet-400/45"
+                        max="100"
+                        min="0"
+                        onChange={(e) => setReviewScore(e.target.value)}
+                        placeholder="Score"
+                        type="number"
+                        value={reviewScore}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-[13px] font-semibold text-[#9AA7BA]">
+                        Cash prize awarded
+                      </label>
+                      <input
+                        className="h-10 w-full rounded-xl border border-white/[0.06] bg-[#0F1728] px-3 text-white outline-none focus:border-violet-400/45"
+                        min="0"
+                        onChange={(e) => setReviewCashPrize(e.target.value)}
+                        placeholder="Optional amount"
+                        type="number"
+                        value={reviewCashPrize}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-[13px] font-semibold text-[#9AA7BA]">
+                        Feedback
+                      </label>
+                      <textarea
+                        className="min-h-[120px] w-full resize-y rounded-2xl border border-white/[0.06] bg-[#0F1728] p-3 text-[14px] leading-6 text-white outline-none transition placeholder:text-[#7F8EA5] focus:border-violet-400/45"
+                        onChange={(e) => setReviewFeedback(e.target.value)}
+                        placeholder="Write constructive feedback..."
+                        value={reviewFeedback}
+                      />
+                    </div>
+                    <div className="flex items-center gap-3 pt-2">
+                      <button
+                        className="h-10 rounded-full bg-[#182237] px-5 text-[13px] font-bold text-[#B9C5D7] transition hover:bg-[#22304A] hover:text-white"
+                        onClick={() => setIsReviewOpen(false)}
+                        type="button"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="flex h-10 items-center gap-2 rounded-full bg-[#8B5CF6] px-5 text-[13px] font-extrabold text-white shadow-[0_12px_26px_rgba(139,92,246,0.24)] transition hover:bg-[#9568ff] disabled:opacity-50"
+                        disabled={isSaving}
+                        onClick={saveReview}
+                        type="button"
+                      >
+                        <Send size={15} />
+                        {isSaving ? "Saving..." : "Save & Notify"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
           </aside>
         </div>
       </motion.main>

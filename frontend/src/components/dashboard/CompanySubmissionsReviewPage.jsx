@@ -1,63 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Bot,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Eye,
   Mail,
-  MessageSquare,
   Paperclip,
   Search,
-  Send,
-  UserPlus,
-  X,
+  UserRound,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import { companySubmissionsNavItems } from "../../data/companySubmissionsReview";
 import CompanyTopbar from "../layout/CompanyTopbar";
-import {
-  fetchSubmissions,
-  reviewSubmission,
-} from "../../services/submissionService";
+import { fetchSubmissions } from "../../services/submissionService";
 import { fetchCompanyDashboardStats } from "../../services/dashboardService";
+import { fetchMyChallenges } from "../../services/challengeService";
 
 function StatCard({ stat }) {
-  const Icon = stat.icon;
-
   return (
     <article className="rounded-[18px] border border-white/[0.07] bg-[#131C2E] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.14)]">
-      <div className="flex items-center gap-4">
-        <span
-          className={`flex h-12 w-12 items-center justify-center rounded-full ${stat.background} ${stat.color}`}
-        >
-          <Icon size={21} />
-        </span>
-        <div>
-          <h3 className="text-[28px] font-extrabold leading-none text-white">
-            {stat.value}
-          </h3>
-          <p className="mt-2 text-[13px] font-medium text-[#9AA7BA]">
-            {stat.label}
-          </p>
-        </div>
-      </div>
+      <h3 className="text-[28px] font-extrabold leading-none text-white">
+        {stat.value}
+      </h3>
+      <p className="mt-2 text-[13px] font-medium text-[#9AA7BA]">
+        {stat.label}
+      </p>
     </article>
-  );
-}
-
-function FilterButton({ children, icon: Icon }) {
-  return (
-    <button
-      className="flex h-12 items-center justify-center gap-2 rounded-full border border-white/[0.05] bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] transition hover:bg-[#19243A] hover:text-white"
-      type="button"
-    >
-      {Icon ? <Icon size={16} /> : null}
-      <span className="truncate">{children}</span>
-      <ChevronDown size={16} />
-    </button>
   );
 }
 
@@ -78,265 +48,110 @@ function StatusBadge({ status, tone }) {
   );
 }
 
-function ScoreRing({ score, tone }) {
-  const ringClass =
-    tone === "emerald"
-      ? "border-[#16A34A] text-[#22C55E]"
-      : tone === "amber"
-        ? "border-[#B7791F] text-[#F59E0B]"
-        : "border-[#6D4FD7] text-[#A78BFA]";
-
-  return (
-    <div
-      className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-full border-2 bg-[#101A2B] ${ringClass}`}
-    >
-      <span className="text-[19px] font-extrabold leading-none">{score}</span>
-      <span className="text-[11px] font-bold text-[#9AA7BA]">pts</span>
-    </div>
-  );
-}
-
 function SubmissionCard({ item }) {
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [sentFeedback, setSentFeedback] = useState("");
-  const [companyScore, setCompanyScore] = useState(item.score);
-  const [cashPrizeAwarded, setCashPrizeAwarded] = useState("");
-  const [shortlisted, setShortlisted] = useState(Boolean(item.shortlisted));
-  const [submissionStatus, setSubmissionStatus] = useState(item.status);
-
-  const sendFeedback = async () => {
-    const trimmedFeedback = feedback.trim();
-
-    if (
-      !trimmedFeedback ||
-      Number(companyScore) < 0 ||
-      Number(companyScore) > 100
-    ) {
-      return;
-    }
-
-    setSentFeedback(`${trimmedFeedback} (${companyScore}/100)`);
-    setSubmissionStatus("reviewed");
-    setFeedback("");
-    setIsFeedbackOpen(false);
-
-    if (item.id) {
-      try {
-        await reviewSubmission(item.id, {
-          feedback: trimmedFeedback,
-          company_score: Number(companyScore),
-          status: "reviewed",
-          shortlisted,
-          cash_prize_awarded: cashPrizeAwarded
-            ? parseFloat(cashPrizeAwarded)
-            : 0,
-        });
-      } catch {
-        // silent fail - UI already reflects the review
-      }
-    }
-  };
+  const [avatarError, setAvatarError] = useState(false);
+  const hasTeamMembers = item.team_members && item.team_members.length > 0;
 
   return (
     <article className="rounded-[20px] border border-white/[0.07] bg-[#131C2E] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.13)] lg:p-7">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_210px]">
-        <div className="min-w-0">
-          <div className="flex gap-4">
-            <div className="relative shrink-0 pt-8 sm:pt-7">
+      <div className="flex gap-4">
+        <div className="relative shrink-0 pt-8 sm:pt-7">
+          <span
+            className={`absolute left-3 top-0 flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-extrabold ${
+              item.rank === 1
+                ? "bg-[#F59E0B] text-white"
+                : "bg-[#263247] text-[#9AA7BA]"
+            }`}
+          >
+            {item.rank}
+          </span>
+          {item.avatar && !avatarError ? (
+            <img
+              alt={item.name}
+              className="h-12 w-12 rounded-full object-cover ring-2 ring-white/[0.05]"
+              src={item.avatar}
+              onError={() => setAvatarError(true)}
+            />
+          ) : (
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/15 text-[#C5A8FF] ring-2 ring-white/[0.05]">
+              <UserRound size={22} />
+            </span>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          {item.challenge_title && (
+            <p className="mb-2 flex items-center gap-1.5 text-[12px] font-bold text-[#A78BFA]">
+              <BriefcaseBusiness size={13} />
+              {item.challenge_title}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-[17px] font-extrabold text-white">
+              {item.name}
+            </h2>
+            <StatusBadge
+              status={item.status}
+              tone={item.status === "reviewed" ? "emerald" : item.statusTone}
+            />
+          </div>
+          <p className="mt-7 max-w-[900px] text-[15px] leading-7 text-[#AAB5C7]">
+            {item.summary}
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {item.tags.map((tag) => (
               <span
-                className={`absolute left-3 top-0 flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-extrabold ${
-                  item.rank === 1
-                    ? "bg-[#F59E0B] text-white"
-                    : "bg-[#263247] text-[#9AA7BA]"
-                }`}
+                className="rounded-lg bg-[#0E1728] px-3 py-1.5 text-[12px] font-semibold text-[#9AA7BA]"
+                key={tag}
               >
-                {item.rank}
+                {tag}
               </span>
-              <img
-                alt={item.name}
-                className="h-12 w-12 rounded-full object-cover ring-2 ring-white/[0.05]"
-                src={item.avatar}
-              />
-            </div>
+            ))}
+          </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-[17px] font-extrabold text-white">
-                  {item.name}
-                </h2>
-                <StatusBadge
-                  status={submissionStatus}
-                  tone={
-                    submissionStatus === "reviewed"
-                      ? "emerald"
-                      : item.statusTone
-                  }
-                />
-              </div>
-              <p className="mt-1 text-[13px] font-medium text-[#9AA7BA]">
-                {item.university} · Submitted {item.submitted}
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] font-semibold">
+            {item.files.map((file) => (
+              <a
+                className="inline-flex items-center gap-2 text-[#A78BFA] underline decoration-[#A78BFA]/40 underline-offset-2 transition hover:text-white"
+                href="#"
+                key={file}
+              >
+                <Paperclip className="text-[#8EA0B8]" size={15} />
+                {file}
+              </a>
+            ))}
+          </div>
+
+          {hasTeamMembers && (
+            <div className="mt-5">
+              <p className="mb-2 text-[12px] font-bold text-[#9AA7BA]">
+                Team members ({item.team_members.length})
               </p>
-
-              <p className="mt-7 max-w-[900px] text-[15px] leading-7 text-[#AAB5C7]">
-                {item.summary}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {item.tags.map((tag) => (
+              <div className="flex flex-wrap gap-2">
+                {item.team_members.map((member) => (
                   <span
-                    className="rounded-lg bg-[#0E1728] px-3 py-1.5 text-[12px] font-semibold text-[#9AA7BA]"
-                    key={tag}
+                    key={member.id}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#1A2639] px-2.5 py-1 text-[11px] font-bold text-[#9AA7BA]"
                   >
-                    {tag}
+                    {member.first_name} {member.last_name}
                   </span>
                 ))}
               </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] font-semibold">
-                {item.files.map((file) => (
-                  <a
-                    className="inline-flex items-center gap-2 text-[#A78BFA] underline decoration-[#A78BFA]/40 underline-offset-2 transition hover:text-white"
-                    href="#"
-                    key={file}
-                  >
-                    <Paperclip className="text-[#8EA0B8]" size={15} />
-                    {file}
-                  </a>
-                ))}
-                <span className="inline-flex items-center gap-2 text-[#9AA7BA]">
-                  <Bot className="text-[#8B5CF6]" size={16} />
-                  Company score:
-                  <strong className="text-white">{companyScore}/100</strong>
-                </span>
-              </div>
             </div>
-          </div>
-        </div>
+          )}
 
-        <div className="flex flex-col gap-3 lg:items-stretch">
-          <div className="flex items-center justify-between gap-4 lg:block">
-            <ScoreRing
-              score={companyScore}
-              tone={
-                companyScore >= 80
-                  ? "emerald"
-                  : companyScore >= 60
-                    ? "violet"
-                    : "amber"
-              }
-            />
-            <div className="min-w-[150px] lg:mt-4">
-              <label className="mb-2 block text-[12px] font-semibold text-[#9AA7BA]">
-                Cash prize awarded
-              </label>
-              <input
-                className="h-10 w-full rounded-full border border-white/[0.05] bg-[#0F1728] px-4 text-[14px] font-extrabold text-white outline-none focus:border-violet-400/50"
-                min="0"
-                onChange={(event) => setCashPrizeAwarded(event.target.value)}
-                placeholder="Optional amount"
-                type="number"
-                value={cashPrizeAwarded}
-              />
-            </div>
+          <div className="mt-5">
+            <Link
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#2B215A] px-5 text-[13px] font-extrabold text-[#A78BFA] transition hover:bg-[#382877] hover:text-white"
+              to={`/solution/${item.id}`}
+            >
+              <Eye size={15} />
+              View Full Solution & Review
+            </Link>
           </div>
-
-          <button
-            className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#1A2639] px-4 text-[13px] font-extrabold text-white transition hover:bg-[#24324A]"
-            onClick={async () => {
-              const newVal = !shortlisted;
-              setShortlisted(newVal);
-              if (newVal && item.id) {
-                try {
-                  await reviewSubmission(item.id, {
-                    shortlisted: true,
-                    status: "reviewed",
-                  });
-                } catch {
-                  // UI revert not critical here
-                }
-              }
-            }}
-            type="button"
-          >
-            <UserPlus size={16} />
-            {shortlisted ? "Shortlisted" : "Shortlist Intern"}
-          </button>
-          <button
-            className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#2B215A] px-4 text-[13px] font-extrabold text-[#A78BFA] transition hover:bg-[#382877] hover:text-white"
-            onClick={() => setIsFeedbackOpen(true)}
-            type="button"
-          >
-            <MessageSquare size={16} />
-            {sentFeedback ? "Edit Feedback" : "Mark Complete & Give Feedback"}
-          </button>
-          <Link
-            className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#0E1728] px-4 text-[13px] font-bold text-[#9AA7BA] transition hover:bg-[#182237] hover:text-white"
-            to={`/solution/${item.id}`}
-          >
-            <Eye size={16} />
-            View Full Solution
-          </Link>
         </div>
       </div>
-
-      {isFeedbackOpen ? (
-        <div className="mt-6 rounded-[18px] border border-violet-400/20 bg-[#0F1728] p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-[15px] font-extrabold text-white">
-              Feedback for {item.name}
-            </h3>
-            <button
-              aria-label="Close feedback box"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[#9AA7BA] transition hover:bg-white/[0.06] hover:text-white"
-              onClick={() => setIsFeedbackOpen(false)}
-              type="button"
-            >
-              <X size={16} />
-            </button>
-          </div>
-          <textarea
-            className="min-h-[120px] w-full resize-y rounded-2xl border border-white/[0.06] bg-[#131C2E] p-4 text-[14px] leading-6 text-white outline-none transition placeholder:text-[#7F8EA5] focus:border-violet-400/45"
-            onChange={(event) => setFeedback(event.target.value)}
-            placeholder="Write clear, constructive feedback for the student's submission..."
-            value={feedback}
-          />
-          <label className="mt-4 block text-[13px] font-semibold text-[#9AA7BA]">
-            Company score (0-100)
-            <input
-              className="mt-2 h-10 w-full rounded-xl border border-white/[0.06] bg-[#131C2E] px-3 text-white outline-none focus:border-violet-400/45"
-              max="100"
-              min="0"
-              onChange={(event) => setCompanyScore(event.target.value)}
-              type="number"
-              value={companyScore}
-            />
-          </label>
-          <div className="mt-4 flex flex-wrap justify-end gap-3">
-            <button
-              className="h-10 rounded-full bg-[#182237] px-5 text-[13px] font-bold text-[#B9C5D7] transition hover:bg-[#22304A] hover:text-white"
-              onClick={() => setIsFeedbackOpen(false)}
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              className="flex h-10 items-center gap-2 rounded-full bg-[#8B5CF6] px-5 text-[13px] font-extrabold text-white shadow-[0_12px_26px_rgba(139,92,246,0.24)] transition hover:bg-[#9568ff]"
-              onClick={sendFeedback}
-              type="button"
-            >
-              <Send size={15} />
-              Save Review
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {sentFeedback ? (
-        <div className="mt-5 rounded-2xl border border-emerald-400/15 bg-emerald-500/10 p-4 text-[14px] leading-6 text-[#B9F6D3]">
-          <strong className="text-white">Feedback sent:</strong> {sentFeedback}
-        </div>
-      ) : null}
     </article>
   );
 }
@@ -344,15 +159,21 @@ function SubmissionCard({ item }) {
 export default function CompanySubmissionsReviewPage() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [challengeFilter, setChallengeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("highest_score");
   const [notifyMessage, setNotifyMessage] = useState("");
   const [submissions, setSubmissions] = useState([]);
+  const [challenges, setChallenges] = useState([]);
   const [stats, setStats] = useState(null);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([fetchSubmissions({ page }), fetchCompanyDashboardStats()])
+    const params = { page };
+    if (challengeFilter !== "all") {
+      params.challenge = challengeFilter;
+    }
+    Promise.all([fetchSubmissions(params), fetchCompanyDashboardStats()])
       .then(([subsResp, statsResp]) => {
         if (!mounted) return;
         const list = Array.isArray(subsResp)
@@ -363,9 +184,13 @@ export default function CompanySubmissionsReviewPage() {
           name: item.submitter?.first_name
             ? `${item.submitter.first_name} ${item.submitter.last_name || ""}`.trim()
             : item.submitter?.username || item.title || "Unknown",
+          challenge_title: item.challenge_title || "",
+          challenge_id: item.challenge || null,
           avatar:
-            item.submitter?.profile_picture ||
-            `https://i.pravatar.cc/100?img=${(idx % 70) + 1}`,
+            // For team submissions, display team leader's picture; otherwise submitter's picture
+            (item.team_members && item.team_members.length > 0
+              ? item.team_leader_picture
+              : item.submitter_profile_picture) || null,
           university:
             item.submitter?.institution || item.submitter?.organization || "",
           submitted: item.submitted_at
@@ -377,6 +202,8 @@ export default function CompanySubmissionsReviewPage() {
           score: item.score ?? item.company_score ?? 0,
           status: item.status || "submitted",
           shortlisted: Boolean(item.shortlisted),
+          team_members: item.team_members || [],
+          shortlisted_members: item.shortlisted_members || [],
           rank: idx + 1,
         }));
         setSubmissions(normalized);
@@ -389,17 +216,30 @@ export default function CompanySubmissionsReviewPage() {
         }
       });
     return () => (mounted = false);
-  }, [page]);
+  }, [page, challengeFilter]);
+
+  // Load the company's challenges for the filter dropdown
+  useEffect(() => {
+    let mounted = true;
+    fetchMyChallenges()
+      .then((list) => {
+        if (mounted) setChallenges(list || []);
+      })
+      .catch(() => {});
+    return () => (mounted = false);
+  }, []);
+
   const filteredSubmissions = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const list = submissions.filter(
       (item) =>
         (!needle ||
-          [item.name, item.university, ...item.tags]
+          [item.name, item.university, ...item.tags, item.challenge_title]
             .join(" ")
             .toLowerCase()
             .includes(needle)) &&
-        (statusFilter === "all" || item.status === statusFilter),
+        (statusFilter === "all" || item.status === statusFilter) &&
+        (challengeFilter === "all" || item.challenge_id === challengeFilter),
     );
     return list
       .slice()
@@ -467,60 +307,36 @@ export default function CompanySubmissionsReviewPage() {
                 {
                   label: "Total Submissions",
                   value: stats.total_submissions ?? 0,
-                  icon: Mail,
-                  background: "bg-[#F59E0B]",
-                  color: "text-white",
                 },
                 {
                   label: "Reviewed Submissions",
                   value: stats.reviewed_submissions ?? 0,
-                  icon: Mail,
-                  background: "bg-[#22C55E]",
-                  color: "text-white",
                 },
                 {
                   label: "Shortlisted",
                   value: stats.shortlisted_submissions ?? 0,
-                  icon: Mail,
-                  background: "bg-[#A78BFA]",
-                  color: "text-white",
                 },
                 {
                   label: "Active Challenges",
                   value: stats.active_challenges ?? 0,
-                  icon: Mail,
-                  background: "bg-[#8B5CF6]",
-                  color: "text-white",
                 },
               ]
             : [
                 {
                   label: "Total Submissions",
                   value: "—",
-                  icon: Mail,
-                  background: "bg-[#8B5CF6]",
-                  color: "text-white",
                 },
                 {
                   label: "Reviewed Submissions",
                   value: "—",
-                  icon: Mail,
-                  background: "bg-[#22C55E]",
-                  color: "text-white",
                 },
                 {
                   label: "Shortlisted",
                   value: "—",
-                  icon: Mail,
-                  background: "bg-[#A78BFA]",
-                  color: "text-white",
                 },
                 {
                   label: "Active Challenges",
                   value: "—",
-                  icon: Mail,
-                  background: "bg-[#F59E0B]",
-                  color: "text-white",
                 },
               ]
           ).map((stat) => (
@@ -539,7 +355,22 @@ export default function CompanySubmissionsReviewPage() {
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          <FilterButton>All Challenges</FilterButton>
+          <select
+            aria-label="Filter by challenge"
+            className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none"
+            onChange={(event) => {
+              setChallengeFilter(event.target.value);
+              setPage(1);
+            }}
+            value={challengeFilter}
+          >
+            <option value="all">All Challenges</option>
+            {challenges.map((ch) => (
+              <option key={ch.id} value={ch.id}>
+                {ch.title}
+              </option>
+            ))}
+          </select>
           <select
             aria-label="Filter submissions"
             className="h-12 rounded-full bg-[#131C2E] px-4 text-[14px] font-semibold text-[#9AA7BA] outline-none"
@@ -547,7 +378,6 @@ export default function CompanySubmissionsReviewPage() {
             value={statusFilter}
           >
             <option value="all">All statuses</option>
-            <option value="submitted">Submitted</option>
             <option value="under_review">Under review</option>
             <option value="reviewed">Reviewed</option>
           </select>

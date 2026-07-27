@@ -8,7 +8,32 @@ from common.models import BaseModel
 from .validators import validate_document
 
 
-class Submission(BaseModel): 
+class SubmissionShortlist(BaseModel):
+    """Tracks which specific users are shortlisted within a team submission.
+    
+    A company may shortlist one or many team members from a group submission.
+    """
+    submission = models.ForeignKey(
+        "Submission",
+        on_delete=models.CASCADE,
+        related_name="shortlist_entries",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="shortlisted_entries",
+    )
+    shortlisted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("submission", "user")
+        ordering = ["-shortlisted_at"]
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.email} shortlisted for {self.submission.title}"
+
+
+class Submission(BaseModel):
     class Status(models.TextChoices):
         SUBMITTED = "submitted", "Submitted"
         UNDER_REVIEW = "under_review", "Under Review"

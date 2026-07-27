@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Submission
+from .models import Submission, SubmissionShortlist
 from challenges.models import Challenge, ChallengeTeam
 from accounts.models import User
 from django.utils import timezone
@@ -8,7 +8,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
     challenge_title = serializers.CharField(source="challenge.title", read_only=True)
     challenge_company_name = serializers.CharField(source="challenge.company.company_name", read_only=True, default=None)
     intern_name = serializers.SerializerMethodField()
+    submitter = serializers.SerializerMethodField()
+    submitter_profile_picture = serializers.SerializerMethodField()
     team_name = serializers.CharField(source="team.leader.get_full_name", read_only=True, allow_null=True)
+    team_leader_picture = serializers.SerializerMethodField()
+    team_members = serializers.SerializerMethodField()
+    shortlisted_members = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
@@ -29,6 +34,68 @@ class SubmissionSerializer(serializers.ModelSerializer):
     def get_intern_name(self, obj):
         return obj.intern.get_full_name() if obj.intern else None
 
+    def get_absolute_url(self, file_field):
+        """Convert a relative file URL to an absolute URL using the request context."""
+        if not file_field:
+            return None
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(file_field.url)
+        return file_field.url
+
+    def get_submitter(self, obj):
+        """Return the submitter user object with profile picture and details."""
+        if not obj.intern:
+            return None
+        profile = getattr(obj.intern, "intern_profile", None)
+        return {
+            "id": str(obj.intern.id),
+            "first_name": obj.intern.first_name,
+            "last_name": obj.intern.last_name,
+            "email": obj.intern.email,
+            "username": obj.intern.username,
+            "profile_picture": self.get_absolute_url(profile.profile_picture) if profile and profile.profile_picture else None,
+            "institution": profile.institution if profile else "",
+            "organization": profile.institution if profile else "",
+        }
+
+    def get_submitter_profile_picture(self, obj):
+        """Return the submitter's profile picture URL directly."""
+        if not obj.intern:
+            return None
+        profile = getattr(obj.intern, "intern_profile", None)
+        return self.get_absolute_url(profile.profile_picture) if profile and profile.profile_picture else None
+
+    def get_team_leader_picture(self, obj):
+        """Return the team leader's profile picture if this is a team submission."""
+        if not obj.team or not obj.team.leader:
+            return None
+        profile = getattr(obj.team.leader, "intern_profile", None)
+        return self.get_absolute_url(profile.profile_picture) if profile and profile.profile_picture else None
+
+    def get_team_members(self, obj):
+        """Return list of team members for this submission if it's a team submission."""
+        if not obj.team:
+            return []
+        members = []
+        for tm in obj.team.members.select_related("user").all():
+            profile = getattr(tm.user, "intern_profile", None)
+            members.append({
+                "id": str(tm.user.id),
+                "first_name": tm.user.first_name,
+                "last_name": tm.user.last_name,
+                "email": tm.user.email,
+                "role": tm.role,
+                "profile_picture": self.get_absolute_url(profile.profile_picture) if profile and profile.profile_picture else None,
+            })
+        return members
+
+    def get_shortlisted_members(self, obj):
+        """Return list of user IDs that are shortlisted for this submission."""
+        return list(
+            obj.shortlist_entries.values_list("user_id", flat=True)
+        )
+
 
 class CreateSubmissionSerializer(serializers.ModelSerializer):
     submission_fields = {
@@ -39,6 +106,13 @@ class CreateSubmissionSerializer(serializers.ModelSerializer):
         "Video Walkthrough": ("video_link",),
         "Spreadsheet": ("spreadsheet_file", "spreadsheet_link"),
     }
+
+    report_link = serializers.CharField(required=False, allow_blank=True)
+    design_link = serializers.CharField(required=False, allow_blank=True)
+    github_repository = serializers.CharField(required=False, allow_blank=True)
+    slides_link = serializers.CharField(required=False, allow_blank=True)
+    video_link = serializers.CharField(required=False, allow_blank=True)
+    spreadsheet_link = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Submission
@@ -152,4 +226,34 @@ class ReviewSerializer(serializers.ModelSerializer):
         if "status" not in attrs and attrs.get("company_score") is not None:
             attrs["status"] = Submission.Status.REVIEWED
 
+        return attrs
+
+
+class ShortlistToggleSerializer(serializers.Serializer):
+    """Toggle shortlist status for a specific user on a submission."""
+    user_id = serializers.UUIDField()
+    shortlisted = serializers.BooleanField()
+
+    def validate_user_id(self, value):
+        try:
+            user = User.objects.get(id=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found.")
+        return user
+
+    def validate(self, attrs):
+        submission = self.context["submission"]
+        user = attrs["user_id"]
+
+        # Verify the user is either the intern or a team member
+        if submission.team:
+            is_member = submission.team.members.filter(user=user).exists()
+            if not is_member and submission.intern != user:
+                raise serializers.ValidationError(
+                    {"user_id": "This user is not part of this submission."}
+                )
+        elif submission.intern != user:
+            raise serializers.ValidationError(
+                {"user_id": "This user is not associated with this submission."}
+            )
         return attrs

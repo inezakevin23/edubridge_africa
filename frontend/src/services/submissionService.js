@@ -37,3 +37,12 @@ export async function notifyShortlisted(challengeId) {
     challenge_id: challengeId,
   });
 }
+
+export async function toggleShortlistMember(submissionId, userId, shortlisted) {
+  // Toggle shortlist status for a specific user on a submission
+  return apiRequest(
+    "post",
+    `/api/submissions/company/${submissionId}/shortlist/`,
+    { user_id: userId, shortlisted },
+  );
+}

@@ -12,12 +12,80 @@ from common.pagination import StandardPagination
 from common.responses import api_response
 from notifications.models import Notification
 
-from .models import Submission
+from .models import Submission, SubmissionShortlist
 from .serializers import (
     CreateSubmissionSerializer,
     ReviewSerializer,
+    ShortlistToggleSerializer,
     SubmissionSerializer,
 )
+
+
+class SubmissionShortlistToggleView(generics.GenericAPIView):
+    """Toggle shortlist status for a specific user on a submission.
+    
+    Company can shortlist one or many team members from a group submission.
+    """
+    serializer_class = ShortlistToggleSerializer
+    permission_classes = [IsAuthenticated, IsCompany]
+
+    def get_object(self, submission_id):
+        try:
+            submission = Submission.objects.get(id=submission_id)
+        except Submission.DoesNotExist:
+            return None
+        # Ensure the company owns the challenge this submission belongs to
+        if submission.challenge.company.user != self.request.user:
+            return None
+        return submission
+
+    def post(self, request, submission_id):
+        submission = self.get_object(submission_id)
+        if not submission:
+            return api_response(
+                success=False,
+                message="Submission not found or access denied.",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = self.get_serializer(
+            data=request.data,
+            context={"submission": submission},
+        )
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data["user_id"]
+        should_shortlist = serializer.validated_data["shortlisted"]
+
+        if should_shortlist:
+            # Mark the submission-level shortlisted field as well for backward compatibility
+            if not submission.shortlisted:
+                submission.shortlisted = True
+                submission.save(update_fields=["shortlisted"])
+
+            SubmissionShortlist.objects.get_or_create(
+                submission=submission,
+                user=user,
+            )
+            message = f"{user.get_full_name() or user.email} has been shortlisted."
+        else:
+            SubmissionShortlist.objects.filter(
+                submission=submission,
+                user=user,
+            ).delete()
+            # If no more shortlist entries, reset the submission-level shortlisted flag
+            if not SubmissionShortlist.objects.filter(submission=submission).exists():
+                submission.shortlisted = False
+                submission.save(update_fields=["shortlisted"])
+            message = f"{user.get_full_name() or user.email} has been removed from shortlist."
+
+        response_serializer = SubmissionSerializer(submission, context={"request": request})
+        return api_response(
+            success=True,
+            message=message,
+            data=response_serializer.data,
+            status_code=status.HTTP_200_OK,
+        )
 
 
 class CreateSubmissionView(generics.CreateAPIView):
@@ -51,10 +119,15 @@ class MySubmissionsView(generics.ListAPIView):
     pagination_class = StandardPagination
 
     def get_queryset(self):
+        user = self.request.user
+        # Include submissions where user is the submitter OR where user is a team member
         return (
             Submission.objects
-            .filter(intern=self.request.user)
+            .filter(
+                Q(intern=user) | Q(team__members__user=user)
+            )
             .select_related("challenge")
+            .distinct()
             .order_by("-created_at")
         )
 
@@ -70,7 +143,9 @@ class SubmissionDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.role == User.Roles.INTERN:
-            return Submission.objects.filter(intern=user)
+            return Submission.objects.filter(
+                Q(intern=user) | Q(team__members__user=user)
+            ).distinct()
         if user.role == User.Roles.COMPANY:
             return Submission.objects.filter(challenge__company__user=user)
         return Submission.objects.none()
@@ -187,18 +262,37 @@ class NotifyShortlistedView(generics.GenericAPIView):
             )
 
         challenge = get_object_or_404(Challenge, id=challenge_id, company__user=request.user)
-        submissions = Submission.objects.filter(challenge=challenge, shortlisted=True).select_related("intern")
+        # Get submissions that have at least one shortlisted member
+        submissions = Submission.objects.filter(
+            challenge=challenge,
+            shortlisted=True,
+        ).prefetch_related("shortlist_entries__user")
         
         notified_count = 0
         for submission in submissions:
-            Notification.objects.create(
-                recipient=submission.intern,
-                title="Challenge Shortlist Selection",
-                message=f"Congratulations! Your project entry for the challenge '{challenge.title}' has been successfully shortlisted.",
-                notification_type=Notification.NotificationType.CHALLENGE_SHORTLIST if hasattr(Notification.NotificationType, 'CHALLENGE_SHORTLIST') else "shortlist",
-                related_object_id=submission.id,
-            )
-            notified_count += 1
+            # Collect all shortlisted users for this submission (prefetched)
+            shortlist_entries = submission.shortlist_entries.all()
+            if shortlist_entries:
+                for entry in shortlist_entries:
+                    Notification.objects.create(
+                        recipient=entry.user,
+                        title="Challenge Shortlist Selection",
+                        message=f"Congratulations! Your project entry for the challenge '{challenge.title}' has been successfully shortlisted.",
+                        notification_type=Notification.NotificationType.CHALLENGE_SHORTLIST if hasattr(Notification.NotificationType, 'CHALLENGE_SHORTLIST') else "shortlist",
+                        related_object_id=submission.id,
+                    )
+                    notified_count += 1
+            else:
+                # Fallback: if submission is shortlisted but no per-member entries exist,
+                # notify the intern who submitted (backward compatibility)
+                Notification.objects.create(
+                    recipient=submission.intern,
+                    title="Challenge Shortlist Selection",
+                    message=f"Congratulations! Your project entry for the challenge '{challenge.title}' has been successfully shortlisted.",
+                    notification_type=Notification.NotificationType.CHALLENGE_SHORTLIST if hasattr(Notification.NotificationType, 'CHALLENGE_SHORTLIST') else "shortlist",
+                    related_object_id=submission.id,
+                )
+                notified_count += 1
 
         return api_response(
             success=True,

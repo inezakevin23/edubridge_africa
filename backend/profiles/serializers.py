@@ -24,6 +24,7 @@ class InternProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source="user.first_name")
     last_name = serializers.ReadOnlyField(source="user.last_name")
     phone_number = serializers.ReadOnlyField(source="user.phone_number")
+    is_verified = serializers.ReadOnlyField(source="user.is_verified")
     total_score_points = serializers.SerializerMethodField()
     profile_picture = serializers.ImageField(required=False)
     national_or_student_id_document = serializers.FileField(required=False)
@@ -109,7 +110,7 @@ class CompanyRepresentativeSerializer(serializers.ModelSerializer):
 
 class CompanyProfileSerializer(serializers.ModelSerializer):
     industry = IndustrySerializer(read_only=True)
-    representative = CompanyRepresentativeSerializer() 
+    representative = CompanyRepresentativeSerializer()
     email = serializers.ReadOnlyField(source="user.email")
     username = serializers.ReadOnlyField(source="user.username")
     phone_number = serializers.ReadOnlyField(source="user.phone_number")

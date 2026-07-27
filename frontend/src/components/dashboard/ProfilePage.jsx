@@ -591,17 +591,17 @@ export default function ProfilePage({ type }) {
                 <div className="min-w-0 pt-1">
                   <div className="mb-3">
                     <StatusBadge
-                      isVerifiedByAdmin={isCompany && profile.is_verified}
+                      isVerifiedByAdmin={profile.is_verified}
                       status={profile.verification_status}
                     />
                   </div>
                   <h1 className="flex items-center gap-2 truncate text-[28px] font-extrabold text-white sm:text-[34px]">
                     <span className="truncate">{name}</span>
-                    {isCompany &&
-                    (profile.is_verified ||
-                      profile.verification_status?.trim().toLowerCase() === "verified") ? (
+                    {profile.is_verified ||
+                    profile.verification_status?.trim().toLowerCase() ===
+                      "verified" ? (
                       <BadgeCheck
-                        aria-label="Verified company"
+                        aria-label="Verified profile"
                         className="shrink-0 text-[#4ADE80]"
                         size={25}
                       />

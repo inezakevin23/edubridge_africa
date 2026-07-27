@@ -20,12 +20,17 @@ class InternDashboardStatsView(APIView):
     def get(self, request):
         close_expired_challenges()
         user = request.user
+        from django.db.models import Q
+        
         active_challenges = Challenge.objects.filter(status="published").count()
-        my_submissions = Submission.objects.filter(intern=user).count()
-        shortlisted_submissions = Submission.objects.filter(intern=user, shortlisted=True).count()
+        # Include submissions where user is the intern or a team member
+        user_submissions = Submission.objects.filter(
+            Q(intern=user) | Q(team__members__user=user)
+        ).distinct()
+        my_submissions = user_submissions.count()
+        shortlisted_submissions = user_submissions.filter(shortlisted=True).count()
         unread_notifications = Notification.objects.filter(recipient=user, is_read=False).count()
-        score_stats = Submission.objects.filter(
-            intern=user, 
+        score_stats = user_submissions.filter(
             company_score__isnull=False
         ).aggregate(total=Sum("company_score"))
         total_score_points = score_stats["total"] if score_stats["total"] is not None else 0   

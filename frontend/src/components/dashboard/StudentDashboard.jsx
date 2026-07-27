@@ -1,12 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import {
-  ArrowRight,
-  Clock3,
-  Banknote,
-  Globe,
-  BriefcaseBusiness,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight, Clock3, Banknote } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
@@ -16,14 +9,9 @@ import { fetchInternDashboardStats } from "../../services/dashboardService";
 import { studentDashboardNavItems } from "../../data/studentDashboard";
 
 function MetricCard({ metric }) {
-  const Icon = metric.icon;
-
   return (
     <article className="relative min-h-[132px] overflow-hidden rounded-[18px] border border-white/[0.07] bg-[linear-gradient(145deg,#141D30_0%,#111827_100%)] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.17)]">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0D1626]">
-        <Icon className={metric.color} size={19} />
-      </div>
-      <h2 className="mt-5 text-[30px] font-extrabold leading-none text-white">
+      <h2 className="mt-2 text-[30px] font-extrabold leading-none text-white">
         {metric.value}
       </h2>
       <p className="mt-2 text-[13px] text-[#9AA7BA]">{metric.label}</p>
@@ -120,52 +108,36 @@ export default function StudentDashboard() {
         {
           label: "My Submissions",
           value: stats.my_submissions ?? 0,
-          icon: Globe,
-          color: "text-[#60A5FA]",
         },
         {
           label: "Score Points",
           value: stats.total_score_points ?? 0,
-          icon: Banknote,
-          color: "text-[#F59E0B]",
         },
         {
           label: "Active Challenges",
           value: stats.active_challenges ?? 0,
-          icon: BriefcaseBusiness,
-          color: "text-[#9B6CFF]",
         },
         {
           label: "Shortlisted",
           value: stats.shortlisted_submissions ?? 0,
-          icon: Trophy,
-          color: "text-[#22C55E]",
         },
       ]
     : [
         {
           label: "My Submissions",
           value: "—",
-          icon: Globe,
-          color: "text-[#60A5FA]",
         },
         {
           label: "Score Points",
           value: "—",
-          icon: Banknote,
-          color: "text-[#F59E0B]",
         },
         {
           label: "Active Challenges",
           value: "—",
-          icon: BriefcaseBusiness,
-          color: "text-[#9B6CFF]",
         },
         {
           label: "Shortlisted",
           value: "—",
-          icon: Trophy,
-          color: "text-[#22C55E]",
         },
       ];
 
@@ -184,9 +156,6 @@ export default function StudentDashboard() {
         transition={{ duration: 0.55 }}
       >
         <div className="mb-7 flex items-center gap-3 xl:hidden">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7C4DDE] shadow-[0_0_28px_rgba(139,92,246,0.5)]">
-            <Globe size={23} />
-          </div>
           <h1 className="text-[24px] font-extrabold">EduBridge</h1>
         </div>
 

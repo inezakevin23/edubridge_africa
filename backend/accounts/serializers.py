@@ -85,6 +85,8 @@ class UserSerializer(serializers.ModelSerializer):
     Serializer used for returning user information.
     """
 
+    company_name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
@@ -96,6 +98,12 @@ class UserSerializer(serializers.ModelSerializer):
             "role",
             "username",
             "is_verified",
+            "company_name",
             "created_at",
         )
         read_only_fields = fields
+
+    def get_company_name(self, obj):
+        if obj.role == User.Roles.COMPANY and hasattr(obj, "company_profile"):
+            return obj.company_profile.company_name
+        return None

@@ -156,10 +156,31 @@ export function toFormData(payload) {
 }
 
 export function buildApiError(error) {
-  const fieldErrors =
-    error?.fieldErrors || error?.response?.data?.errors || null;
-  const message =
-    error?.response?.data?.message || error?.message || "Request failed";
+  const responseData = error?.response?.data;
+  const fieldErrors = error?.fieldErrors || responseData?.errors || null;
+
+  // Extract meaningful message from different error formats
+  let message = responseData?.message || null;
+
+  // DRF standard validation error: {"field": ["error msg"]}
+  if (
+    !message &&
+    responseData &&
+    typeof responseData === "object" &&
+    !Array.isArray(responseData)
+  ) {
+    const values = Object.values(responseData);
+    const firstValue = values[0];
+    if (firstValue) {
+      if (Array.isArray(firstValue)) {
+        message = firstValue[0] || null;
+      } else if (typeof firstValue === "string") {
+        message = firstValue;
+      }
+    }
+  }
+
+  message = message || error?.message || "Request failed";
   const apiError = new Error(message);
   apiError.fieldErrors = fieldErrors;
   apiError.status = error?.response?.status || null;

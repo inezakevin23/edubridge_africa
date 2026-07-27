@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Submission
+from .models import Submission, SubmissionShortlist
+
+
+@admin.register(SubmissionShortlist)
+class SubmissionShortlistAdmin(admin.ModelAdmin):
+    list_display = ("submission", "user", "shortlisted_at")
+    list_filter = ("shortlisted_at",)
+    search_fields = ("user__email", "user__first_name", "user__last_name")
 
 
 @admin.register(Submission)

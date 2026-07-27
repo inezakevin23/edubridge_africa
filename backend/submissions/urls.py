@@ -7,6 +7,7 @@ from .views import (
     NotifyShortlistedView, 
     ReviewSubmissionView,
     SubmissionDetailView,
+    SubmissionShortlistToggleView,
 )
 
 urlpatterns = [
@@ -44,5 +45,10 @@ urlpatterns = [
         "company/<uuid:id>/review/",
         ReviewSubmissionView.as_view(),
         name="review-submission",
+    ),
+    path(
+        "company/<uuid:submission_id>/shortlist/",
+        SubmissionShortlistToggleView.as_view(),
+        name="submission-shortlist-toggle",
     ),
 ]

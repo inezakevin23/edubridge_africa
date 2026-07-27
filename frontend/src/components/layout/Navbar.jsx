@@ -83,44 +83,100 @@ export default function Navbar() {
           <EduBridgeLogo />
           <ul className="hidden lg:flex gap-10 text-gray-400">
             <li>
-              <a className="hover:text-white cursor-pointer transition" href="#" onClick={handleInternsClick}>For Interns</a>
+              <a
+                className="hover:text-white cursor-pointer transition"
+                href="#"
+                onClick={handleInternsClick}
+              >
+                For Interns
+              </a>
             </li>
             <li>
-              <a className="hover:text-white cursor-pointer transition" href="#" onClick={handleCompaniesClick}>For Companies</a>
+              <a
+                className="hover:text-white cursor-pointer transition"
+                href="#"
+                onClick={handleCompaniesClick}
+              >
+                For Companies
+              </a>
             </li>
             <li>
-              <Link className="hover:text-white cursor-pointer transition" to="/challenges">Challenges</Link>
+              <Link
+                className="hover:text-white cursor-pointer transition"
+                to="/challenges"
+              >
+                Challenges
+              </Link>
             </li>
           </ul>
           <div className="hidden lg:flex items-center gap-5">
             {isAuthenticated && user ? (
               <>
-                <span className="text-gray-200">Hello, {user.first_name || user.username || user.email}</span>
-                <button onClick={() => { logout(); navigate("/", { replace: true }); }} className="text-gray-300 hover:text-white">Logout</button>
+                <span className="text-gray-200">
+                  Hello,{" "}
+                  {user.role === "company" && user.company_name
+                    ? user.company_name
+                    : user.first_name || user.username || user.email}
+                </span>
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate("/", { replace: true });
+                  }}
+                  className="text-gray-300 hover:text-white"
+                >
+                  Logout
+                </button>
               </>
             ) : (
               <>
-                <Link className="text-gray-300 hover:text-white" to="/login">Sign In</Link>
-                <Link className="bg-violet-600 hover:bg-violet-500 rounded-xl px-6 py-3 transition" to="/register">Get Started</Link>
+                <Link className="text-gray-300 hover:text-white" to="/login">
+                  Sign In
+                </Link>
+                <Link
+                  className="bg-violet-600 hover:bg-violet-500 rounded-xl px-6 py-3 transition"
+                  to="/register"
+                >
+                  Get Started
+                </Link>
               </>
             )}
           </div>
-          <button onClick={() => setOpen(!open)} className="lg:hidden">{open ? <X /> : <Menu />}</button>
+          <button onClick={() => setOpen(!open)} className="lg:hidden">
+            {open ? <X /> : <Menu />}
+          </button>
         </nav>
         {open && (
           <div className="lg:hidden bg-[#111827] border-t border-white/10">
             <div className="flex flex-col p-6 space-y-6">
               {isAuthenticated && user ? (
                 <>
-                  <span className="font-semibold">{user.first_name || user.username}</span>
-                  <button onClick={() => { logout(); navigate("/", { replace: true }); }} className="bg-transparent text-left text-white">Logout</button>
+                  <span className="font-semibold">
+                    {user.role === "company" && user.company_name
+                      ? user.company_name
+                      : user.first_name || user.username}
+                  </span>
+                  <button
+                    onClick={() => {
+                      logout();
+                      navigate("/", { replace: true });
+                    }}
+                    className="bg-transparent text-left text-white"
+                  >
+                    Logout
+                  </button>
                 </>
               ) : (
                 <>
                   <Link to="/register">For Students</Link>
                   <Link to="/company-registration">For Companies</Link>
                   <Link to="/challenges">Challenges</Link>
-                  <Link className="bg-violet-600 rounded-xl py-3 text-center" to="/register">Get Started</Link>
+                  <Link
+                    className="bg-violet-600 rounded-xl py-3 text-center"
+                    to="/register"
+                  >
+                    Get Started
+                  </Link>
                 </>
               )}
             </div>

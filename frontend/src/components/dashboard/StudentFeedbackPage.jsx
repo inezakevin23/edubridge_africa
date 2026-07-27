@@ -1,10 +1,4 @@
-import {
-  BriefcaseBusiness,
-  Eye,
-  Filter,
-  SlidersHorizontal,
-  ThumbsUp,
-} from "lucide-react";
+import { Eye, Filter, SlidersHorizontal, ThumbsUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
@@ -15,25 +9,14 @@ import { fetchMySubmissions } from "../../services/submissionService";
 import { fetchInternDashboardStats } from "../../services/dashboardService";
 
 function StatCard({ stat }) {
-  const Icon = stat.icon;
-
   return (
     <article className="rounded-[18px] border border-white/[0.07] bg-[#131C2E] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.14)]">
-      <div className="flex items-center gap-4">
-        <span
-          className={`flex h-12 w-12 items-center justify-center rounded-full ${stat.background} ${stat.color}`}
-        >
-          <Icon size={22} />
-        </span>
-        <div>
-          <h3 className="text-[30px] font-extrabold leading-none text-white">
-            {stat.value}
-          </h3>
-          <p className="mt-2 text-[13px] font-medium text-[#9AA7BA]">
-            {stat.label}
-          </p>
-        </div>
-      </div>
+      <h3 className="text-[30px] font-extrabold leading-none text-white">
+        {stat.value}
+      </h3>
+      <p className="mt-2 text-[13px] font-medium text-[#9AA7BA]">
+        {stat.label}
+      </p>
     </article>
   );
 }
@@ -175,32 +158,20 @@ export default function StudentFeedbackPage() {
         {
           label: "Total Reviews",
           value: stats.my_submissions ?? submissions.length ?? 0,
-          icon: Filter,
-          color: "text-[#8B5CF6]",
-          background: "bg-violet-500/12",
         },
         {
           label: "Score Points",
           value: stats.total_score_points ?? 0,
-          icon: Filter,
-          color: "text-[#F59E0B]",
-          background: "bg-amber-500/10",
         },
         {
           label: "Times Shortlisted",
           value: stats.shortlisted_submissions ?? 0,
-          icon: ThumbsUp,
-          color: "text-[#22C55E]",
-          background: "bg-emerald-500/10",
         },
         {
           label: "Pending Reviews",
           value: submissions.filter(
             (s) => s.status === "submitted" || s.status === "under_review",
           ).length,
-          icon: SlidersHorizontal,
-          color: "text-[#F59E0B]",
-          background: "bg-amber-500/10",
         },
       ]
     : [];
@@ -210,7 +181,7 @@ export default function StudentFeedbackPage() {
     if (!submissions.length) return [];
     return submissions
       .filter((s) => s.company_score != null || s.feedback)
-      .map((s, idx) => {
+      .map((s) => {
         const challengeTitle = s.challenge_title || s.title || "Challenge";
         const companyName =
           s.challenge_company_name || s.company?.company_name || "";
@@ -229,7 +200,6 @@ export default function StudentFeedbackPage() {
           reviewer: companyName || "Company",
           reviewerRole: "Reviewer",
           reviewerInitial: (companyName || "C").charAt(0).toUpperCase(),
-          reviewerAvatar: `https://i.pravatar.cc/100?img=${(idx % 70) + 1}`,
           badge: s.shortlisted ? "Shortlisted" : "",
           badgeIcon: ThumbsUp,
           xp: `${score}/100`,
@@ -301,25 +271,6 @@ export default function StudentFeedbackPage() {
             ))
           )}
         </div>
-
-        <section className="mt-8 flex flex-col justify-between gap-5 rounded-[22px] border border-violet-400/15 bg-[linear-gradient(135deg,#171B3A_0%,#141C30_100%)] p-7 shadow-[0_18px_46px_rgba(0,0,0,0.14)] sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-[20px] font-extrabold text-white">
-              Keep building your track record
-            </h2>
-            <p className="mt-2 max-w-[560px] text-[15px] leading-6 text-[#9AA7BA]">
-              Each review adds to your reputation passport. Companies look at
-              your feedback history when considering you for roles.
-            </p>
-          </div>
-          <Link
-            className="flex h-12 w-fit items-center gap-2 rounded-full bg-[#8B5CF6] px-6 text-[15px] font-extrabold text-white shadow-[0_14px_30px_rgba(139,92,246,0.32)] transition hover:bg-[#9568ff]"
-            to="/challenges"
-          >
-            <BriefcaseBusiness size={18} />
-            Browse New Challenges
-          </Link>
-        </section>
       </motion.main>
     </DashboardLayout>
   );

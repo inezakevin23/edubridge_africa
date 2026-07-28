@@ -35,7 +35,7 @@ import {
   createCompanyProfile,
 } from "../../services/authService";
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailRegex = "/^[^\s@]+@[^\s@]+\.[^\s@]+$/";
 
 function RequiredMark() {
   return <span className="text-[#F43F5E]">*</span>;

@@ -44,7 +44,7 @@ const starterSkills = studentRegistrationSkills;
 const genderOptions = ["Male", "Female"];
 const emailPattern = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
 const phonePattern = "^\\+?[0-9\\s()-]{7,20}$";
-const emailRegex = "/^[^\s@]+@[^\s@]+\.[^\s@]+$/";
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = "^\\+?[0-9\\s()\\-]{7,20}$";
 
 function RequiredMark() {

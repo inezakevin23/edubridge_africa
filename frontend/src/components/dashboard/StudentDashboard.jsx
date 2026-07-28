@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, Clock3, Banknote } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -72,8 +72,6 @@ function ChallengeCard({ challenge }) {
 export default function StudentDashboard() {
   const [stats, setStats] = useState(null);
   const [challenges, setChallenges] = useState([]);
-  const [activeFilter, setActiveFilter] = useState("All");
-
   useEffect(() => {
     let mounted = true;
     Promise.all([fetchInternDashboardStats(), fetchChallenges()])
@@ -81,7 +79,8 @@ export default function StudentDashboard() {
         if (!mounted) return;
         const s = statsResp?.data || statsResp;
         setStats(s);
-        setChallenges(Array.isArray(challengesResp) ? challengesResp : []);
+        const results = challengesResp?.results || challengesResp || [];
+        setChallenges(Array.isArray(results) ? results : []);
       })
       .catch(() => {
         if (mounted) {
@@ -91,25 +90,6 @@ export default function StudentDashboard() {
       });
     return () => (mounted = false);
   }, []);
-
-  // Derive filter options dynamically from challenge industries
-  const filterOptions = useMemo(() => {
-    const industries = new Set();
-    challenges.forEach((c) => {
-      if (c.tags) c.tags.forEach((t) => industries.add(t));
-    });
-    return ["All", ...Array.from(industries)];
-  }, [challenges]);
-
-  // Filter challenges based on active filter
-  const filteredChallenges = useMemo(() => {
-    if (activeFilter === "All") return challenges;
-    return challenges.filter((c) =>
-      (c.tags || []).some(
-        (t) => t.toLowerCase() === activeFilter.toLowerCase(),
-      ),
-    );
-  }, [challenges, activeFilter]);
 
   const metrics = stats
     ? [
@@ -173,23 +153,6 @@ export default function StudentDashboard() {
           ))}
         </div>
 
-        <div className="mt-9 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {filterOptions.map((filter) => (
-            <button
-              className={`h-11 shrink-0 rounded-full px-5 text-[14px] font-semibold transition ${
-                filter === activeFilter
-                  ? "bg-[#8B5CF6] text-white shadow-[0_12px_26px_rgba(76,29,149,0.3)]"
-                  : "bg-[#182237] text-[#A6B1C4] hover:bg-[#202B43] hover:text-white"
-              }`}
-              key={filter}
-              type="button"
-              onClick={() => setActiveFilter(filter)}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
-
         <div className="mt-9 flex items-center justify-between gap-4">
           <h2 className="text-[24px] font-extrabold text-white">
             Latest Challenges
@@ -204,7 +167,7 @@ export default function StudentDashboard() {
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2 min-[1300px]:grid-cols-3">
-          {filteredChallenges.map((challenge) => (
+          {challenges.map((challenge) => (
             <ChallengeCard
               challenge={challenge}
               key={challenge.id || challenge.title}

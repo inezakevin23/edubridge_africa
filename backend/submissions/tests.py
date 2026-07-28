@@ -199,7 +199,7 @@ class SubmissionModuleTests(APITestCase):
         )
         Submission.objects.create(
             challenge=self.open_challenge, intern=self.other_intern,
-            title="Proposal Beta", summary="Data.", company_score=80, status="under_review"
+            title="Proposal Beta", summary="Data.", company_score=80, status="submitted"
         )
 
         self.client.force_authenticate(user=self.company_user)
@@ -208,5 +208,5 @@ class SubmissionModuleTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["data"]["total_submissions"], 2)
         self.assertEqual(response.data["data"]["shortlisted"], 1)
-        self.assertEqual(response.data["data"]["under_review"], 1)
+        self.assertEqual(response.data["data"]["pending_review"], 1)
         self.assertEqual(response.data["data"]["average_score"], 85.00)

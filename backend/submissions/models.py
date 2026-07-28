@@ -36,7 +36,6 @@ class SubmissionShortlist(BaseModel):
 class Submission(BaseModel):
     class Status(models.TextChoices):
         SUBMITTED = "submitted", "Submitted"
-        UNDER_REVIEW = "under_review", "Under Review"
         REVIEWED = "reviewed", "Reviewed"
 
     challenge = models.ForeignKey(

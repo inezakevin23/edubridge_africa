@@ -234,7 +234,7 @@ class CompanySubmissionStatisticsView(generics.GenericAPIView):
         submissions = Submission.objects.filter(challenge__company__user=request.user)
         total_submissions = submissions.count()
         shortlisted = submissions.filter(shortlisted=True).count()
-        under_review = submissions.filter(status=Submission.Status.UNDER_REVIEW).count()
+        pending_review = submissions.filter(status=Submission.Status.SUBMITTED).count()
         
         average_score = submissions.filter(company_score__isnull=False).aggregate(
             average=Avg("company_score")
@@ -246,7 +246,7 @@ class CompanySubmissionStatisticsView(generics.GenericAPIView):
         data = {
             "total_submissions": total_submissions,
             "shortlisted": shortlisted,
-            "under_review": under_review,
+            "pending_review": pending_review,
             "average_score": average_score,
         }
         return api_response(

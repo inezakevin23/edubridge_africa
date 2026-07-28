@@ -160,7 +160,7 @@ export default function StudentFeedbackPage() {
         {
           label: "Pending Reviews",
           value: submissions.filter(
-            (s) => s.status === "submitted" || s.status === "under_review",
+            (s) => s.status === "submitted",
           ).length,
         },
       ]

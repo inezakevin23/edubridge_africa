@@ -48,7 +48,7 @@ class ChallengeListView(ListAPIView):
     search_fields = [
         "title",
         "description",
-        "company__organization_name",
+        "company__company_name",
     ]
     ordering_fields = [
         "created_at",
@@ -60,13 +60,20 @@ class ChallengeListView(ListAPIView):
     ]
 
     def get_queryset(self):
-        from django.db.models import Count
+        from django.db.models import Count, Q
 
         close_expired_challenges()
         queryset = Challenge.objects.filter(status="published")
         industry = self.request.query_params.get("industry")
         if industry:
-            queryset = queryset.filter(industry_id=industry)
+            industry = industry.strip()
+            industry_filter = Q(industry__name__iexact=industry)
+            try:
+                uuid.UUID(industry)
+                industry_filter |= Q(industry_id=industry)
+            except (ValueError, TypeError):
+                pass
+            queryset = queryset.filter(industry_filter).distinct()
         queryset = queryset.annotate(
             submissions_count=Count("submissions", distinct=True)
         )

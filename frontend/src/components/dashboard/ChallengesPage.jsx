@@ -7,7 +7,7 @@ import {
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import Topbar from "../layout/Topbar";
 import ChallengeCard from "../challenges/ChallengeCard";
@@ -38,7 +38,7 @@ function SearchFilters({ query, onQueryChange, activeCategory, onClearAll }) {
             className="inline-flex items-center gap-1 rounded-full bg-violet-500/15 px-3 py-1.5 font-bold text-[#A879FF]"
             key="query"
           >
-            Search: “{query.trim().slice(0, 24)}”
+            Search: &ldquo;{query.trim().slice(0, 24)}&rdquo;
             <X size={13} />
           </span>
         )}
@@ -130,33 +130,76 @@ export default function ChallengesPage() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
-  const [page, setPage] = useState(1);
-  const [challenges, setChallenges] = useState([]);
+  const [challengesData, setChallengesData] = useState({
+    results: [],
+    count: 0,
+    page: 1,
+    pages: 1,
+  });
   const [loading, setLoading] = useState(true);
-  const pageSize = 8;
+  const requestIdRef = useRef(0);
+  const abortControllerRef = useRef(null);
 
+  const challenges = challengesData.results;
+  const totalPages = challengesData.pages;
+  const currentPage = challengesData.page;
+
+  const loadChallenges = useCallback(
+    async (pageNum = 1) => {
+      const currentRequestId = ++requestIdRef.current;
+      // Abort any in-flight request before starting a new one
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      setLoading(true);
+      try {
+        const params = {
+          page: pageNum,
+          page_size: 8,
+          ...(query.trim() && { search: query.trim() }),
+          ...(activeCategory !== "All" && { industry: activeCategory }),
+          ...(sortBy !== "newest" && {
+            ordering:
+              sortBy === "oldest"
+                ? "-created_at"
+                : sortBy === "alphabetical"
+                  ? "title"
+                  : "submission_deadline",
+          }),
+        };
+
+        const data = await fetchChallenges(params, controller.signal);
+        // Discard stale responses from earlier navigations
+        if (currentRequestId !== requestIdRef.current) return;
+        setChallengesData(data);
+      } catch (error) {
+        // Ignore abort errors from superseded requests
+        if (error.name === "CanceledError" || error.name === "AbortError")
+          return;
+        if (currentRequestId === requestIdRef.current) {
+          setChallengesData({ results: [], count: 0, page: 1, pages: 1 });
+        }
+      } finally {
+        if (currentRequestId === requestIdRef.current) {
+          setLoading(false);
+        }
+      }
+    },
+    [query, activeCategory, sortBy],
+  );
+
+  // Load challenges when filters change
   useEffect(() => {
-    let mounted = true;
-    fetchChallenges()
-      .then((data) => {
-        if (mounted) {
-          setChallenges(data);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (mounted) {
-          setChallenges([]);
-          setLoading(false);
-        }
-      });
+    const timer = setTimeout(() => loadChallenges(1), 0);
+    return () => clearTimeout(timer);
+  }, [loadChallenges]);
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // Derive category buttons dynamically from loaded challenges
+  // Build category filter chips from current results. Always show
+  // discovered categories; only attach counts when viewing a single
+  // page so the numbers reflect the full filtered set.
   const categories = useMemo(() => {
     const counts = {};
     challenges.forEach((c) => {
@@ -165,63 +208,19 @@ export default function ChallengesPage() {
       });
     });
     const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    return [["All", challenges.length], ...entries];
-  }, [challenges]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-
-    // When activeCategory is "All", show everything.
-    // Otherwise, categories are derived from the raw tags in the data,
-    // so the category name IS the tag to match.
-    const tagNeedle = activeCategory === "All" ? null : activeCategory;
-
-    let list = challenges.filter((c) => {
-      const matchesCategory =
-        !tagNeedle ||
-        (c.tags || []).some(
-          (t) => String(t).toLowerCase() === tagNeedle.toLowerCase(),
-        );
-
-      const matchesQuery =
-        !q ||
-        [c.title, c.company, ...(c.tags || [])]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-          .includes(q);
-
-      return matchesCategory && matchesQuery;
-    });
-
-    if (sortBy === "oldest") list = list.slice().reverse();
-    if (sortBy === "alphabetical")
-      list = list.slice().sort((a, b) => a.title.localeCompare(b.title));
-    if (sortBy === "deadline")
-      list = list
-        .slice()
-        .sort(
-          (a, b) =>
-            new Date(a.deadline_raw || "9999-12-31") -
-            new Date(b.deadline_raw || "9999-12-31"),
-        );
-
-    return list;
-  }, [challenges, query, activeCategory, sortBy]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const safePage = Math.min(page, pageCount);
-
-  const pagedChallenges = useMemo(() => {
-    const start = (safePage - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, safePage]);
+    return [
+      ["All", totalPages > 1 ? undefined : challengesData.count],
+      ...entries.map(([tag, count]) => [
+        tag,
+        totalPages > 1 ? undefined : count,
+      ]),
+    ];
+  }, [challenges, challengesData.count, totalPages]);
 
   const clearAll = () => {
     setQuery("");
     setActiveCategory("All");
     setSortBy("newest");
-    setPage(1);
   };
 
   return (
@@ -255,7 +254,6 @@ export default function ChallengesPage() {
             query={query}
             onQueryChange={(v) => {
               setQuery(v);
-              setPage(1);
             }}
             activeCategory={activeCategory}
             onClearAll={clearAll}
@@ -279,12 +277,11 @@ export default function ChallengesPage() {
                 type="button"
                 onClick={() => {
                   setActiveCategory(category);
-                  setPage(1);
                 }}
                 aria-pressed={isActive}
               >
                 {category}
-                {count && (
+                {count !== undefined && count !== null && count > 0 && (
                   <span className="rounded-full bg-white/15 px-2 py-0.5 text-[12px]">
                     {count}
                   </span>
@@ -297,7 +294,7 @@ export default function ChallengesPage() {
         {/* Sort dropdown */}
         <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <p className="text-[14px] text-[#9AA7BA]">
-            Showing {pagedChallenges.length} of {filtered.length} challenges
+            Showing {challenges.length} of {challengesData.count} challenges
           </p>
           <div className="flex items-center gap-3">
             <label className="relative flex">
@@ -305,7 +302,6 @@ export default function ChallengesPage() {
                 value={sortBy}
                 onChange={(e) => {
                   setSortBy(e.target.value);
-                  setPage(1);
                 }}
                 className="appearance-none flex h-10 items-center gap-2 rounded-full bg-[#182237] px-4 pr-9 text-[14px] font-semibold text-[#9AA7BA] outline-none focus:ring-2 focus:ring-violet-400/30"
                 aria-label="Sort challenges"
@@ -329,7 +325,7 @@ export default function ChallengesPage() {
         ) : null}
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 min-[1240px]:grid-cols-3">
-          {pagedChallenges.map((challenge) => (
+          {challenges.map((challenge) => (
             <ChallengeCard
               challenge={challenge}
               key={challenge.slug || challenge.title}
@@ -338,9 +334,9 @@ export default function ChallengesPage() {
         </div>
         <div className="mt-9">
           <Pagination
-            page={safePage}
-            pageCount={pageCount}
-            onPageChange={(n) => setPage(n)}
+            page={currentPage}
+            pageCount={totalPages}
+            onPageChange={(n) => loadChallenges(n)}
           />
         </div>
       </motion.main>

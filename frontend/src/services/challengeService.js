@@ -99,12 +99,24 @@ function normalizeChallenge(payload) {
   };
 }
 
-export async function fetchChallenges(params = {}) {
+export async function fetchChallenges(params = {}, signal) {
   const config = {};
   if (params && Object.keys(params).length) config.params = params;
+  if (signal) config.signal = signal;
   const response = await apiRequest("get", "/api/challenges/", null, config);
-  const payload = Array.isArray(response) ? response : response?.results || [];
-  return payload.map(normalizeChallenge);
+
+  const payload = Array.isArray(response?.results)
+    ? response.results
+    : Array.isArray(response)
+      ? response
+      : [];
+
+  return {
+    results: payload.map(normalizeChallenge),
+    count: response?.count ?? payload.length,
+    page: response?.page ?? 1,
+    pages: response?.pages ?? 1,
+  };
 }
 
 export async function fetchChallengeRawById(id) {

@@ -21,15 +21,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default=os.environ.get('SECRET_KEY', 'placeholder_string_for_build_only'))
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    cast=lambda v: [s.strip() for s in v.split(",")]
-)
+if os.environ.get("ALLOWED_HOSTS"):
+    ALLOWED_HOSTS = [host.strip() for si in os.environ.get("ALLOWED_HOSTS").split(",") for host in si.split()]
+else:
+    ALLOWED_HOSTS = config(
+        "ALLOWED_HOSTS",
+        default="localhost,127.0.0.1",
+        cast=lambda v: [s.strip() for s in v.split(",")]
+    )
 
 
 # Application definition
@@ -162,6 +167,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = 'static/'

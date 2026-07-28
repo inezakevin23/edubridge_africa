@@ -35,8 +35,6 @@ import {
   createCompanyProfile,
 } from "../../services/authService";
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function RequiredMark() {
   return <span className="text-[#F43F5E]">*</span>;
 }
@@ -302,7 +300,6 @@ export default function CompanyRegistrationForm() {
     if (step === 1) {
       const hasAccountDetails =
         form.email &&
-        emailRegex.test(form.email) &&
         form.password &&
         form.confirmPassword &&
         form.password === form.confirmPassword &&

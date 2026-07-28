@@ -42,10 +42,6 @@ const stepLabels = studentRegistrationStepLabels;
 const statusOptions = studentRegistrationStatusOptions;
 const starterSkills = studentRegistrationSkills;
 const genderOptions = ["Male", "Female"];
-const emailPattern = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
-const phonePattern = "^\\+?[0-9\\s()-]{7,20}$";
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
 
 function RequiredMark() {
   return <span className="text-[#F43F5E]">*</span>;
@@ -398,7 +394,6 @@ export default function StudentRegistrationForm() {
     if (step === 1) {
       const hasAccountDetails =
         form.email &&
-        emailRegex.test(form.email) &&
         form.password &&
         form.confirmPassword &&
         form.password === form.confirmPassword &&
@@ -417,7 +412,6 @@ export default function StudentRegistrationForm() {
         form.fullName &&
         form.username &&
         form.phone &&
-        phoneRegex.test(form.phone) &&
         form.country &&
         form.city &&
         form.dateOfBirth &&
@@ -546,7 +540,6 @@ export default function StudentRegistrationForm() {
                     placeholder="you@example.com"
                     required
                     type="email"
-                    pattern={emailPattern}
                     value={form.email}
                   />
                 </div>
@@ -663,7 +656,6 @@ export default function StudentRegistrationForm() {
                   icon={<Phone size={17} />}
                   name="phone"
                   onChange={updateForm}
-                  pattern={phonePattern}
                   placeholder="+234 800 000 0000"
                   required
                   type="tel"

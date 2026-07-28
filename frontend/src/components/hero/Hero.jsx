@@ -5,9 +5,9 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden">
       {/* Background Glow */}
-      <div className="absolute -top-60 -left-60 w-[700px] h-[700px] rounded-full bg-violet-700/20 blur-[140px]" />
+      <div className="absolute -top-60 -left-60 w-[300px] sm:w-[500px] md:w-[700px] h-[300px] sm:h-[500px] md:h-[700px] rounded-full bg-violet-700/20 blur-[140px]" />
 
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-violet-700/10 blur-[120px]" />
+      <div className="absolute bottom-0 right-0 w-[250px] sm:w-[400px] md:w-[500px] h-[250px] sm:h-[400px] md:h-[500px] rounded-full bg-violet-700/10 blur-[120px]" />
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-16 pt-24 pb-20">
         <motion.div

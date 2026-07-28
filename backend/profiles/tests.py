@@ -154,8 +154,8 @@ class ProfileModuleTests(APITestCase):
             "city": "Kigali",
             "description": "Fostering elite software engineers.",
             "registration_certificate": self.valid_pdf,
-            "representative.job_title": "Lead Recruiter", # Flattened multi-part layout notation
-            "representative.corporate_email": "recruitment@edubridge.africa",
+            "representative_job_title": "Lead Recruiter",
+            "representative_corporate_email": "recruitment@edubridge.africa",
         }
         response = self.client.post(self.company_create_url, payload, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

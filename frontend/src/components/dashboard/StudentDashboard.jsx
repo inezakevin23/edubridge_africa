@@ -21,40 +21,48 @@ function MetricCard({ metric }) {
 
 function ChallengeCard({ challenge }) {
   return (
-    <article className="group flex min-h-[235px] flex-col rounded-[22px] border border-white/[0.07] bg-[linear-gradient(135deg,#111A2C_0%,#171B38_100%)] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.18)] transition hover:-translate-y-1 hover:border-violet-400/25 hover:shadow-[0_24px_65px_rgba(0,0,0,0.26)]">
-      <div className="flex items-start gap-5">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/[0.07] bg-[#0D1626] text-[13px] font-extrabold text-[#A879FF]">
-          {challenge.initials}
+    <article className="group flex flex-col rounded-[22px] border border-white/[0.07] bg-[linear-gradient(135deg,#111A2C_0%,#171B38_100%)] shadow-[0_18px_45px_rgba(0,0,0,0.18)] transition hover:-translate-y-1 hover:border-violet-400/25 hover:shadow-[0_24px_65px_rgba(0,0,0,0.26)]">
+      <div className="p-4 sm:p-6">
+        <div className="flex items-start gap-3 sm:gap-5">
+          <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl border border-white/[0.07] bg-[#0D1626] text-[11px] sm:text-[13px] font-extrabold text-[#A879FF]">
+            {challenge.initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-[15px] sm:text-[17px] font-extrabold text-white">
+              {challenge.title}
+            </h3>
+            <p className="mt-1 text-[13px] sm:text-[15px] text-[#9AA7BA]">
+              {challenge.company}
+            </p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <h3 className="truncate text-[17px] font-extrabold text-white">
-            {challenge.title}
-          </h3>
-          <p className="mt-1 text-[15px] text-[#9AA7BA]">{challenge.company}</p>
+
+        <div className="mt-4 sm:mt-6 flex flex-wrap gap-2">
+          {challenge.tags.map((tag) => (
+            <span
+              className="rounded-lg sm:rounded-xl border border-white/[0.05] bg-[#0F172A] px-2.5 py-1 sm:px-3 sm:py-1.5 text-[11px] sm:text-[12px] font-semibold text-[#AAB4C3]"
+              key={tag}
+            >
+              {tag}
+            </span>
+          ))}
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {challenge.tags.map((tag) => (
-          <span
-            className="rounded-xl border border-white/[0.05] bg-[#0F172A] px-3 py-1.5 text-[12px] font-semibold text-[#AAB4C3]"
-            key={tag}
-          >
-            {tag}
+      <div className="flex items-center justify-between border-t border-white/[0.07] p-4 sm:px-6 sm:py-5">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[13px] sm:text-[15px] font-extrabold text-[#F59E0B]">
+          <Banknote size={16} className="sm:hidden" />
+          <Banknote size={18} className="hidden sm:block" />
+          <span className="truncate">
+            {challenge.cash_prize
+              ? `Cash prize: ${challenge.cash_prize}`
+              : "No cash prize"}
           </span>
-        ))}
-      </div>
-
-      <div className="mt-auto flex items-center justify-between border-t border-white/[0.07] pt-5">
-        <div className="flex items-center gap-2 text-[15px] font-extrabold text-[#F59E0B]">
-          <Banknote size={18} />
-          {challenge.cash_prize
-            ? `Cash prize: ${challenge.cash_prize}`
-            : "No cash prize"}
         </div>
-        <div className="flex items-center gap-2 text-[14px] font-medium text-[#9AA7BA]">
-          <Clock3 size={18} />
-          {challenge.time}
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[13px] sm:text-[14px] font-medium text-[#9AA7BA]">
+          <Clock3 size={16} className="sm:hidden" />
+          <Clock3 size={18} className="hidden sm:block" />
+          <span className="truncate">{challenge.time}</span>
         </div>
       </div>
     </article>

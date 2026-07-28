@@ -3,7 +3,7 @@ import StudentRegistrationLeft from "./StudentRegistrationLeft";
 
 export default function StudentRegistrationLayout() {
   return (
-    <div className="grid h-screen overflow-hidden bg-[#0B1020] text-white lg:grid-cols-[minmax(390px,544px)_1fr]">
+    <div className="grid min-h-screen overflow-hidden bg-[#0B1020] text-white lg:grid-cols-[minmax(390px,544px)_1fr]">
       <StudentRegistrationLeft />
       <StudentRegistrationForm />
     </div>

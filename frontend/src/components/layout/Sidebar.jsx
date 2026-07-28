@@ -1,4 +1,4 @@
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut, UserRound, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import EduBridgeLogo from "./Logo";
@@ -32,6 +32,8 @@ export default function DashboardSidebar({
   activeIndex = 0,
   bottomPanel,
   workspace = "student",
+  mobileOpen = false,
+  onMobileClose,
 }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -70,8 +72,8 @@ export default function DashboardSidebar({
     user?.email?.split("@")[0] ||
     (workspace === "company" ? "Company account" : "Student account");
 
-  return (
-    <aside className="hidden min-h-screen w-[280px] shrink-0 border-r border-white/[0.07] bg-[#111A2A] px-7 py-8 xl:flex xl:flex-col">
+  const sidebarContent = (
+    <>
       <div className="mb-10">
         <EduBridgeLogo />
       </div>
@@ -87,6 +89,12 @@ export default function DashboardSidebar({
             data-sidebar-label={label}
             to={routeForLabel(label, role)}
             key={label}
+            onClick={(e) => {
+              // On mobile, close the sidebar after clicking a link
+              if (onMobileClose && e.target.closest("a")) {
+                onMobileClose();
+              }
+            }}
           >
             <Icon size={20} />
             {label}
@@ -116,6 +124,46 @@ export default function DashboardSidebar({
           </button>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar - visible on xl and up */}
+      <aside className="hidden min-h-screen w-[280px] shrink-0 border-r border-white/[0.07] bg-[#111A2A] px-7 py-8 xl:flex xl:flex-col">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile sidebar overlay - visible on mobile/tablet when open */}
+      {mobileOpen ? (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm xl:hidden"
+            onClick={onMobileClose}
+          />
+
+          {/* Drawer */}
+          <aside
+            className="fixed top-0 left-0 z-50 flex h-screen w-[280px] flex-col overflow-y-auto border-r border-white/[0.07] bg-[#111A2A] px-7 py-8 shadow-[0_18px_46px_rgba(0,0,0,0.35)] xl:hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Mobile close button */}
+            <div className="mb-6 flex justify-end">
+              <button
+                aria-label="Close sidebar"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-[#9AA7BA] transition hover:bg-white/[0.06] hover:text-white"
+                onClick={onMobileClose}
+                type="button"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {sidebarContent}
+          </aside>
+        </>
+      ) : null}
+    </>
   );
 }

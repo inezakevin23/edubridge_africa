@@ -344,7 +344,7 @@ export default function CompanySubmissionsReviewPage() {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-3 lg:grid-cols-[minmax(0,1fr)_160px_160px_180px]">
+        <div className="mt-8 grid gap-3 sm:grid-cols-[minmax(0,1fr)_120px_120px_160px] lg:grid-cols-[minmax(0,1fr)_160px_160px_180px]">
           <div className="flex h-12 items-center gap-3 rounded-full border border-white/[0.05] bg-[#131C2E] px-5 text-[#9AA7BA]">
             <Search size={18} />
             <input

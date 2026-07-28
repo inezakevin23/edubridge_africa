@@ -24,7 +24,22 @@ export default function NotificationMenu({ tone = "amber" }) {
   };
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const resp = await fetchNotifications();
+        const list = Array.isArray(resp) ? resp : resp?.results || [];
+        if (!cancelled) setNotifications(list);
+      } catch {
+        if (!cancelled) setNotifications([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const unread = notifications.filter((item) => !item.is_read).length;

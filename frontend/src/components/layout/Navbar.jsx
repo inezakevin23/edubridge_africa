@@ -148,37 +148,66 @@ export default function Navbar() {
         </nav>
         {open && (
           <div className="lg:hidden bg-[#111827] border-t border-white/10">
-            <div className="flex flex-col p-6 space-y-6">
-              {isAuthenticated && user ? (
-                <>
-                  <span className="font-semibold">
-                    {user.role === "company" && user.company_name
-                      ? user.company_name
-                      : user.first_name || user.username}
-                  </span>
-                  <button
-                    onClick={() => {
-                      logout();
-                      navigate("/", { replace: true });
-                    }}
-                    className="bg-transparent text-left text-white"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link to="/register">For Students</Link>
-                  <Link to="/company-registration">For Companies</Link>
-                  <Link to="/challenges">Challenges</Link>
-                  <Link
-                    className="bg-violet-600 rounded-xl py-3 text-center"
-                    to="/register"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
+            <div className="flex flex-col p-6 space-y-4">
+              {/* Main navigation links - always visible on mobile */}
+              <a
+                className="hover:text-white text-gray-400 cursor-pointer transition"
+                href="#"
+                onClick={handleInternsClick}
+              >
+                For Interns
+              </a>
+              <a
+                className="hover:text-white text-gray-400 cursor-pointer transition"
+                href="#"
+                onClick={handleCompaniesClick}
+              >
+                For Companies
+              </a>
+              <Link
+                className="hover:text-white text-gray-400 transition"
+                to="/challenges"
+              >
+                Challenges
+              </Link>
+
+              {/* Auth section */}
+              <div className="border-t border-white/10 pt-4 mt-4">
+                {isAuthenticated && user ? (
+                  <>
+                    <span className="block font-semibold text-white mb-3">
+                      Hello,{" "}
+                      {user.role === "company" && user.company_name
+                        ? user.company_name
+                        : user.first_name || user.username || user.email}
+                    </span>
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate("/", { replace: true });
+                      }}
+                      className="text-left text-gray-300 hover:text-white"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      className="text-center text-gray-300 hover:text-white"
+                      to="/login"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      className="bg-violet-600 hover:bg-violet-500 rounded-xl py-3 text-center text-white"
+                      to="/register"
+                    >
+                      Get Started
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

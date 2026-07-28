@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ===== Responsive base styles ===== */
+html {
+  /* Fluid font size scaling for better readability on all screens */
+  font-size: clamp(14px, 1.2vw + 12px, 17px);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 html,
 body,
 #root {
@@ -13,6 +22,57 @@ body {
   background: #0b1020;
   color: white;
   font-family: Inter, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
+}
+
+/* ===== Touch-friendly elements ===== */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  a.button,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+
+  /* Ensure dropdowns and selects are usable on mobile */
+  select {
+    padding-right: 2.5rem;
+  }
+}
+
+/* ===== Prevent horizontal scroll on mobile ===== */
+@media (max-width: 640px) {
+  .overflow-x-visible-mobile {
+    overflow-x: hidden;
+  }
+
+  .overflow-x-auto-mobile {
+    overflow-x: auto;
+    -webkit-touch-callout: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ===== Mobile-friendly table wrapper ===== */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== Smooth transitions for mobile performance ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .auth-input,

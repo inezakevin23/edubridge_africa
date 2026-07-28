@@ -480,7 +480,7 @@ export default function SubmitSolutionPage() {
                                 accept={item.accept}
                                 className="sr-only"
                                 onChange={(event) => {
-                                  const file = event.target.files?.[0] || null;
+                                  const file = event.target.files[0];
                                   updateDeliverable(
                                     item.key,
                                     "fileName",

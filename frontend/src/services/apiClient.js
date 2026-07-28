@@ -1,6 +1,7 @@
 import axios from "axios";
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const storage = typeof window !== "undefined" ? window.localStorage : null;
 
@@ -135,7 +136,7 @@ export function toFormData(payload) {
   const formData = new FormData();
 
   Object.entries(payload || {}).forEach(([key, value]) => {
-    if (value === undefined || value === null) {
+    if (value === undefined || value === null || value === "") {
       return;
     }
 

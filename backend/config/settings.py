@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "dashboard",
     "notifications",
     "common",
+    "home",
     "profiles",
 ]
 

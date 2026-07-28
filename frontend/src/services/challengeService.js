@@ -130,9 +130,9 @@ export async function fetchChallengeById(id) {
 }
 
 export async function fetchChallengeBySlug(slug) {
-  // First get minimal list to find the challenge ID
-  const challenges = await fetchChallenges();
-  const match = challenges.find((c) => c.slug === slug);
+  // First get the paginated results, destructure to access the results array
+  const { results } = await fetchChallenges();
+  const match = results.find((c) => c.slug === slug);
   if (!match || !match.id) return null;
   // Fetch full detail data (includes description, requirements, company profile etc.)
   return fetchChallengeById(match.id);

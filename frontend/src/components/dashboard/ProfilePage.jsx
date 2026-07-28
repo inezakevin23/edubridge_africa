@@ -447,7 +447,7 @@ export default function ProfilePage({ type }) {
   };
 
   const handleProfilePicChange = (event) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files[0]
     if (!file) return;
     setProfilePicFile(file);
     const reader = new FileReader();

@@ -783,7 +783,7 @@ export default function CompanyRegistrationForm() {
               title="Registration & Verification Documents"
               icon={<FileText size={18} />}
             >
-              <p className="mb-5 max-w-[610px] text-[13px] leading-relaxed text-[#9AA7BA]">
+<p className="mb-5 max-w-[610px] text-[13px] leading-relaxed text-[#9AA7BA]">
                 Upload the relevant documents for your business type. All files
                 are securely stored and reviewed within 48 hours.
               </p>
@@ -793,7 +793,7 @@ export default function CompanyRegistrationForm() {
                     file={documents[document]}
                     key={`${document}-${fileInputResetKey}`}
                     onChange={(event) =>
-                      updateDocument(document, event.target.files?.[0] || null)
+                      updateDocument(document, event.target.files[0])
                     }
                     optional={index >= 2}
                     required={index < 2}

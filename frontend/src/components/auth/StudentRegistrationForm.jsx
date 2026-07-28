@@ -303,22 +303,6 @@ export default function StudentRegistrationForm() {
     setSelectedSkills((current) => current.filter((item) => item !== skill));
   };
 
-  const handleProfileUpload = (event) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    setProfilePic(file);
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      setProfilePreview(result);
-      localStorage.setItem("edubridgeStudentProfilePic", result);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -860,9 +844,7 @@ export default function StudentRegistrationForm() {
                   helper="PDF only — max 5MB"
                   key={`id-${fileInputResetKey}`}
                   label="National ID or Student ID"
-                  onChange={(event) =>
-                    setIdFile(event.target.files?.[0] || null)
-                  }
+                  onChange={(e) => setIdFile(e.target.files[0])}
                   required
                   title="Upload a PDF ID document"
                 />
@@ -872,7 +854,11 @@ export default function StudentRegistrationForm() {
                   helper="PNG or JPG — max 2MB"
                   key={`profile-${fileInputResetKey}`}
                   label="Profile Picture"
-                  onChange={handleProfileUpload}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setProfilePic(file);
+                    if (file) setProfilePreview(URL.createObjectURL(file));
+                  }}
                   preview={profilePreview}
                   required
                   title="Upload your profile photo"

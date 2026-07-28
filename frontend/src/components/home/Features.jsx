@@ -1,5 +1,13 @@
+import { Briefcase, Building2, GraduationCap, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchHomeFeatures } from "../../services/homeService";
+
+const iconMap = {
+  building: Building2,
+  briefcase: Briefcase,
+  trending: TrendingUp,
+  graduation: GraduationCap,
+};
 
 export default function Features() {
   const [features, setFeatures] = useState([]);
@@ -37,7 +45,7 @@ export default function Features() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
           {features.map((feature, index) => {
-            const Icon = feature.icon || (() => null);
+            const Icon = iconMap[feature.icon] || (() => null);
 
             return (
               <div

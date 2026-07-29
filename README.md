@@ -1,6 +1,6 @@
 # Edubridge Africa Platform
 
-A full-stack platform connecting students with companies through challenges and submissions, built with Django REST Framework and React.
+A full-stack platform connecting students, interns, professionals, freelancers and job seekers with companies through challenges and submissions, built with Django REST Framework and React.
 
 ## Tech Stack
 
@@ -13,7 +13,7 @@ A full-stack platform connecting students with companies through challenges and 
 
 Choose the setup method that works best for you:
 
-### For Docker Setup (Recommended)
+### For Docker Setup
 
 - Docker Engine 20.10+
 - Docker Compose v2.0+
@@ -27,7 +27,7 @@ Choose the setup method that works best for you:
 
 ---
 
-## Option 1: Docker Setup (Recommended)
+## Option 1: Docker Setup
 
 This is the fastest way to get the entire stack running with isolated containers.
 
@@ -156,10 +156,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Ensure the backend `.env` file exists with correct values (it's already present in the repo):
+create backend `.env` file with correct values:
 
 ```env
-SECRET_KEY=?%k0nklytd*k8@m^c4Ky_v+@@he+=@^6ucu3e_kwcgqc&-g+jk
+SECRET_KEY=your_django_secret_key_here
 DEBUG=True
 
 DB_NAME=edubridge_db
@@ -286,7 +286,6 @@ edubridge_africa/
 When running, visit:
 
 - **Swagger UI**: http://localhost:8000/api/docs/
-- **ReDoc**: http://localhost:8000/api/redoc/
 
 ---
 
@@ -348,40 +347,3 @@ python manage.py migrate
 ```
 
 ---
-
-## Environment Variables Reference
-
-### Backend (`backend/.env`)
-
-| Variable               | Description                                 | Example                      |
-| ---------------------- | ------------------------------------------- | ---------------------------- |
-| `SECRET_KEY`           | Django secret key for cryptographic signing | `django-insecure-abc123...`  |
-| `DEBUG`                | Enable debug mode                           | `True` / `False`             |
-| `DB_NAME`              | PostgreSQL database name                    | `edubridge_db`               |
-| `DB_USER`              | PostgreSQL username                         | `edubridge_user`             |
-| `DB_PASSWORD`          | PostgreSQL password                         | `secure_password`            |
-| `DB_HOST`              | Database host                               | `localhost` or `db` (Docker) |
-| `DB_PORT`              | Database port                               | `5432`                       |
-| `ALLOWED_HOSTS`        | Comma-separated allowed hosts               | `localhost,127.0.0.1`        |
-| `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins             | `http://localhost:5173`      |
-
-### Frontend (`.env.production`)
-
-| Variable            | Description          | Example                   |
-| ------------------- | -------------------- | ------------------------- |
-| `VITE_API_BASE_URL` | Backend API base URL | `https://api.example.com` |
-
----
-
-## Next Steps
-
-- Create an admin user: `python manage.py createsuperuser`
-- Seed sample data: `python manage.py seed_data`
-- Read the API docs at `/api/docs/`
-- Customize the frontend theme in `frontend/src/index.css`
-
----
-
-## License
-
-[Your License Here]

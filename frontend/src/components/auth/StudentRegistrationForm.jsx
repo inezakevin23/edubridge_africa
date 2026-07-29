@@ -262,6 +262,21 @@ function getPasswordStrength(password) {
   };
 }
 
+function formatFieldErrors(fieldErrors) {
+  if (!fieldErrors) return null;
+  if (typeof fieldErrors === "string") return fieldErrors;
+  if (Array.isArray(fieldErrors)) return fieldErrors.join(" ");
+  if (typeof fieldErrors === "object") {
+    return Object.entries(fieldErrors)
+      .map(([field, errors]) => {
+        const msgs = Array.isArray(errors) ? errors.join(" ") : String(errors);
+        return `${field}: ${msgs}`;
+      })
+      .join("\n");
+  }
+  return null;
+}
+
 export default function StudentRegistrationForm() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -327,7 +342,6 @@ export default function StudentRegistrationForm() {
         localStorage.setItem("edubridge_refresh_token", tokens.refresh);
       }
 
-      // Create the intern profile with file uploads
       try {
         await createInternProfile({
           country: form.country,
@@ -345,7 +359,15 @@ export default function StudentRegistrationForm() {
           national_or_student_id_document: idFile,
         });
       } catch (profileError) {
-        console.warn("Profile creation note:", profileError.message);
+        const detail = formatFieldErrors(profileError.fieldErrors);
+        if (detail) {
+          setFormMessage(detail);
+        } else {
+          setFormMessage(
+            profileError.message ||
+              "Profile creation failed. Please try again.",
+          );
+        }
       }
 
       localStorage.setItem("edubridgeStudentName", form.fullName);

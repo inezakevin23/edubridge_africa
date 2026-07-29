@@ -41,9 +41,12 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // When sending FormData, let axios auto-set Content-Type with boundary
   if (config.data instanceof FormData) {
-    delete config.headers["Content-Type"];
+    if (typeof config.headers?.delete === "function") {
+      config.headers.delete("Content-Type");
+    } else {
+      delete config.headers["Content-Type"];
+    }
   }
 
   return config;
@@ -160,10 +163,8 @@ export function buildApiError(error) {
   const responseData = error?.response?.data;
   const fieldErrors = error?.fieldErrors || responseData?.errors || null;
 
-  // Extract meaningful message from different error formats
   let message = responseData?.message || null;
 
-  // DRF standard validation error: {"field": ["error msg"]}
   if (
     !message &&
     responseData &&

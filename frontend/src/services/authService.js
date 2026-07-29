@@ -44,37 +44,27 @@ export async function getCurrentUser() {
 
 export async function createInternProfile(payload) {
   const formData = toFormData(payload);
-  return apiRequest("post", "/api/profiles/intern/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return apiRequest("post", "/api/profiles/intern/", formData);
 }
 
 export async function updateInternProfile(payload) {
   const formData = toFormData(payload);
-  return apiRequest("put", "/api/profiles/intern/me/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return apiRequest("put", "/api/profiles/intern/me/", formData);
 }
 
 export async function createCompanyProfile(payload) {
   const formData = toFormData(payload);
-  return apiRequest("post", "/api/profiles/company/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return apiRequest("post", "/api/profiles/company/", formData);
 }
 
 export async function updateCompanyProfile(payload) {
   const formData = toFormData(payload);
-  return apiRequest("put", "/api/profiles/company/me/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return apiRequest("put", "/api/profiles/company/me/", formData);
 }
 
 export async function createSubmission(payload) {
   const formData = toFormData(payload);
-  return apiRequest("post", "/api/submissions/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return apiRequest("post", "/api/submissions/", formData);
 }
 
 export async function getChallenges() {

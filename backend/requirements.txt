@@ -23,4 +23,4 @@ dj-database-url
 whitenoise
 Pillow
 whitenoise-media
-django-storage-supabase
+django-supabase-storage==0.1.3

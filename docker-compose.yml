@@ -17,9 +17,10 @@ services:
   backend:
     build: ./backend
     container_name: edubridge_django_api
+    env_file:
+      - ./backend/.env
     volumes:
       - static_volume:/app/static
-      - media_volume:/app/media
     environment:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - DEBUG=True # Keep True for local testing, change to False on live server
@@ -49,7 +50,6 @@ services:
 volumes:
   postgres_data:
   static_volume:
-  media_volume:
 
 networks:
   edubridge_network:

@@ -183,7 +183,7 @@ if SUPABASE_URL and SUPABASE_KEY:
     # Production Cloud Settings
     STORAGES = {
         "default": {
-            "BACKEND": "django_supabase_storage.storage.SupabaseStorage",
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",

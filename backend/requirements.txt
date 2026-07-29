@@ -22,5 +22,4 @@ gunicorn
 dj-database-url
 whitenoise
 Pillow
-whitenoise-media
 django-supabase-storage==0.1.3

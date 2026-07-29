@@ -176,11 +176,9 @@ STATICFILES_DIRS = []
 # Supabase Client Core Keys Extraction
 SUPABASE_URL = config("SUPABASE_URL", default=None)
 SUPABASE_KEY = config("SUPABASE_KEY", default=None)
-SUPABASE_MEDIA_BUCKET = config("SUPABASE_MEDIA_BUCKET", default="edubridge_media_bucket")
 
-# ─── PRODUCTION CENTRAL CLOUD STATIC & MEDIA STORAGE STORAGE ENGINE ─────────
+# ─── S3-COMPATIBLE STORAGE SETTINGS ─────────────────────────────────────────
 if SUPABASE_URL and SUPABASE_KEY:
-    # Production Cloud Settings
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -189,6 +187,20 @@ if SUPABASE_URL and SUPABASE_KEY:
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
+    
+    # Grab these variables from your Railway Environment
+    AWS_ACCESS_KEY_ID = config('SUPABASE_ACCESS_KEY_ID', default='')
+    AWS_SECRET_ACCESS_KEY = config('SUPABASE_SECRET_ACCESS_KEY', default='')
+    AWS_STORAGE_BUCKET_NAME = config('SUPABASE_BUCKET_NAME', default='') or 'edubridge_media_bucket'
+    AWS_S3_ENDPOINT_URL = config('SUPABASE_S3_ENDPOINT', default='')
+    SUPABASE_PROJECT_REF = config('SUPABASE_PROJECT_REF', default='')
+    
+    # Builds clean public URLs: https://supabase.co/storage/v1/object/public/bucket
+    if SUPABASE_PROJECT_REF:
+        AWS_S3_CUSTOM_DOMAIN = f"{SUPABASE_PROJECT_REF}.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}"
+    
+    AWS_QUERYSTRING_AUTH = False  # Makes URLs permanent instead of expiring
+    AWS_S3_FILE_OVERWRITE = False # Prevents files with duplicate names from replacing each other
 else:
     # Local Machine Development Fallbacks
     STORAGES = {

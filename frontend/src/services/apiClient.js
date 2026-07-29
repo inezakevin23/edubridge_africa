@@ -7,7 +7,6 @@ const storage = typeof window !== "undefined" ? window.localStorage : null;
 
 const getStoredToken = (key) => {
   if (!storage) return null;
-
   try {
     return storage.getItem(key);
   } catch {
@@ -17,7 +16,6 @@ const getStoredToken = (key) => {
 
 const setStoredToken = (key, value) => {
   if (!storage) return;
-
   try {
     if (value) {
       storage.setItem(key, value);
@@ -29,9 +27,9 @@ const setStoredToken = (key, value) => {
   }
 };
 
+// REMOVED: Global Content-Type header to prevent interference with binary form data uploads
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: { "Content-Type": "application/json" },
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -41,12 +39,11 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
+  // Ensure content headers are dynamic based on the payload type
   if (config.data instanceof FormData) {
-    if (typeof config.headers?.delete === "function") {
-      config.headers.delete("Content-Type");
-    } else {
-      delete config.headers["Content-Type"];
-    }
+    config.headers["Content-Type"] = "multipart/form-data";
+  } else if (!config.headers["Content-Type"]) {
+    config.headers["Content-Type"] = "application/json";
   }
 
   return config;
@@ -61,7 +58,6 @@ const processQueue = (error, token = null) => {
       promise.reject(error);
       return;
     }
-
     promise.resolve(token);
   });
   pendingRequests = [];
@@ -71,7 +67,6 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -90,13 +85,12 @@ apiClient.interceptors.response.use(
 
         const refreshResponse = await apiClient.post(
           "/api/auth/token/refresh/",
-          {
-            refresh: refreshToken,
-          },
+          { refresh: refreshToken },
         );
 
         const nextAccessToken =
           refreshResponse?.data?.data?.access || refreshResponse?.data?.access;
+
         if (nextAccessToken) {
           setStoredToken("edubridge_access_token", nextAccessToken);
           processQueue(null, nextAccessToken);
@@ -114,55 +108,45 @@ apiClient.interceptors.response.use(
         isRefreshing = false;
       }
     }
-
     return Promise.reject(error);
   },
 );
 
 export function normalizeApiResponse(response) {
   const payload = response?.data;
-
   if (!payload || typeof payload !== "object") {
     return null;
   }
-
   if (payload.success === false) {
     const error = new Error(payload.message || "Request failed");
     error.fieldErrors = payload.errors || null;
     throw error;
   }
-
   return payload.data ?? null;
 }
 
 export function toFormData(payload) {
   const formData = new FormData();
-
   Object.entries(payload || {}).forEach(([key, value]) => {
     if (value === undefined || value === null || value === "") {
       return;
     }
-
     if (value instanceof File || value instanceof Blob) {
       formData.append(key, value);
       return;
     }
-
     if (Array.isArray(value)) {
       value.forEach((item) => formData.append(key, item));
       return;
     }
-
     formData.append(key, value);
   });
-
   return formData;
 }
 
 export function buildApiError(error) {
   const responseData = error?.response?.data;
   const fieldErrors = error?.fieldErrors || responseData?.errors || null;
-
   let message = responseData?.message || null;
 
   if (
@@ -190,20 +174,12 @@ export function buildApiError(error) {
 }
 
 export async function apiRequest(method, url, data = null, config = {}) {
-  const isFormData = data instanceof FormData;
   const requestConfig = {
     ...config,
     method,
     url,
     ...(data !== null ? { data } : {}),
   };
-
-  if (!isFormData && requestConfig.headers?.["Content-Type"] === undefined) {
-    requestConfig.headers = {
-      ...requestConfig.headers,
-      "Content-Type": "application/json",
-    };
-  }
 
   try {
     const response = await apiClient(requestConfig);

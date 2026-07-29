@@ -166,6 +166,8 @@ export default function CompanySubmissionsReviewPage() {
   const [challenges, setChallenges] = useState([]);
   const [stats, setStats] = useState(null);
   const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(8);
 
   useEffect(() => {
     let mounted = true;
@@ -179,6 +181,11 @@ export default function CompanySubmissionsReviewPage() {
         const list = Array.isArray(subsResp)
           ? subsResp
           : subsResp?.results || [];
+        // Capture pagination metadata from the API response
+        if (!Array.isArray(subsResp)) {
+          setTotalCount(subsResp?.count ?? 0);
+          setPageSize(subsResp?.page_size ?? 8);
+        }
         const normalized = list.map((item, idx) => ({
           id: item.id,
           name: item.submitter?.first_name
@@ -204,6 +211,7 @@ export default function CompanySubmissionsReviewPage() {
           shortlisted: Boolean(item.shortlisted),
           team_members: item.team_members || [],
           shortlisted_members: item.shortlisted_members || [],
+          // Flatten all shortlisted members into separate cards for display
           rank: idx + 1,
         }));
         setSubmissions(normalized);
@@ -399,13 +407,38 @@ export default function CompanySubmissionsReviewPage() {
         ) : null}
 
         <div className="mt-8 space-y-5">
-          {filteredSubmissions.map((item) => (
-            <SubmissionCard item={item} key={item.name} />
-          ))}
+          {filteredSubmissions.map((item) => {
+            const shortlistedCount = item.shortlisted_members?.length || 0;
+            const showMembers = item.shortlisted && shortlistedCount > 0;
+            if (showMembers) {
+              return item.shortlisted_members.map((member) => (
+                <SubmissionCard
+                  item={{
+                    ...item,
+                    id: `${item.id}-${member.id}`,
+                    name:
+                      `${member.first_name} ${member.last_name || ""}`.trim() ||
+                      member.username,
+                    avatar: member.profile_picture || item.avatar,
+                    university:
+                      member.institution ||
+                      member.organization ||
+                      item.university,
+                  }}
+                  key={`${item.id}-${member.id}`}
+                />
+              ));
+            }
+            return <SubmissionCard item={item} key={item.name} />;
+          })}
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-5 text-[14px] font-medium text-[#9AA7BA] sm:flex-row">
-          <p>Showing 1-5 of 142 submissions</p>
+          <p>
+            {totalCount > 0
+              ? `Showing ${(page - 1) * pageSize + 1}-${Math.min(page * pageSize, totalCount)} of ${totalCount} submission${totalCount !== 1 ? "s" : ""}`
+              : "No submissions"}
+          </p>
           <div className="flex items-center gap-2">
             <button
               aria-label="Previous page"

@@ -6,7 +6,7 @@ from accounts.permissions import IsCompany, IsIntern
 from challenges.models import Challenge, close_expired_challenges
 from common.responses import api_response
 from notifications.models import Notification
-from submissions.models import Submission
+from submissions.models import Submission, SubmissionShortlist
 
 from .serializers import (
     CompanyDashboardStatsSerializer,
@@ -28,13 +28,12 @@ class InternDashboardStatsView(APIView):
             Q(intern=user) | Q(team__members__user=user)
         ).distinct()
         my_submissions = user_submissions.count()
-        # Count submissions where the user is specifically shortlisted.
-        # For solo submissions (no team), use the submission-level shortlisted flag.
-        # For team submissions, check the per-member SubmissionShortlist entries
-        # so that only shortlisted members are counted (not the whole team).
-        shortlisted_submissions = user_submissions.filter(
-            Q(team__isnull=True, shortlisted=True) | Q(shortlist_entries__user=user)
-        ).distinct().count()
+        # Count individual shortlisted entries for this user across all their submissions.
+        # Each shortlisted team member counts as one.
+        shortlisted_submissions = SubmissionShortlist.objects.filter(
+            user=user,
+            submission__in=user_submissions,
+        ).count()
         unread_notifications = Notification.objects.filter(recipient=user, is_read=False).count()
         score_stats = user_submissions.filter(
             company_score__isnull=False
@@ -74,7 +73,10 @@ class CompanyDashboardStatsView(APIView):
 
         total_submissions = company_submissions.count()
         reviewed_submissions = company_submissions.filter(company_score__isnull=False).count()
-        shortlisted_submissions = company_submissions.filter(shortlisted=True).count()
+        # Count total individual shortlisted members across all company submissions
+        shortlisted_submissions = SubmissionShortlist.objects.filter(
+            submission__in=company_submissions,
+        ).count()
         data = {
             "active_challenges": active_challenges,
             "total_submissions": total_submissions,

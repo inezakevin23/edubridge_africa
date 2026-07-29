@@ -153,3 +153,7 @@ export async function fetchMyChallenges(params = {}) {
   const payload = Array.isArray(response) ? response : response?.results || [];
   return payload.map(normalizeChallenge);
 }
+
+export async function deleteChallenge(id) {
+  return apiRequest("delete", `/api/challenges/${id}/delete/`);
+}

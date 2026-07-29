@@ -281,6 +281,7 @@ export default function CompanyRegistrationForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formMessage, setFormMessage] = useState("");
   const [fileInputResetKey, setFileInputResetKey] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(form.password),
@@ -381,6 +382,7 @@ export default function CompanyRegistrationForm() {
     }
 
     try {
+      setIsSubmitting(true);
       // Clear any stale tokens before registration to prevent them
       // from being attached to the register POST by the apiClient interceptor
       localStorage.removeItem("edubridge_access_token");
@@ -459,6 +461,8 @@ export default function CompanyRegistrationForm() {
           error.message || "Registration failed. Please try again.",
         );
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -783,7 +787,7 @@ export default function CompanyRegistrationForm() {
               title="Registration & Verification Documents"
               icon={<FileText size={18} />}
             >
-<p className="mb-5 max-w-[610px] text-[13px] leading-relaxed text-[#9AA7BA]">
+              <p className="mb-5 max-w-[610px] text-[13px] leading-relaxed text-[#9AA7BA]">
                 Upload the relevant documents for your business type. All files
                 are securely stored and reviewed within 48 hours.
               </p>
@@ -903,10 +907,11 @@ export default function CompanyRegistrationForm() {
             ) : (
               <button
                 className="flex h-12 items-center justify-center gap-3 rounded-[24px] bg-[#F59E0B] px-8 text-[14px] font-bold text-white shadow-[0_18px_36px_rgba(245,158,11,0.3)] transition hover:bg-[#f7a923]"
+                disabled={isSubmitting}
                 type="submit"
               >
-                Register
-                <ArrowRight size={18} />
+                {isSubmitting ? "Registering..." : "Register"}
+                {!isSubmitting && <ArrowRight size={18} />}
               </button>
             )}
           </div>

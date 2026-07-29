@@ -189,9 +189,13 @@ class CompanySubmissionsView(generics.ListAPIView):
         shortlisted_param = self.request.query_params.get("shortlisted")
         if shortlisted_param is not None:
             if shortlisted_param.lower() in ("true", "1", "yes"):
-                queryset = queryset.filter(shortlisted=True)
+                queryset = queryset.filter(
+                    Q(shortlisted=True) | Q(shortlist_entries__isnull=False)
+                ).distinct()
             elif shortlisted_param.lower() in ("false", "0", "no"):
-                queryset = queryset.filter(shortlisted=False)
+                queryset = queryset.filter(
+                    shortlisted=False, shortlist_entries__isnull=True
+                )
 
         ordering = self.request.query_params.get("ordering", "newest")
         if ordering == "oldest":
@@ -233,7 +237,10 @@ class CompanySubmissionStatisticsView(generics.GenericAPIView):
     def get(self, request):
         submissions = Submission.objects.filter(challenge__company__user=request.user)
         total_submissions = submissions.count()
-        shortlisted = submissions.filter(shortlisted=True).count()
+        # Count total individual shortlisted members across all company submissions
+        shortlisted = SubmissionShortlist.objects.filter(
+            submission__in=submissions,
+        ).count()
         pending_review = submissions.filter(status=Submission.Status.SUBMITTED).count()
         
         average_score = submissions.filter(company_score__isnull=False).aggregate(

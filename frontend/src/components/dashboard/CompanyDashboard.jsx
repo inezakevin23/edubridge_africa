@@ -1,11 +1,14 @@
-import { Building2, Send, Check, Sparkles } from "lucide-react";
+import { Building2, Send, Check, Sparkles, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import CompanyTopbar from "../layout/CompanyTopbar";
 import { companyDashboardNavItems } from "../../data/companyDashboard";
-import { fetchMyChallenges } from "../../services/challengeService";
+import {
+  fetchMyChallenges,
+  deleteChallenge,
+} from "../../services/challengeService";
 import { fetchCompanyDashboardStats } from "../../services/dashboardService";
 import { fetchSubmissions } from "../../services/submissionService";
 import { sendJobOffer } from "../../services/notificationService";
@@ -21,7 +24,7 @@ function MetricCard({ metric }) {
   );
 }
 
-function ActiveChallengesTable({ challenges }) {
+function ActiveChallengesTable({ challenges, onDelete, deletingId }) {
   return (
     <section className="overflow-hidden rounded-[22px] border border-white/[0.07] bg-[#131C2E] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
       <div className="flex items-center justify-between border-b border-white/[0.06] p-7">
@@ -42,6 +45,7 @@ function ActiveChallengesTable({ challenges }) {
               <th className="px-5 py-4 font-bold">Submissions</th>
               <th className="px-5 py-4 font-bold">Deadline</th>
               <th className="px-5 py-4 font-bold">Status</th>
+              <th className="px-5 py-4 font-bold">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.05] text-[15px]">
@@ -80,6 +84,21 @@ function ActiveChallengesTable({ challenges }) {
                         ? "Ended"
                         : "Active"}
                   </span>
+                </td>
+                <td className="px-5 py-5">
+                  <button
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/10 text-red-400 transition hover:bg-red-500/20 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled={deletingId === challenge.id}
+                    onClick={() => onDelete(challenge)}
+                    title="Delete challenge"
+                    type="button"
+                  >
+                    {deletingId === challenge.id ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+                    ) : (
+                      <Trash2 size={16} />
+                    )}
+                  </button>
                 </td>
               </tr>
             ))}
@@ -243,6 +262,32 @@ export default function CompanyDashboard() {
   const [challenges, setChallenges] = useState([]);
   const [stats, setStats] = useState(null);
   const [shortlisted, setShortlisted] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
+  const [deleteMessage, setDeleteMessage] = useState(null);
+
+  const handleDeleteChallenge = async (challenge) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${challenge.title}"? This action cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(challenge.id);
+    setDeleteMessage(null);
+    try {
+      await deleteChallenge(challenge.id);
+      setChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
+      setDeleteMessage(`"${challenge.title}" has been deleted successfully.`);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to delete challenge. Please try again.";
+      setDeleteMessage(msg);
+    } finally {
+      setDeletingId(null);
+      setTimeout(() => setDeleteMessage(null), 5000);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -255,19 +300,42 @@ export default function CompanyDashboard() {
       setChallenges(challengeData);
       setStats(statsData?.data || statsData || null);
       const list = Array.isArray(subsData) ? subsData : subsData?.results || [];
-      // Filter to only include submissions that are actually shortlisted
-      setShortlisted(
-        list
-          .filter((s) => s.shortlisted === true)
-          .map((s, idx) => ({
+      // Flatten all shortlisted team members across submissions so each counts
+      // as an individual shortlist entry.
+      const shortlistedItems = [];
+      for (const s of list) {
+        if (s.shortlisted !== true) continue;
+        const members = s.shortlisted_members || [];
+        if (members.length > 0) {
+          for (const member of members) {
+            shortlistedItems.push({
+              id: `${s.id}-${member.id}`,
+              name:
+                `${member.first_name} ${member.last_name || ""}`.trim() ||
+                member.username,
+              submitter_id: member.id,
+              submitter_role: member.role || "Participant",
+              summary: s.summary || s.feedback || "",
+              avatar: member.profile_picture || null,
+            });
+          }
+        } else {
+          // Fallback to submitter if no per-member entries
+          shortlistedItems.push({
             id: s.id,
             name:
-              s.intern_name || s.intern?.username || `Submission #${idx + 1}`,
+              s.intern_name ||
+              s.submitter?.first_name ||
+              s.intern?.username ||
+              "Participant",
             submitter_id: s.submitter?.id || s.intern?.id || null,
-            submitter_role: s.intern?.role || "Participant",
+            submitter_role: s.submitter?.role || "Participant",
             summary: s.summary || s.feedback || "",
-          })),
-      );
+            avatar: s.submitter_profile_picture || null,
+          });
+        }
+      }
+      setShortlisted(shortlistedItems);
     });
     return () => {
       mounted = false;
@@ -359,9 +427,25 @@ export default function CompanyDashboard() {
           ))}
         </div>
 
+        {deleteMessage && (
+          <div
+            className={`mt-6 rounded-xl border px-5 py-3 text-[14px] font-semibold ${
+              deleteMessage.includes("successfully")
+                ? "border-emerald-400/20 bg-emerald-500/10 text-[#86EFAC]"
+                : "border-red-400/20 bg-red-500/10 text-red-300"
+            }`}
+          >
+            {deleteMessage}
+          </div>
+        )}
+
         <div className="mt-9 grid gap-8 min-[1180px]:grid-cols-[minmax(0,1fr)_420px]">
           <div className="space-y-8">
-            <ActiveChallengesTable challenges={challenges} />
+            <ActiveChallengesTable
+              challenges={challenges}
+              onDelete={handleDeleteChallenge}
+              deletingId={deletingId}
+            />
           </div>
           <div className="space-y-8">
             <ShortlistedSubmissions submissions={shortlisted} />

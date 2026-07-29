@@ -413,7 +413,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=14),
                 "max_team_size": 4,
                 "skills": "Python, Django, Redis, Celery, Mobile Money APIs",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must implement atomic transactions to prevent double-spending.",
@@ -431,7 +431,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=21),
                 "max_team_size": 3,
                 "skills": "TensorFlow, Computer Vision, PyTorch, Flask, OpenCV",
-                "submission_formats": ["zip", "pdf"],
+                "submission_formats": ["Code Repository", "Written Report"],
                 "status": "published",
                 "requirements": [
                     "Must work offline on low-end Android smartphones.",
@@ -449,7 +449,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=30),
                 "max_team_size": 4,
                 "skills": "Python, FHIR, HL7, PostgreSQL, GraphQL",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must comply with HIPAA and local data protection regulations.",
@@ -467,7 +467,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=25),
                 "max_team_size": 3,
                 "skills": "React, Service Workers, IndexedDB, PWA, JavaScript",
-                "submission_formats": ["zip"],
+                "submission_formats": ["Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must support content caching for at least 50 hours of video.",
@@ -485,7 +485,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=18),
                 "max_team_size": 3,
                 "skills": "React, D3.js, TimescaleDB, MQTT, Python",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must display real-time data with <5 second latency.",
@@ -503,7 +503,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=22),
                 "max_team_size": 4,
                 "skills": "Python, Graph Algorithms, Google Maps API, PostgreSQL, Redis",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must reduce delivery time by at least 25% compared to standard routing.",
@@ -521,7 +521,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=35),
                 "max_team_size": 4,
                 "skills": "Solidity, Ethereum, React, Web3.js, IPFS",
-                "submission_formats": ["zip", "pdf"],
+                "submission_formats": ["Code Repository", "Written Report"],
                 "status": "published",
                 "requirements": [
                     "Must provide immutable audit trail for all land transactions.",
@@ -539,7 +539,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=28),
                 "max_team_size": 3,
                 "skills": "Python, Scikit-Learn, Time Series Analysis, Flask, REST API",
-                "submission_formats": ["zip", "pdf"],
+                "submission_formats": ["Code Repository", "Written Report"],
                 "status": "published",
                 "requirements": [
                     "Must achieve 90%+ prediction accuracy with minimal false positives.",
@@ -557,7 +557,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=20),
                 "max_team_size": 4,
                 "skills": "Python, Kafka, Redis, Machine Learning, PostgreSQL",
-                "submission_formats": ["zip", "pdf"],
+                "submission_formats": ["Code Repository", "Written Report"],
                 "status": "published",
                 "requirements": [
                     "Must process transactions in <100ms with 95% fraud detection rate.",
@@ -575,7 +575,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=32),
                 "max_team_size": 3,
                 "skills": "Blockchain, Hyperledger, React, Node.js, MongoDB",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must support QR code scanning for product verification.",
@@ -593,7 +593,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=40),
                 "max_team_size": 4,
                 "skills": "WebRTC, Django, PostgreSQL, React, Azure/AWS",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must support video calls up to 60 minutes with HD quality.",
@@ -611,7 +611,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=24),
                 "max_team_size": 3,
                 "skills": "JavaScript, Node.js, MongoDB, Redis, React",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must provide 20+ types of achievements and badges.",
@@ -629,7 +629,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=27),
                 "max_team_size": 3,
                 "skills": "IoT, Arduino, MQTT, Python, React, TimescaleDB",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must measure energy consumption with ±2% accuracy.",
@@ -647,7 +647,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=19),
                 "max_team_size": 3,
                 "skills": "Python, Collaborative Filtering, Content-Based Filtering, Redis, PostgreSQL",
-                "submission_formats": ["zip"],
+                "submission_formats": ["Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must handle 1M+ products with sub-200ms recommendation latency.",
@@ -665,7 +665,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=33),
                 "max_team_size": 4,
                 "skills": "Python, Elasticsearch, ML, Threat Intelligence, API Integration",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must integrate with at least 5 threat intelligence feeds.",
@@ -683,7 +683,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=29),
                 "max_team_size": 4,
                 "skills": "Django, React, Stripe/PayPal API, PostgreSQL, Celery",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must support both equity and rewards-based crowdfunding.",
@@ -701,7 +701,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=45),
                 "max_team_size": 4,
                 "skills": "Python, OpenCV, GIS, DroneKit, Flask, React",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must process NDVI (Normalized Difference Vegetation Index) from drone images.",
@@ -719,7 +719,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=26),
                 "max_team_size": 3,
                 "skills": "Python, NLP, Transformers, FastAPI, React, TensorFlow",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must detect suicidal ideation and trigger emergency protocols.",
@@ -737,7 +737,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=38),
                 "max_team_size": 3,
                 "skills": "Unity, AR Foundation, C#, Mobile Development, 3D Modeling",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must run smoothly on mid-range Android devices.",
@@ -755,7 +755,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=34),
                 "max_team_size": 4,
                 "skills": "Ethereum, Smart Contracts, React, Node.js, IoT",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must enable automatic micro-transactions via smart contracts.",
@@ -773,8 +773,8 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=16),
                 "max_team_size": 3,
                 "skills": "Django, React, PostgreSQL, Redis, REST API",
-                "submission_formats": ["pdf", "zip"],
-                "status": "published",
+                "submission_formats": ["Written Report", "Code Repository"],
+                "status": "draft",
                 "requirements": [
                     "Must include barcode/QR code scanning functionality.",
                     "Provide low-stock alerts via SMS and email.",
@@ -791,7 +791,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=23),
                 "max_team_size": 3,
                 "skills": "Python, OpenCV, Deep Learning, Flask, React",
-                "submission_formats": ["zip", "pdf"],
+                "submission_formats": ["Code Repository", "Written Report"],
                 "status": "published",
                 "requirements": [
                     "Must achieve 98%+ accuracy in various lighting conditions.",
@@ -809,7 +809,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=28),
                 "max_team_size": 3,
                 "skills": "Python, Django, Celery, Celery Beat, PostgreSQL, Redis",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must aggregate real-time exchange rates from 10+ providers.",
@@ -827,7 +827,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=36),
                 "max_team_size": 4,
                 "skills": "IoT, Python, LoRaWAN, MongoDB, React, Embedded C",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must operate on battery for at least 6 months.",
@@ -845,7 +845,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=42),
                 "max_team_size": 4,
                 "skills": "NLP, TensorFlow, Python, FastAPI, React",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must achieve 85%+ diagnostic accuracy for top 20 common diseases.",
@@ -863,7 +863,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=37),
                 "max_team_size": 3,
                 "skills": "Unity, VR/AR Development, 3D Modeling, C#, Photogrammetry",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must create photorealistic 360° environments of at least 3 heritage sites.",
@@ -881,7 +881,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=25),
                 "max_team_size": 3,
                 "skills": "IoT, Python, Django, React, Google Maps API",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must integrate fill-level sensors on waste bins.",
@@ -899,7 +899,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=21),
                 "max_team_size": 3,
                 "skills": "Python, Speech Recognition, NLP, React, Deep Learning",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must support 5+ African languages with accent recognition.",
@@ -917,7 +917,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=60),
                 "max_team_size": 4,
                 "skills": "Django, React, Git, OAuth, PostgreSQL",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must integrate with GitHub/GitLab APIs for repository management.",
@@ -935,7 +935,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=45),
                 "max_team_size": 3,
                 "skills": "Python, Blockchain, Biometrics, PostgreSQL, React",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must use government-issued ID verification.",
@@ -953,7 +953,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=35),
                 "max_team_size": 3,
                 "skills": "Flutter, Firebase, Django, PostgreSQL, REST API",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must work offline in remote areas with no connectivity.",
@@ -971,7 +971,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=40),
                 "max_team_size": 3,
                 "skills": "Django, React, PostgreSQL, Redis, Celery",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must support bulk content upload and organization.",
@@ -989,7 +989,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=50),
                 "max_team_size": 4,
                 "skills": "Django, React, PostgreSQL, Celery, Stripe API",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must support mobile money premium payments.",
@@ -1007,7 +1007,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=55),
                 "max_team_size": 3,
                 "skills": "Python, NLP, TensorFlow, Django, React",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must analyze soil data, weather patterns, and market prices.",
@@ -1025,7 +1025,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=30),
                 "max_team_size": 3,
                 "skills": "Django, React, PostgreSQL, Redis, Celery",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must integrate with doctor availability calendars.",
@@ -1043,7 +1043,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=38),
                 "max_team_size": 3,
                 "skills": "Python, Django, React, PostgreSQL, NLP",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must support multiple question types (MCQ, essay, coding).",
@@ -1061,7 +1061,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=25),
                 "max_team_size": 3,
                 "skills": "React, JavaScript, Python, Django, PostgreSQL",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must calculate ROI and payback periods accurately.",
@@ -1079,7 +1079,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=42),
                 "max_team_size": 4,
                 "skills": "Django, React, PostgreSQL, Redis, Google Maps API",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must include geolocation-based product search.",
@@ -1097,7 +1097,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=33),
                 "max_team_size": 3,
                 "skills": "Python, NLP, Django, React, TensorFlow",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must include validated mental health questionnaires.",
@@ -1115,7 +1115,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=48),
                 "max_team_size": 4,
                 "skills": "Django, React, PostgreSQL, Stripe, Celery",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "draft",
                 "requirements": [
                     "Must track and visualize environmental impact metrics.",
@@ -1133,7 +1133,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=28),
                 "max_team_size": 3,
                 "skills": "Python, NLP, GPT Models, Django, React",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must evaluate grammar, coherence, and argument strength.",
@@ -1151,7 +1151,7 @@ class Command(BaseCommand):
                 "submission_deadline": timezone.now() + timedelta(days=32),
                 "max_team_size": 3,
                 "skills": "Django, React, PostgreSQL, Google Maps API, Celery",
-                "submission_formats": ["pdf", "zip"],
+                "submission_formats": ["Written Report", "Code Repository"],
                 "status": "published",
                 "requirements": [
                     "Must include opportunity matching based on skills and interests.",
@@ -1338,6 +1338,14 @@ class Command(BaseCommand):
 
         created_submissions = []
         for sub_data in submissions_data:
+            challenge = sub_data["challenge"]
+            accepted_formats = challenge.submission_formats or []
+
+            if "pdf" in accepted_formats and not sub_data.get("report_file") and not sub_data.get("report_link"):
+                sub_data["report_file"] = "submissions/reports/mock_report.pdf"
+            if "zip" in accepted_formats and not sub_data.get("other_file") and not sub_data.get("github_repository"):
+                sub_data["other_file"] = "submissions/other/mock_deliverable.zip"
+
             submission = Submission.objects.create(**sub_data)
             created_submissions.append(submission)
             

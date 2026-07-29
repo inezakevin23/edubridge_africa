@@ -90,10 +90,23 @@ class SubmissionSerializer(serializers.ModelSerializer):
         return members
 
     def get_shortlisted_members(self, obj):
-        """Return list of user IDs that are shortlisted for this submission."""
-        return list(
-            obj.shortlist_entries.values_list("user_id", flat=True)
-        )
+        """Return list of shortlisted users with details for this submission."""
+        shortlisted = []
+        for entry in obj.shortlist_entries.select_related("user").all():
+            user = entry.user
+            profile = getattr(user, "intern_profile", None)
+            shortlisted.append({
+                "id": str(user.id),
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "username": user.username,
+                "role": user.role,
+                "profile_picture": self.get_absolute_url(profile.profile_picture) if profile and profile.profile_picture else None,
+                "institution": profile.institution if profile else "",
+                "organization": profile.institution if profile else "",
+            })
+        return shortlisted
 
 
 class CreateSubmissionSerializer(serializers.ModelSerializer):

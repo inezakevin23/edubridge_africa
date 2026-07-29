@@ -158,6 +158,13 @@ class ChallengeDeleteView(DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        # Prevent deletion if the challenge has submissions
+        if instance.submissions.exists():
+            return api_response(
+                success=False,
+                message="Cannot delete a challenge that has submissions. Close the challenge instead.",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
         instance.delete()
         return api_response(
             success=True,

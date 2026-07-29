@@ -102,6 +102,7 @@ export default function SubmitSolutionPage() {
   });
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [team, setTeam] = useState(null);
   const [teamLoading, setTeamLoading] = useState(true);
@@ -302,6 +303,7 @@ export default function SubmitSolutionPage() {
     }
 
     try {
+      setIsSubmitting(true);
       const payload = {
         challenge: challenge?.id,
         title: form.title,
@@ -337,6 +339,8 @@ export default function SubmitSolutionPage() {
     } catch (error) {
       setSubmitError(error.message || "Unable to submit solution now.");
       setSubmitSuccess("");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -627,12 +631,18 @@ export default function SubmitSolutionPage() {
             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
               <button
                 className="flex h-14 flex-1 items-center justify-center gap-2 rounded-[22px] bg-[#8B5CF6] px-8 text-[16px] font-extrabold text-white shadow-[0_18px_42px_rgba(139,92,246,0.38)] transition hover:bg-[#9568ff]"
-                disabled={isSubmitted && !canUpdateBeforeDeadline}
+                disabled={
+                  (isSubmitted && !canUpdateBeforeDeadline) || isSubmitting
+                }
                 onClick={submitSolution}
                 type="button"
               >
                 <Send size={19} />
-                {isSubmitted ? "Submitted ✓" : "Submit Solution"}
+                {isSubmitting
+                  ? "Submitting..."
+                  : isSubmitted
+                    ? "Submitted ✓"
+                    : "Submit Solution"}
               </button>
             </div>
             {submitError ? (

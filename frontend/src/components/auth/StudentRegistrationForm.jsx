@@ -291,6 +291,7 @@ export default function StudentRegistrationForm() {
   const [profilePreview, setProfilePreview] = useState("");
   const [formMessage, setFormMessage] = useState("");
   const [fileInputResetKey, setFileInputResetKey] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(form.password),
@@ -326,6 +327,7 @@ export default function StudentRegistrationForm() {
     }
 
     try {
+      setIsSubmitting(true);
       const payload = {
         ...form,
         skills: selectedSkills.join(", "),
@@ -393,6 +395,8 @@ export default function StudentRegistrationForm() {
       setFileInputResetKey((key) => key + 1);
     } catch (error) {
       setFormMessage(error.message || "Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -927,10 +931,11 @@ export default function StudentRegistrationForm() {
             ) : (
               <button
                 className="flex h-12 items-center justify-center gap-3 rounded-[24px] bg-[#8B5CF6] px-8 text-[14px] font-bold text-white shadow-[0_18px_36px_rgba(76,29,149,0.48)] transition hover:bg-[#9568ff]"
+                disabled={isSubmitting}
                 type="submit"
               >
-                Register
-                <ArrowRight size={18} />
+                {isSubmitting ? "Registering..." : "Register"}
+                {!isSubmitting && <ArrowRight size={18} />}
               </button>
             )}
           </div>

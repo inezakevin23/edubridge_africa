@@ -228,4 +228,7 @@ CORS_ALLOW_CREDENTIALS = True
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+if not DEBUG:
+    WHITENOISE_ROOT = os.path.join(BASE_DIR, 'media')
+
 AUTH_USER_MODEL = "accounts.User"

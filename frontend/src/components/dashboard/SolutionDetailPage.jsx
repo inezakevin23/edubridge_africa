@@ -289,11 +289,13 @@ export default function SolutionDetailPage() {
                         {submission?.team_members &&
                         submission.team_members.length > 0 ? (
                           submission.team_members.map((member) => {
-                            const isShortlisted = shortlistedMembers.includes(
-                              member.id,
+                            const isShortlisted = shortlistedMembers.some(
+                              (m) =>
+                                (typeof m === "string" ? m : m.id) ===
+                                member.id,
                             );
                             const isAuthor =
-                              member.id === submission?.intern?.id ||
+                              member.id === submission?.intern ||
                               member.email === submission?.intern?.email;
                             return (
                               <div
@@ -408,21 +410,20 @@ export default function SolutionDetailPage() {
                                 try {
                                   await toggleShortlistMember(
                                     id,
-                                    submission?.intern?.id,
+                                    submission?.intern,
                                     newShortlisted,
                                   );
                                   if (newShortlisted) {
                                     setShortlistedMembers((prev) =>
-                                      submission?.intern?.id
-                                        ? [...prev, submission.intern.id]
+                                      submission?.intern
+                                        ? [...prev, submission.intern]
                                         : prev,
                                     );
                                   } else {
                                     setShortlistedMembers((prev) =>
-                                      submission?.intern?.id
+                                      submission?.intern
                                         ? prev.filter(
-                                            (uid) =>
-                                              uid !== submission.intern.id,
+                                            (uid) => uid !== submission.intern,
                                           )
                                         : prev,
                                     );

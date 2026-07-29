@@ -22,4 +22,5 @@ gunicorn
 dj-database-url
 whitenoise
 Pillow
-supabase
+django-storages[s3]
+boto3

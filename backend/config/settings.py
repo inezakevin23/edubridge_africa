@@ -169,23 +169,37 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = []
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "django_storage_supabase.storage.SupabaseStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
+
+SUPABASE_URL = config("SUPABASE_URL", default="")
+SUPABASE_KEY = config("SUPABASE_KEY", default="")
+SUPABASE_BUCKET = config("SUPABASE_BUCKET", default="edubridge_media_bucket")
+
+if not SUPABASE_URL:
+    STORAGES["default"] = {"BACKEND": "django.core.files.storage.FileSystemStorage"}
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTODISCOVER_SUPPORT = True
-WHITENOISE_ROOT = STATIC_ROOT
+WHITENOISE_MEDIA_PREFIX = '/media/'
+WHITENOISE_MEDIA_ROOT = MEDIA_ROOT
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -224,11 +238,5 @@ CSRF_COOKIE_SECURE = True
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = '/app/media' 
-
-if not DEBUG:
-    WHITENOISE_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = "accounts.User"

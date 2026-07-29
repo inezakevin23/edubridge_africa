@@ -22,3 +22,5 @@ gunicorn
 dj-database-url
 whitenoise
 Pillow
+whitenoise-media
+django-storage-supabase

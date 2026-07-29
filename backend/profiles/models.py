@@ -150,7 +150,7 @@ class InternProfile(BaseModel):
     graduation_year = models.PositiveIntegerField(null=True, blank=True)
     years_of_experience = models.PositiveIntegerField(default=0)
     skills = models.TextField(help_text="Separate skills using commas.")
-    portfolio_url = models.URLField(blank=True)
+    portfolio_url = models.CharField(max_length=500, blank=True)
     
     national_or_student_id_document = models.FileField(
         upload_to=identity_document_upload_path,
@@ -191,7 +191,7 @@ class CompanyProfile(BaseModel):
     )
     country = models.CharField(max_length=50, choices=AfricanCountries.choices)
     city = models.CharField(max_length=100)
-    website = models.URLField(blank=True)
+    website = models.CharField(max_length=500, blank=True)
     description = models.TextField()
     
     registration_certificate = models.FileField(

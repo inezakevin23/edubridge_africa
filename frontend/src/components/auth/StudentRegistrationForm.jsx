@@ -849,7 +849,7 @@ export default function StudentRegistrationForm() {
                     onChange={updateForm}
                     optional
                     placeholder="https://yourportfolio.com"
-                    type="url"
+                    type="text"
                     value={form.portfolio}
                   />
                 </div>

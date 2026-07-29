@@ -746,7 +746,7 @@ export default function CompanyRegistrationForm() {
                   onChange={updateForm}
                   optional
                   placeholder="https://company.com"
-                  type="url"
+                  type="text"
                   value={form.website}
                 />
                 <Field

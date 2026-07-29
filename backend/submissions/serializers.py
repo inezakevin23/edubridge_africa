@@ -25,7 +25,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "status",
             "company_score",
             "feedback",
-            "shortlisted",
             "cash_prize_awarded",
             "created_at",
             "updated_at",

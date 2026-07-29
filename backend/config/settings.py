@@ -176,14 +176,14 @@ STATICFILES_DIRS = []
 # Supabase Client Core Keys Extraction
 SUPABASE_URL = config("SUPABASE_URL", default=None)
 SUPABASE_KEY = config("SUPABASE_KEY", default=None)
-SUPABASE_BUCKET = config("SUPABASE_BUCKET", default="edubridge_media_bucket")
+SUPABASE_MEDIA_BUCKET = config("SUPABASE_MEDIA_BUCKET", default="edubridge_media_bucket")
 
 # ─── PRODUCTION CENTRAL CLOUD STATIC & MEDIA STORAGE STORAGE ENGINE ─────────
 if SUPABASE_URL and SUPABASE_KEY:
     # Production Cloud Settings
     STORAGES = {
         "default": {
-            "BACKEND": "django_supabase_storage.SupabaseMediaStorage",
+            "BACKEND": "django_supabase_storage.storage.SupabaseStorage",
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",

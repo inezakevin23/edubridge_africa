@@ -40,8 +40,9 @@ urlpatterns = [
     ),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT,
-    )
+# Serve media files in production as well (e.g. Railway.app).
+# For high-traffic production, i will use a CDN or cloud storage (Cloudinary/S3) instead.
+urlpatterns += static(
+    settings.MEDIA_URL,
+    document_root=settings.MEDIA_ROOT,
+)

@@ -380,7 +380,7 @@ export default function StudentRegistrationForm() {
         response?.user ||
           response?.data?.user || { role: "intern", email: form.email },
       );
-      navigate("/complete-profile/intern");
+      navigate("/student-dashboard");
       setForm(initialForm);
       setSelectedSkills([]);
       setSkillInput("");

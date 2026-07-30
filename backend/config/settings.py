@@ -100,15 +100,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 # Prioritize DATABASE_URL env var from Docker; fall back to backend/.env config
-# 1. Prioritize direct multi-container environment variables if injected by Docker Compose
+# 1. Prioritize direct multi-container environment variables if injected by Docker Compose / Railway
 if os.environ.get("DATABASE_URL"):
     DATABASES = {
         "default": dj_database_url.config(
             default=os.environ.get("DATABASE_URL"),
-            conn_max_age=600,
-            ssl_require=True  # Required for Railway and most production PostgreSQL providers
+            conn_max_age=60,              # Keeps the socket connection alive for up to 60 seconds
+            conn_health_checks=True,      # Tests connection health; auto-reconnects safely if dropped
+            ssl_require=True              # Mandatory security enforcement for Railway PostgreSQL instances
         )
     }
+    # Disables server-side cursor tracking which conflicts with transactional database connection poolers
+    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+
 # 2. If running locally inside Docker but checking individual keys
 elif os.environ.get("DB_HOST") and os.environ.get("DB_HOST") != "localhost":
     DATABASES = {
@@ -188,11 +192,11 @@ if SUPABASE_URL and SUPABASE_KEY:
         },
     }
     
-    # Grab these variables from your Railway Environment
-    AWS_ACCESS_KEY_ID = config('SUPABASE_ACCESS_KEY_ID', default='')
-    AWS_SECRET_ACCESS_KEY = config('SUPABASE_SECRET_ACCESS_KEY', default='')
-    AWS_STORAGE_BUCKET_NAME = config('SUPABASE_BUCKET_NAME', default='') or 'edubridge_media_bucket'
-    AWS_S3_ENDPOINT_URL = config('SUPABASE_S3_ENDPOINT', default='')
+    # Standardized AWS configuration fields utilizing decouple configuration layers
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default=config('SUPABASE_ACCESS_KEY_ID', default=''))
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=config('SUPABASE_SECRET_ACCESS_KEY', default=''))
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default=config('SUPABASE_BUCKET_NAME', default='edubridge_media_bucket'))
+    AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default=config('SUPABASE_S3_ENDPOINT', default=''))
     SUPABASE_PROJECT_REF = config('SUPABASE_PROJECT_REF', default='')
     
     # Builds clean public URLs: https://supabase.co/storage/v1/object/public/bucket

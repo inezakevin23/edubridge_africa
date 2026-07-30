@@ -146,7 +146,7 @@ export default function StudentFeedbackPage() {
   const feedbackStats = stats
     ? [
         {
-          label: "Total Reviews",
+          label: "Total Submission",
           value: stats.my_submissions ?? submissions.length ?? 0,
         },
         {
@@ -159,9 +159,7 @@ export default function StudentFeedbackPage() {
         },
         {
           label: "Pending Reviews",
-          value: submissions.filter(
-            (s) => s.status === "submitted",
-          ).length,
+          value: submissions.filter((s) => s.status === "submitted").length,
         },
       ]
     : [];
